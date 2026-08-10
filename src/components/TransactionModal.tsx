@@ -7,13 +7,17 @@ interface TransactionModalProps {
   onClose: () => void;
   onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   banks: Bank[];
+  defaultType?: TransactionType;
+  defaultBankId?: string;
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({
   isOpen,
   onClose,
   onAddTransaction,
-  banks
+  banks,
+  defaultType,
+  defaultBankId
 }) => {
   const [amount, setAmount] = useState<string>('');
   const [description, setDescription] = useState<string>('');
@@ -63,17 +67,22 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     setCurrentTranslateY(0);
   };
 
-  // Inicializar bancos selecionados ao abrir
+  // Inicializar bancos e tipo selecionados ao abrir
   useEffect(() => {
-    if (isOpen && banks && banks.length > 0) {
-      setSelectedBankId(banks[0].id);
+    if (isOpen) {
+      setType(defaultType || 'expense');
+      
+      const initialBankId = defaultBankId || (banks.length > 0 ? banks[0].id : '');
+      setSelectedBankId(initialBankId);
+
       if (banks.length > 1) {
-        setTargetBankId(banks[1].id);
+        const nextBank = banks.find(b => b.id !== initialBankId);
+        setTargetBankId(nextBank ? nextBank.id : banks[1].id);
       } else {
         setTargetBankId('');
       }
     }
-  }, [isOpen, banks]);
+  }, [isOpen, defaultType, defaultBankId, banks]);
 
   // Resetar a categoria selecionada quando o tipo muda (deixa vazio/null)
   useEffect(() => {

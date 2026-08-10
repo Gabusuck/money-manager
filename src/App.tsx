@@ -27,7 +27,8 @@ import type {
   BudgetAllocation, 
   SavingGoal,
   TransactionCategory,
-  Bank
+  Bank,
+  TransactionType
 } from './types';
 
 // Views
@@ -125,6 +126,8 @@ function App() {
   
   // Modals
   const [isTxOpen, setIsTxOpen] = useState(false);
+  const [defaultTxType, setDefaultTxType] = useState<TransactionType>('expense');
+  const [defaultBankId, setDefaultBankId] = useState<string>('');
   
   // Estado de rede/offline
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -429,6 +432,13 @@ function App() {
     }
   };
 
+  // Handler para abrir o modal de lançamentos preenchido de antemão (Origem/Tipo)
+  const handleOpenPrefilledTxModal = (type: TransactionType, bankId: string) => {
+    setDefaultTxType(type);
+    setDefaultBankId(bankId);
+    setIsTxOpen(true);
+  };
+
   // Handler para limpar todos os dados e recomeçar do zero
   const handleClearAllData = async () => {
     if (window.confirm('Tens a certeza que queres apagar todos os dados e começar do zero? Esta ação é irreversível.')) {
@@ -452,6 +462,7 @@ function App() {
             onAddBank={handleAddBank}
             onDeleteBank={handleDeleteBank}
             onEditBank={handleEditBank}
+            onOpenPrefilledTxModal={handleOpenPrefilledTxModal}
           />
         );
       case 'evolution':
@@ -575,9 +586,15 @@ function App() {
       {/* Modals da Aplicação */}
       <TransactionModal 
         isOpen={isTxOpen} 
-        onClose={() => setIsTxOpen(false)} 
+        onClose={() => {
+          setIsTxOpen(false);
+          setDefaultTxType('expense');
+          setDefaultBankId('');
+        }} 
         onAddTransaction={handleAddTransaction} 
         banks={banks}
+        defaultType={defaultTxType}
+        defaultBankId={defaultBankId}
       />
 
     </div>

@@ -12,9 +12,11 @@ import {
   ArrowDownRight, 
   ArrowUpRight,
   X,
-  Plus
+  Plus,
+  Trash2,
+  Edit3
 } from 'lucide-react';
-import type { Transaction, BudgetAllocation, Bank } from '../types';
+import type { Transaction, BudgetAllocation, Bank, TransactionType } from '../types';
 
 interface DashboardProps {
   transactions: Transaction[];
@@ -24,6 +26,7 @@ interface DashboardProps {
   onAddBank: (name: string, initialBalance: number) => void;
   onDeleteBank: (bankId: string) => void;
   onEditBank: (bankId: string, name: string, balance: number) => void;
+  onOpenPrefilledTxModal: (type: TransactionType, bankId: string) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ 
@@ -33,9 +36,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
   banks,
   onAddBank,
   onDeleteBank,
-  onEditBank
+  onEditBank,
+  onOpenPrefilledTxModal
 }) => {
   const [longPressTimeout, setLongPressTimeout] = useState<any>(null);
+  const [activeContextMenuBank, setActiveContextMenuBank] = useState<Bank | null>(null);
+  const [editingBank, setEditingBank] = useState<Bank | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editBalance, setEditBalance] = useState('');
   const currentMonthTransactions = transactions; 
 
   // Soma de gastos por categoria e tipo
@@ -147,21 +155,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const handleEditBankPrompt = (bank: Bank) => {
-    const currentBalance = getBankBalance(bank.id);
-    const newName = prompt('Qual é o novo nome do Banco/Conta?', bank.name);
-    if (newName === null) return;
-    if (!newName.trim()) {
-      alert('O nome do banco não pode estar vazio!');
-      return;
-    }
-    const newBalanceStr = prompt(`Qual é o novo saldo para a conta "${newName.trim()}"? (Ajusta o saldo atual)`, currentBalance.toString());
-    if (newBalanceStr === null) return;
-    const newBalance = parseFloat(newBalanceStr.replace(',', '.'));
-    if (isNaN(newBalance)) {
-      alert('Por favor, introduz um saldo válido.');
-      return;
-    }
-    onEditBank(bank.id, newName.trim(), newBalance);
+    setActiveContextMenuBank(bank);
   };
 
   // Icon mapping para as transações recentes
@@ -443,6 +437,142 @@ export const Dashboard: React.FC<DashboardProps> = ({
           )}
         </div>
       </div>
+
+      {/* iOS Context Menu Backdrop */}
+      {activeContextMenuBank && (
+        <div 
+          className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-50 flex items-center justify-center p-6 animate-in fade-in duration-200" 
+          onClick={() => setActiveContextMenuBank(null)}
+        >
+          <div 
+            className="bg-white/90 backdrop-blur-md rounded-[24px] border border-slate-100/50 shadow-premium w-full max-w-[280px] overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-4 border-b border-slate-100 text-center">
+              <h4 className="text-xs font-black text-brand-dark truncate">{activeContextMenuBank.name}</h4>
+              <p className="text-[10px] font-bold text-slate-400 mt-0.5">Gestão de Conta</p>
+            </div>
+            
+            {/* Opções */}
+            <div className="flex flex-col">
+              <button
+                onClick={() => {
+                  onOpenPrefilledTxModal('expense', activeContextMenuBank.id);
+                  setActiveContextMenuBank(null);
+                }}
+                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 border-b border-slate-50 transition-custom text-left text-xs font-bold text-brand-dark"
+              >
+                <span>Nova Despesa</span>
+                <ArrowDownRight className="w-4 h-4 text-cat-red" />
+              </button>
+              
+              <button
+                onClick={() => {
+                  onOpenPrefilledTxModal('income', activeContextMenuBank.id);
+                  setActiveContextMenuBank(null);
+                }}
+                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 border-b border-slate-50 transition-custom text-left text-xs font-bold text-brand-dark"
+              >
+                <span>Nova Renda</span>
+                <ArrowUpRight className="w-4 h-4 text-cat-green" />
+              </button>
+              
+              <button
+                onClick={() => {
+                  setEditingBank(activeContextMenuBank);
+                  setEditName(activeContextMenuBank.name);
+                  setEditBalance(getBankBalance(activeContextMenuBank.id).toString());
+                  setActiveContextMenuBank(null);
+                }}
+                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 border-b border-slate-50 transition-custom text-left text-xs font-bold text-brand-dark"
+              >
+                <span>Editar Conta</span>
+                <Edit3 className="w-4 h-4 text-brand-purple" />
+              </button>
+              
+              {banks.length > 1 && (
+                <button
+                  onClick={() => {
+                    onDeleteBank(activeContextMenuBank.id);
+                    setActiveContextMenuBank(null);
+                  }}
+                  className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 transition-custom text-left text-xs font-bold text-cat-red"
+                >
+                  <span>Eliminar Conta</span>
+                  <Trash2 className="w-4 h-4 text-cat-red" />
+                </button>
+              )}
+            </div>
+            
+            {/* Fechar */}
+            <button 
+              onClick={() => setActiveContextMenuBank(null)}
+              className="w-full py-3.5 bg-slate-50 hover:bg-slate-100 text-center text-[10px] font-black uppercase tracking-wider text-slate-400 border-t border-slate-100"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Bank Modal Overlay */}
+      {editingBank && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-in fade-in duration-200">
+          <div className="bg-slate-50 w-full max-w-sm rounded-[32px] border border-slate-100 p-5 shadow-premium space-y-4.5 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center">
+              <h4 className="text-xs font-black text-brand-dark uppercase tracking-widest">Editar Conta</h4>
+              <button
+                onClick={() => setEditingBank(null)}
+                className="w-7 h-7 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-custom"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5">
+              <div className="space-y-1">
+                <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest px-1">Nome da Conta</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full p-3.5 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-premium"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest px-1">Saldo Atual</label>
+                <input
+                  type="text"
+                  value={editBalance}
+                  onChange={(e) => setEditBalance(e.target.value)}
+                  className="w-full p-3.5 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-premium"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (!editName.trim()) {
+                  alert('O nome do banco não pode estar vazio!');
+                  return;
+                }
+                const parsed = parseFloat(editBalance.replace(',', '.'));
+                if (isNaN(parsed)) {
+                  alert('Introduz um saldo válido.');
+                  return;
+                }
+                onEditBank(editingBank.id, editName.trim(), parsed);
+                setEditingBank(null);
+              }}
+              className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
+            >
+              Gravar Alterações
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
