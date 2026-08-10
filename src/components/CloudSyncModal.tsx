@@ -53,7 +53,6 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
       updatedAt: new Date().toISOString()
     };
   };
-
   const handleBackup = async () => {
     setLoading(true);
     setStatusText('A guardar cópia na nuvem...');
@@ -62,29 +61,35 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
     try {
       if (syncCode) {
         // Atualizar backup existente
-        const response = await fetch(`https://api.npoint.io/bins/${syncCode}`, {
+        const response = await fetch(`https://api.restful-api.dev/objects/${syncCode}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ contents: payload })
+          body: JSON.stringify({
+            name: 'all_my_money_backup',
+            data: payload
+          })
         });
         if (!response.ok) throw new Error('Falha ao atualizar backup.');
         setStatusText('Sincronizado com sucesso!');
       } else {
         // Criar novo backup
-        const response = await fetch('https://api.npoint.io/bins', {
+        const response = await fetch('https://api.restful-api.dev/objects', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ contents: payload })
+          body: JSON.stringify({
+            name: 'all_my_money_backup',
+            data: payload
+          })
         });
         if (!response.ok) throw new Error('Falha ao criar backup.');
         const data = await response.json();
-        if (data.binId) {
-          localStorage.setItem('allmymoney_sync_code', data.binId);
-          setSyncCode(data.binId);
+        if (data.id) {
+          localStorage.setItem('allmymoney_sync_code', data.id);
+          setSyncCode(data.id);
           setStatusText('Código de sincronização gerado com sucesso!');
         } else {
           throw new Error('Código não recebido da nuvem.');
@@ -111,15 +116,23 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
     setStatusText('A ler dados da nuvem...');
 
     try {
-      const response = await fetch(`https://api.npoint.io/bins/${code}`);
-      if (!response.ok) throw new Error('Código inválido ou dados não encontrados.');
-      const data = await response.json();
-
-      // Garantir compatibilidade quer venha embrulhado em "contents" ou em bruto
-      const payload = data.contents ? data.contents : data;
+      let payload;
+      if (code.length < 20) {
+        // Fallback compatibilidade npoint
+        const response = await fetch(`https://api.npoint.io/bins/${code}`);
+        if (!response.ok) throw new Error('Código inválido ou dados não encontrados.');
+        const data = await response.json();
+        payload = data.contents ? data.contents : data;
+      } else {
+        // api.restful-api.dev
+        const response = await fetch(`https://api.restful-api.dev/objects/${code}`);
+        if (!response.ok) throw new Error('Código inválido ou dados não encontrados.');
+        const data = await response.json();
+        payload = data.data;
+      }
 
       // Validação básica de integridade
-      if (!payload.transactions || !payload.banks || !payload.budget) {
+      if (!payload || !payload.transactions || !payload.banks || !payload.budget) {
         throw new Error('O ficheiro de cópia na nuvem está corrompido ou incompleto.');
       }
 
@@ -144,7 +157,6 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
       setTimeout(() => setStatusText(''), 3000);
     }
   };
-
   const copyToClipboard = () => {
     navigator.clipboard.writeText(syncCode);
     setCopied(true);
