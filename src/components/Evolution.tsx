@@ -98,7 +98,7 @@ export const Evolution: React.FC<EvolutionProps> = ({ transactions }) => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-28 space-y-6">
+    <div className="px-4 pb-28 space-y-6">
       
       {/* Resumo de Evolução em Cartão Premium */}
       <div className="bg-white rounded-3xl border border-slate-100 p-5 mt-2 space-y-4 shadow-premium">
