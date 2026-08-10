@@ -35,7 +35,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     onAddTransaction({
       description: description.trim(),
       amount: parsedAmount,
-      type: 'expense', // Focado em despesas / saídas de carteira conforme o modelo do app
+      type: 'expense',
       category,
       date,
     });
@@ -48,67 +48,71 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     onClose();
   };
 
-  // Ícones e cores para seleção de categoria
-  const categoriesList: { name: TransactionCategory; label: string; color: string; bg: string; icon: any }[] = [
-    { name: 'Transportes', label: 'Transportes', color: 'text-cat-orange border-cat-orange', bg: 'bg-cat-orange/10', icon: Car },
-    { name: 'Lazer', label: 'Lazer / Café', color: 'text-cat-yellow border-cat-yellow', bg: 'bg-cat-yellow/10', icon: Smile },
-    { name: 'Outros', label: 'Outros', color: 'text-cat-gray border-cat-gray', bg: 'bg-cat-gray/10', icon: HelpCircle },
-    { name: 'Fixos', label: 'Fixos / Renda', color: 'text-cat-red border-cat-red', bg: 'bg-cat-red/10', icon: Shield },
-    { name: 'Poupança', label: 'Poupança TV', color: 'text-cat-purple border-cat-purple', bg: 'bg-cat-purple/10', icon: PiggyBank },
-    { name: 'Investimento', label: 'Trading 212', color: 'text-cat-green border-cat-green', bg: 'bg-cat-green/10', icon: TrendingUp },
+  const categoriesList: { name: TransactionCategory; label: string; color: string; bg: string; border: string; icon: any }[] = [
+    { name: 'Transportes', label: 'Transportes / Gasóleo', color: '#f97316', bg: 'bg-cat-orange/10', border: 'border-cat-orange/20', icon: Car },
+    { name: 'Lazer', label: 'Lazer / Café', color: '#eab308', bg: 'bg-cat-yellow/10', border: 'border-cat-yellow/20', icon: Smile },
+    { name: 'Outros', label: 'Outros Desejos', color: '#64748b', bg: 'bg-cat-gray/10', border: 'border-cat-gray/20', icon: HelpCircle },
+    { name: 'Fixos', label: 'Despesas Fixas', color: '#ef4444', bg: 'bg-cat-red/10', border: 'border-cat-red/20', icon: Shield },
+    { name: 'Poupança', label: 'Poupança (TV/Câmara)', color: '#a855f7', bg: 'bg-cat-purple/10', border: 'border-cat-purple/20', icon: PiggyBank },
+    { name: 'Investimento', label: 'Investimento (T212)', color: '#10b981', bg: 'bg-cat-green/10', border: 'border-cat-green/20', icon: TrendingUp },
   ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-xs transition-opacity duration-300">
       <div 
-        className="w-full max-w-md bg-white rounded-t-3xl border-t border-brand-border p-6 space-y-6 safe-pb shadow-xl animate-in slide-in-from-bottom duration-300"
+        className="w-full max-w-md bg-slate-50 rounded-t-[32px] border-t border-slate-100 p-6 space-y-6 max-h-[92vh] overflow-y-auto no-scrollbar safe-pb shadow-2xl animate-in slide-in-from-bottom duration-300"
       >
-        {/* Topo do Modal */}
+        {/* Header Modal */}
         <div className="flex justify-between items-center">
-          <h3 className="text-sm font-bold text-brand-dark uppercase tracking-wider">Novo Lançamento</h3>
+          <h3 className="text-sm font-black text-brand-dark uppercase tracking-widest">Nova Transação</h3>
           <button 
             onClick={onClose} 
-            className="w-8 h-8 rounded-full bg-brand-gray flex items-center justify-center border border-brand-border text-gray-500 hover:text-brand-dark transition-custom"
+            className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-slate-100 text-slate-400 hover:text-brand-dark transition-custom shadow-sm"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4.5 h-4.5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Input de Valor Grande */}
-          <div className="relative text-center py-2">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-400">€</span>
-            <input
-              type="text"
-              inputMode="decimal"
-              placeholder="0,00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full text-center text-4xl font-extrabold focus:outline-none placeholder-gray-200 text-brand-dark"
-              autoFocus
-            />
+          
+          {/* Campo Valor Grande */}
+          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-premium relative text-center py-5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Valor do Lançamento</span>
+            <div className="relative inline-block w-full max-w-[200px]">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-300">€</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                placeholder="0,00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full text-center text-4xl font-black focus:outline-none placeholder-slate-200 text-brand-dark pr-3 pl-8"
+                autoFocus
+              />
+            </div>
           </div>
 
           {/* Campo Descrição */}
-          <div className="space-y-1">
-            <label className="text-xxs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Edit3 className="w-3 h-3 text-gray-400" /> Descrição
+          <div className="space-y-1.5">
+            <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 px-1">
+              <Edit3 className="w-3.5 h-3.5" /> Descrição
             </label>
             <input
               type="text"
-              placeholder="Ex: Supermercado, Almoço, Jantar..."
+              placeholder="Donativo, Pingo Doce, Jantar..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3 text-xs bg-brand-gray border border-brand-border rounded-xl focus:outline-none focus:border-brand-dark text-brand-dark placeholder-gray-400"
+              className="w-full p-3.5 text-xs bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark placeholder-slate-300 shadow-premium"
             />
           </div>
 
-          {/* Seleção de Categoria (Grid) */}
-          <div className="space-y-1.5">
-            <label className="text-xxs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Tag className="w-3 h-3 text-gray-400" /> Categoria
+          {/* Seleção de Categoria em Lista de Cartões (Estilo do Ecrã Direito da Imagem) */}
+          <div className="space-y-2">
+            <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 px-1">
+              <Tag className="w-3.5 h-3.5" /> Categoria
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            
+            <div className="space-y-2 max-h-60 overflow-y-auto no-scrollbar pr-0.5 py-0.5">
               {categoriesList.map((cat) => {
                 const Icon = cat.icon;
                 const isSelected = category === cat.name;
@@ -117,14 +121,36 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     key={cat.name}
                     type="button"
                     onClick={() => setCategory(cat.name)}
-                    className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border text-center transition-custom ${
-                      isSelected 
-                        ? `${cat.color} ${cat.bg} border-current font-semibold scale-98` 
-                        : 'bg-white border-brand-border text-gray-500 hover:bg-brand-gray'
+                    className={`w-full bg-white rounded-2xl border p-3 flex items-center justify-between shadow-premium transition-custom relative overflow-hidden text-left ${
+                      isSelected ? 'border-brand-purple' : 'border-slate-100 hover:translate-y-[-1px]'
                     }`}
                   >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span className="text-[10px] whitespace-nowrap">{cat.label}</span>
+                    {/* Barra Vertical de Categoria */}
+                    <div 
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 rounded-r-lg"
+                      style={{ backgroundColor: cat.color }}
+                    />
+
+                    <div className="flex items-center gap-3 pl-1.5">
+                      {/* Círculo com Ícone */}
+                      <div className={`w-8.5 h-8.5 rounded-full flex items-center justify-center border ${cat.border} ${cat.bg} shadow-sm shrink-0`}>
+                        <Icon className="w-4 h-4" style={{ color: cat.color }} />
+                      </div>
+                      <span className="text-xs font-bold text-brand-dark">{cat.label}</span>
+                    </div>
+
+                    {/* Botão de Rádio Checkmark Customizado */}
+                    <div 
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-custom ${
+                        isSelected 
+                          ? 'border-brand-purple' 
+                          : 'border-slate-300'
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-brand-purple shadow-sm" />
+                      )}
+                    </div>
                   </button>
                 );
               })}
@@ -132,24 +158,24 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           </div>
 
           {/* Campo Data */}
-          <div className="space-y-1">
-            <label className="text-xxs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Calendar className="w-3 h-3 text-gray-400" /> Data do Registo
+          <div className="space-y-1.5">
+            <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 px-1">
+              <Calendar className="w-3.5 h-3.5" /> Data do Movimento
             </label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full p-3 text-xs bg-brand-gray border border-brand-border rounded-xl focus:outline-none focus:border-brand-dark text-brand-dark"
+              className="w-full p-3.5 text-xs bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark shadow-premium"
             />
           </div>
 
-          {/* Botão de Gravar */}
+          {/* Botão de Gravar Pill-Shape */}
           <button
             type="submit"
-            className="w-full py-3.5 mt-2 bg-brand-dark text-white rounded-xl text-xs font-bold hover:bg-slate-800 active:scale-98 transition-custom"
+            className="w-full py-4 mt-3 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
           >
-            Confirmar Registo
+            Confirmar Lançamento
           </button>
         </form>
       </div>
