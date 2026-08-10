@@ -4,25 +4,33 @@ import {
   Car, 
   Smile, 
   HelpCircle, 
-  Info,
-  Shield,
-  PiggyBank,
-  TrendingUp,
-  ArrowDownRight,
-  ArrowUpRight
+  Info, 
+  Shield, 
+  PiggyBank, 
+  TrendingUp, 
+  ArrowDownRight, 
+  ArrowUpRight,
+  X,
+  Plus
 } from 'lucide-react';
-import type { Transaction, BudgetAllocation } from '../types';
+import type { Transaction, BudgetAllocation, Bank } from '../types';
 
 interface DashboardProps {
   transactions: Transaction[];
   budget: BudgetAllocation;
   onEditBudget: () => void;
+  banks: Bank[];
+  onAddBank: (name: string, initialBalance: number) => void;
+  onDeleteBank: (bankId: string) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ 
   transactions, 
   budget, 
-  onEditBudget 
+  onEditBudget,
+  banks,
+  onAddBank,
+  onDeleteBank
 }) => {
   const currentMonthTransactions = transactions; 
 
@@ -82,6 +90,42 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const totalDonutSpent = spentTransportes + spentLazer + spentOutrosExpense + savedPoupanca + investedInvestimento;
   const activeDonutData = donutData.filter(item => item.value > 0);
+
+  // Calcular saldo de cada banco individualmente com base em todo o histórico
+  const getBankBalance = (bankId: string) => {
+    return transactions.reduce((balance, tx) => {
+      // Entrada direta
+      if (tx.type === 'income' && tx.bankId === bankId) {
+        return balance + tx.amount;
+      }
+      // Saída direta (Despesa ou Transferência de Reforço de meta)
+      if ((tx.type === 'expense' || tx.type === 'transfer') && tx.bankId === bankId) {
+        return balance - tx.amount;
+      }
+      // Transferência entre contas: Sai da Origem
+      if (tx.fromBankId === bankId) {
+        return balance - tx.amount;
+      }
+      // Transferência entre contas: Entra no Destino
+      if (tx.toBankId === bankId) {
+        return balance + tx.amount;
+      }
+      return balance;
+    }, 0);
+  };
+
+  const handleAddBankClick = () => {
+    const name = prompt('Qual é o nome do Banco/Conta? (Ex: ActivoBank, Santander, Revolut, Cash...)');
+    if (!name || !name.trim()) return;
+    const balanceStr = prompt(`Qual é o saldo inicial para a conta "${name.trim()}"?`, '0');
+    if (balanceStr === null) return;
+    const balance = parseFloat(balanceStr.replace(',', '.'));
+    if (isNaN(balance) || balance < 0) {
+      alert('Por favor, introduz um saldo inicial válido superior ou igual a 0.');
+      return;
+    }
+    onAddBank(name.trim(), balance);
+  };
 
   // Icon mapping para as transações recentes
   const getCategoryIcon = (cat: string) => {
@@ -159,6 +203,51 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* 3. Secção "As Minhas Contas" horizontal */}
+          <div className="space-y-2.5">
+            <div className="flex justify-between items-center px-1">
+              <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">As Minhas Contas</h3>
+              <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Saldos Atuais</span>
+            </div>
+            
+            <div className="flex gap-3 overflow-x-auto no-scrollbar py-0.5">
+              {banks.map(bank => {
+                const balance = getBankBalance(bank.id);
+                return (
+                  <div 
+                    key={bank.id} 
+                    className="bg-white rounded-2xl border border-slate-100 p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 hover:translate-y-[-1px] transition-custom group"
+                  >
+                    {/* Botão de Apagar discreto se houver mais que 1 conta */}
+                    {banks.length > 1 && (
+                      <button
+                        onClick={() => onDeleteBank(bank.id)}
+                        className="absolute right-1.5 top-1.5 text-slate-300 hover:text-cat-red opacity-0 group-hover:opacity-100 transition-opacity w-4.5 h-4.5 flex items-center justify-center rounded-full bg-slate-50 border border-slate-150"
+                        title="Apagar Conta"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                    
+                    <span className="text-[10px] font-bold text-slate-500 truncate pr-4">{bank.name}</span>
+                    <span className={`text-xs font-black tracking-tight ${balance < 0 ? 'text-cat-red' : 'text-cat-green'}`}>
+                      {formatEuro(balance)}
+                    </span>
+                  </div>
+                );
+              })}
+
+              {/* Botão dashed de Nova Conta */}
+              <button
+                onClick={handleAddBankClick}
+                className="bg-white/50 rounded-2xl border border-dashed border-slate-350 p-3.5 w-32 shrink-0 flex flex-col items-center justify-center h-20 text-slate-400 hover:border-brand-purple hover:text-brand-purple transition-custom cursor-pointer"
+              >
+                <Plus className="w-4 h-4 mb-1" />
+                <span className="text-[9px] font-bold uppercase tracking-wider">Novo Banco</span>
+              </button>
             </div>
           </div>
         </>
@@ -277,7 +366,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                     <div>
                       <p className="text-xs font-bold text-brand-dark leading-tight">{tx.description}</p>
-                      <p className="text-[9px] text-slate-400 mt-0.5">{tx.category} • {tx.date}</p>
+                      <p className="text-[9px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                        <span>{tx.category}</span>
+                        <span>•</span>
+                        <span>{tx.date}</span>
+                        {/* Badge do Banco */}
+                        {tx.fromBankId && tx.toBankId ? (
+                          <span className="bg-purple-50 text-brand-purple border border-purple-100/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                            {banks.find(b => b.id === tx.fromBankId)?.name} ➔ {banks.find(b => b.id === tx.toBankId)?.name}
+                          </span>
+                        ) : tx.bankId ? (
+                          <span className="bg-slate-55 text-slate-500 border border-slate-200/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                            {banks.find(b => b.id === tx.bankId)?.name}
+                          </span>
+                        ) : null}
+                      </p>
                     </div>
                   </div>
                   

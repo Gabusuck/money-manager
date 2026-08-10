@@ -1,5 +1,5 @@
 import { get, set } from 'idb-keyval';
-import type { Transaction, BudgetAllocation, SavingGoal } from './types';
+import type { Transaction, BudgetAllocation, SavingGoal, Bank } from './types';
 
 const TRANSACTIONS_KEY = 'gp_transactions';
 const BUDGET_KEY = 'gp_budget';
@@ -102,6 +102,40 @@ export async function getGoals(): Promise<SavingGoal[]> {
 
   if (isLocalStorageAvailable()) {
     const localData = localStorage.getItem(GOALS_KEY);
+    if (localData) {
+      try {
+        return JSON.parse(localData);
+      } catch {
+        return [];
+      }
+    }
+  }
+  return [];
+}
+
+const BANKS_KEY = 'gp_banks';
+
+export async function saveBanks(banks: Bank[]): Promise<void> {
+  try {
+    await set(BANKS_KEY, banks);
+  } catch (err) {
+    console.warn('Erro ao guardar no IndexedDB, a usar fallback localStorage', err);
+    if (isLocalStorageAvailable()) {
+      localStorage.setItem(BANKS_KEY, JSON.stringify(banks));
+    }
+  }
+}
+
+export async function getBanks(): Promise<Bank[]> {
+  try {
+    const data = await get<Bank[]>(BANKS_KEY);
+    if (data) return data;
+  } catch (err) {
+    console.warn('Erro ao ler do IndexedDB, a usar fallback localStorage', err);
+  }
+
+  if (isLocalStorageAvailable()) {
+    const localData = localStorage.getItem(BANKS_KEY);
     if (localData) {
       try {
         return JSON.parse(localData);

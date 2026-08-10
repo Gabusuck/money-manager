@@ -13,7 +13,9 @@ import {
   getBudget, 
   saveBudget, 
   getGoals, 
-  saveGoals 
+  saveGoals,
+  getBanks,
+  saveBanks
 } from './db';
 import { 
   MOCK_BUDGET, 
@@ -24,7 +26,8 @@ import type {
   Transaction, 
   BudgetAllocation, 
   SavingGoal,
-  TransactionCategory
+  TransactionCategory,
+  Bank
 } from './types';
 
 // Views
@@ -118,6 +121,7 @@ function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budget, setBudget] = useState<BudgetAllocation>(MOCK_BUDGET);
   const [goals, setGoals] = useState<SavingGoal[]>([]);
+  const [banks, setBanks] = useState<Bank[]>([]);
   
   // Modals
   const [isTxOpen, setIsTxOpen] = useState(false);
@@ -158,6 +162,19 @@ function App() {
       } else {
         await saveGoals(MOCK_GOALS);
         setGoals(MOCK_GOALS);
+      }
+
+      // 4. Carregar Bancos
+      const localBanks = await getBanks();
+      if (localBanks && localBanks.length > 0) {
+        setBanks(localBanks);
+      } else {
+        const defaultBanks = [
+          { id: 'activo', name: 'ActivoBank' },
+          { id: 'revolut', name: 'Revolut' }
+        ];
+        await saveBanks(defaultBanks);
+        setBanks(defaultBanks);
       }
     }
     
@@ -290,6 +307,53 @@ function App() {
     }
   };
 
+  // Handler para adicionar novo banco/conta
+  const handleAddBank = async (name: string, initialBalance: number) => {
+    const newBankId = 'bank-' + Date.now();
+    const newBank: Bank = { id: newBankId, name };
+    const updatedBanks = [...banks, newBank];
+    setBanks(updatedBanks);
+    await saveBanks(updatedBanks);
+
+    // Registar saldo inicial como transação do tipo Renda
+    if (initialBalance > 0) {
+      const initialTx: Transaction = {
+        id: 'tx-' + Date.now(),
+        description: `Saldo Inicial: ${name}`,
+        amount: initialBalance,
+        type: 'income',
+        category: 'Outros',
+        date: new Date().toISOString().split('T')[0],
+        bankId: newBankId
+      };
+      const updatedTxs = [initialTx, ...transactions];
+      setTransactions(updatedTxs);
+      await saveTransactions(updatedTxs);
+    }
+  };
+
+  // Handler para eliminar banco/conta
+  const handleDeleteBank = async (bankId: string) => {
+    if (banks.length <= 1) {
+      alert('Não podes apagar a tua única conta!');
+      return;
+    }
+    if (window.confirm('Queres apagar este banco? Todas as transações associadas a ele serão apagadas.')) {
+      const updatedBanks = banks.filter(b => b.id !== bankId);
+      setBanks(updatedBanks);
+      await saveBanks(updatedBanks);
+
+      // Filtrar e remover transações deste banco
+      const updatedTxs = transactions.filter(tx => 
+        tx.bankId !== bankId && 
+        tx.fromBankId !== bankId && 
+        tx.toBankId !== bankId
+      );
+      setTransactions(updatedTxs);
+      await saveTransactions(updatedTxs);
+    }
+  };
+
   // Handler para limpar todos os dados e recomeçar do zero
   const handleClearAllData = async () => {
     if (window.confirm('Tens a certeza que queres apagar todos os dados e começar do zero? Esta ação é irreversível.')) {
@@ -309,6 +373,9 @@ function App() {
             transactions={transactions} 
             budget={budget}
             onEditBudget={handleEditSalary}
+            banks={banks}
+            onAddBank={handleAddBank}
+            onDeleteBank={handleDeleteBank}
           />
         );
       case 'evolution':
@@ -333,6 +400,7 @@ function App() {
           <Ledger 
             transactions={transactions} 
             onDeleteTransaction={handleDeleteTransaction}
+            banks={banks}
           />
         );
     }
@@ -433,6 +501,7 @@ function App() {
         isOpen={isTxOpen} 
         onClose={() => setIsTxOpen(false)} 
         onAddTransaction={handleAddTransaction} 
+        banks={banks}
       />
 
     </div>

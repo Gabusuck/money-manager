@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Search, Trash2, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp } from 'lucide-react';
-import type { Transaction, TransactionCategory } from '../types';
+import type { Transaction, TransactionCategory, Bank } from '../types';
 
 interface LedgerProps {
   transactions: Transaction[];
   onDeleteTransaction: (id: string) => void;
+  banks: Bank[];
 }
 
-export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransaction }) => {
+export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransaction, banks }) => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<TransactionCategory | 'Todas'>('Todas');
   const [selectedDateFilter, setSelectedDateFilter] = useState<string | 'Todas'>('Todas');
@@ -191,8 +192,24 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                         </div>
                         <div>
                           <p className="text-xs font-bold text-brand-dark leading-tight">{tx.description}</p>
-                          <span className="text-[9px] text-slate-400 font-semibold mt-0.5 block">
-                            {tx.category}
+                          <span className="text-[9px] text-slate-400 font-semibold mt-0.5 flex items-center gap-1.5 flex-wrap">
+                            <span>{tx.category}</span>
+                            {/* Badges de Banco */}
+                            {tx.fromBankId && tx.toBankId ? (
+                              <>
+                                <span>•</span>
+                                <span className="bg-purple-50 text-brand-purple border border-purple-100/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                                  {banks.find(b => b.id === tx.fromBankId)?.name} ➔ {banks.find(b => b.id === tx.toBankId)?.name}
+                                </span>
+                              </>
+                            ) : tx.bankId ? (
+                              <>
+                                <span>•</span>
+                                <span className="bg-slate-50 text-slate-500 border border-slate-200/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                                  {banks.find(b => b.id === tx.bankId)?.name}
+                                </span>
+                              </>
+                            ) : null}
                           </span>
                         </div>
                       </div>

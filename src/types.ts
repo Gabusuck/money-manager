@@ -5,7 +5,8 @@ export type TransactionCategory =
   | 'Transportes'
   | 'Lazer'
   | 'Outros'
-  | 'Salário';
+  | 'Salário'
+  | 'Transferência Interna';
 
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
@@ -17,6 +18,14 @@ export interface Transaction {
   category: TransactionCategory;
   date: string; // ISO format: YYYY-MM-DD
   isRecurring?: boolean;
+  bankId?: string;       // Associado a despesa/renda/objetivo
+  fromBankId?: string;   // Associado a transferência entre bancos (Origem)
+  toBankId?: string;     // Associado a transferência entre bancos (Destino)
+}
+
+export interface Bank {
+  id: string;
+  name: string;
 }
 
 export interface BudgetAllocation {
