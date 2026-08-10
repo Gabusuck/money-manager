@@ -67,7 +67,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ contents: payload })
         });
         if (!response.ok) throw new Error('Falha ao atualizar backup.');
         setStatusText('Sincronizado com sucesso!');
@@ -78,10 +78,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            // npoint exige que o objeto inicial seja o payload
-            ...payload
-          })
+          body: JSON.stringify({ contents: payload })
         });
         if (!response.ok) throw new Error('Falha ao criar backup.');
         const data = await response.json();
@@ -118,17 +115,20 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
       if (!response.ok) throw new Error('Código inválido ou dados não encontrados.');
       const data = await response.json();
 
+      // Garantir compatibilidade quer venha embrulhado em "contents" ou em bruto
+      const payload = data.contents ? data.contents : data;
+
       // Validação básica de integridade
-      if (!data.transactions || !data.banks || !data.budget) {
+      if (!payload.transactions || !payload.banks || !payload.budget) {
         throw new Error('O ficheiro de cópia na nuvem está corrompido ou incompleto.');
       }
 
       if (window.confirm('Esta ação irá substituir todos os dados atuais no teu telemóvel pelos dados guardados na nuvem. Desejas continuar?')) {
         await onRestoreData({
-          transactions: data.transactions,
-          banks: data.banks,
-          budget: data.budget,
-          goals: data.goals || []
+          transactions: payload.transactions,
+          banks: payload.banks,
+          budget: payload.budget,
+          goals: payload.goals || []
         });
         localStorage.setItem('allmymoney_sync_code', code);
         setSyncCode(code);
@@ -193,7 +193,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-in fade-in duration-200">
-      <div className="bg-slate-50 w-full max-w-sm rounded-[32px] border border-slate-100 p-5 shadow-premium space-y-4 animate-in zoom-in-95 duration-200">
+      <div className="bg-slate-50 w-full max-w-sm max-h-[90vh] rounded-[32px] border border-slate-100 p-5 shadow-premium flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Cabeçalho */}
         <div className="flex justify-between items-center">
@@ -209,12 +209,14 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
           </button>
         </div>
 
-        {statusText && (
-          <div className="p-3 bg-purple-50 border border-purple-100/50 rounded-2xl text-[10px] text-brand-purple font-bold text-center flex items-center justify-center gap-2">
-            {loading && <RefreshCw className="w-3 h-3 animate-spin text-brand-purple" />}
-            {statusText}
-          </div>
-        )}
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-0.5 mt-4">
+          {statusText && (
+            <div className="p-3 bg-purple-50 border border-purple-100/50 rounded-2xl text-[10px] text-brand-purple font-bold text-center flex items-center justify-center gap-2">
+              {loading && <RefreshCw className="w-3 h-3 animate-spin text-brand-purple" />}
+              {statusText}
+            </div>
+          )}
 
         {/* Cópia de Segurança na Nuvem */}
         <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3.5">
@@ -317,6 +319,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );
