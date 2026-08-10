@@ -764,17 +764,6 @@ function App() {
       {/* Barra de Navegação Inferior (Dock Flutuante Premium Compacta) */}
       <nav className="fixed bottom-2.5 left-6 right-6 max-w-xs mx-auto z-40 bg-white/80 backdrop-blur-md border border-slate-100 px-6 py-3.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
         
-        {/* Aba Início */}
-        <button
-          onClick={() => setCurrentTab('home')}
-          className={`flex items-center justify-center p-1.5 transition-custom ${
-            currentTab === 'home' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
-          }`}
-          title="Início"
-        >
-          <Home className="w-[22px] h-[22px] shrink-0" />
-        </button>
-
         {/* Aba Evolução */}
         <button
           onClick={() => setCurrentTab('evolution')}
@@ -795,6 +784,17 @@ function App() {
           title="Metas"
         >
           <Target className="w-[22px] h-[22px] shrink-0" />
+        </button>
+
+        {/* Aba Início */}
+        <button
+          onClick={() => setCurrentTab('home')}
+          className={`flex items-center justify-center p-1.5 transition-custom ${
+            currentTab === 'home' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
+          }`}
+          title="Início"
+        >
+          <Home className="w-[22px] h-[22px] shrink-0" />
         </button>
 
         {/* Aba Assinaturas */}
