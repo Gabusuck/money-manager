@@ -332,6 +332,81 @@ function App() {
     }
   };
 
+  // Handler para editar nome e saldo de banco/conta
+  const handleEditBank = async (bankId: string, newName: string, newBalance: number) => {
+    // 1. Atualizar nome do banco
+    const updatedBanks = banks.map(b => b.id === bankId ? { ...b, name: newName } : b);
+    setBanks(updatedBanks);
+    await saveBanks(updatedBanks);
+
+    // 2. Ajustar saldo da transação inicial ou criar ajuste para corresponder ao novo saldo
+    // Calcular o saldo atual
+    const currentBalance = transactions.reduce((balance, tx) => {
+      if (tx.type === 'income' && tx.bankId === bankId) return balance + tx.amount;
+      if ((tx.type === 'expense' || tx.type === 'transfer') && tx.bankId === bankId) return balance - tx.amount;
+      if (tx.fromBankId === bankId) return balance - tx.amount;
+      if (tx.toBankId === bankId) return balance + tx.amount;
+      return balance;
+    }, 0);
+
+    const difference = newBalance - currentBalance;
+
+    if (difference !== 0) {
+      // Procurar transação de saldo inicial deste banco
+      const initialTxIndex = transactions.findIndex(tx => 
+        tx.bankId === bankId && 
+        (tx.description.startsWith('Saldo Inicial') || tx.description.startsWith('Ajuste de Saldo'))
+      );
+
+      let updatedTxs = [...transactions];
+      if (initialTxIndex !== -1) {
+        // Atualiza a transação existente de saldo inicial para englobar a diferença
+        const targetTx = updatedTxs[initialTxIndex];
+        const newAmount = targetTx.amount + difference;
+        if (newAmount >= 0) {
+          updatedTxs[initialTxIndex] = {
+            ...targetTx,
+            description: `Saldo Inicial: ${newName}`,
+            amount: newAmount,
+            type: 'income'
+          };
+        } else {
+          // Se for negativo, converte em despesa
+          updatedTxs[initialTxIndex] = {
+            ...targetTx,
+            description: `Saldo Inicial: ${newName}`,
+            amount: Math.abs(newAmount),
+            type: 'expense'
+          };
+        }
+      } else {
+        // Se não houver transação de saldo inicial, cria uma nova
+        const adjustTx: Transaction = {
+          id: 'tx-' + Date.now(),
+          description: `Ajuste de Saldo: ${newName}`,
+          amount: Math.abs(difference),
+          type: difference > 0 ? 'income' : 'expense',
+          category: 'Outros',
+          date: new Date().toISOString().split('T')[0],
+          bankId
+        };
+        updatedTxs = [adjustTx, ...updatedTxs];
+      }
+      setTransactions(updatedTxs);
+      await saveTransactions(updatedTxs);
+    } else {
+      // Se a diferença for 0, só atualiza as descrições das transações iniciais com o novo nome
+      const updatedTxs = transactions.map(tx => {
+        if (tx.bankId === bankId && tx.description.startsWith('Saldo Inicial')) {
+          return { ...tx, description: `Saldo Inicial: ${newName}` };
+        }
+        return tx;
+      });
+      setTransactions(updatedTxs);
+      await saveTransactions(updatedTxs);
+    }
+  };
+
   // Handler para eliminar banco/conta
   const handleDeleteBank = async (bankId: string) => {
     if (banks.length <= 1) {
@@ -376,6 +451,7 @@ function App() {
             banks={banks}
             onAddBank={handleAddBank}
             onDeleteBank={handleDeleteBank}
+            onEditBank={handleEditBank}
           />
         );
       case 'evolution':

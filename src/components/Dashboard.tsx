@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { 
   DollarSign, 
@@ -22,6 +23,7 @@ interface DashboardProps {
   banks: Bank[];
   onAddBank: (name: string, initialBalance: number) => void;
   onDeleteBank: (bankId: string) => void;
+  onEditBank: (bankId: string, name: string, balance: number) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ 
@@ -30,8 +32,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onEditBudget,
   banks,
   onAddBank,
-  onDeleteBank
+  onDeleteBank,
+  onEditBank
 }) => {
+  const [longPressTimeout, setLongPressTimeout] = useState<any>(null);
   const currentMonthTransactions = transactions; 
 
   // Soma de gastos por categoria e tipo
@@ -127,6 +131,39 @@ export const Dashboard: React.FC<DashboardProps> = ({
     onAddBank(name.trim(), balance);
   };
 
+  // Funções de Toque Longo (Long-Press) para editar bancos
+  const startPress = (bank: Bank) => {
+    const timer = setTimeout(() => {
+      handleEditBankPrompt(bank);
+    }, 600); // 600ms de press
+    setLongPressTimeout(timer);
+  };
+
+  const cancelPress = () => {
+    if (longPressTimeout) {
+      clearTimeout(longPressTimeout);
+      setLongPressTimeout(null);
+    }
+  };
+
+  const handleEditBankPrompt = (bank: Bank) => {
+    const currentBalance = getBankBalance(bank.id);
+    const newName = prompt('Qual é o novo nome do Banco/Conta?', bank.name);
+    if (newName === null) return;
+    if (!newName.trim()) {
+      alert('O nome do banco não pode estar vazio!');
+      return;
+    }
+    const newBalanceStr = prompt(`Qual é o novo saldo para a conta "${newName.trim()}"? (Ajusta o saldo atual)`, currentBalance.toString());
+    if (newBalanceStr === null) return;
+    const newBalance = parseFloat(newBalanceStr.replace(',', '.'));
+    if (isNaN(newBalance)) {
+      alert('Por favor, introduz um saldo válido.');
+      return;
+    }
+    onEditBank(bank.id, newName.trim(), newBalance);
+  };
+
   // Icon mapping para as transações recentes
   const getCategoryIcon = (cat: string) => {
     switch (cat) {
@@ -219,7 +256,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 return (
                   <div 
                     key={bank.id} 
-                    className="bg-white rounded-2xl border border-slate-100 p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 hover:translate-y-[-1px] transition-custom group"
+                    onTouchStart={() => startPress(bank)}
+                    onTouchMove={cancelPress}
+                    onTouchEnd={cancelPress}
+                    onMouseDown={() => startPress(bank)}
+                    onMouseUp={cancelPress}
+                    onMouseLeave={cancelPress}
+                    className="bg-white rounded-2xl border border-slate-100 p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 hover:translate-y-[-1px] transition-custom group select-none active:scale-[0.98] cursor-pointer"
+                    title="Mantém pressionado para editar"
                   >
                     {/* Botão de Apagar discreto se houver mais que 1 conta */}
                     {banks.length > 1 && (
