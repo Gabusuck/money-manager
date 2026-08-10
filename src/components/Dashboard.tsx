@@ -193,25 +193,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="px-4 pb-6 space-y-4" style={{paddingTop: '4px'}}>
 
-      {/* 1. Onboarding inicial */}
-      {effectiveSalary === 0 ? (
-        <div style={{background:'#FFFFFF',borderRadius:'24px',border:`1px solid ${P.border}`,padding:'28px 20px',textAlign:'center',boxShadow:'0 4px 20px rgba(79,110,247,0.08)'}}>
-          <div style={{width:56,height:56,borderRadius:'50%',background:P.brandLight,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px'}}>
-            <DollarSign style={{color:P.brand,width:24,height:24}} />
-          </div>
-          <h3 style={{fontSize:15,fontWeight:800,color:P.ink,marginBottom:8}}>Bem-vindo ao All My Money</h3>
-          <p style={{fontSize:12,color:P.inkMuted,lineHeight:1.6,marginBottom:20}}>
-            Vamos organizar o teu dinheiro. Define o teu salário de referência para começar.
-          </p>
-          <button
-            onClick={onEditBudget}
-            style={{width:'100%',padding:'14px',borderRadius:'14px',background:`linear-gradient(135deg,${P.brand},#7C5CFC)`,color:'#fff',fontSize:12,fontWeight:800,letterSpacing:'0.06em',border:'none',cursor:'pointer',boxShadow:'0 6px 20px rgba(79,110,247,0.35)'}}
-          >
-            Definir Salário de Referência
-          </button>
-        </div>
-      ) : (
-        <>
+      <>
+
           {/* 2. Hero Card — Patrimônio Total */}
           <div
             style={{
@@ -518,8 +501,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
               )}
             </div>
           </div>
-        </>
-      )}
+      </>
+
 
       {/* iOS Context Menu */}
       {activeContextMenuBank && (
