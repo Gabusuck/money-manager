@@ -11,18 +11,20 @@ import {
   Legend 
 } from 'recharts';
 import { TrendingUp, BarChart2, AlertTriangle } from 'lucide-react';
-import type { Transaction, BudgetAllocation } from '../types';
+import type { Transaction, BudgetAllocation, Bank } from '../types';
 
 interface EvolutionProps {
   transactions: Transaction[];
   budget: BudgetAllocation;
   onEditBudget: () => void;
+  banks: Bank[];
 }
 
 export const Evolution: React.FC<EvolutionProps> = ({ 
   transactions, 
   budget, 
-  onEditBudget 
+  onEditBudget,
+  banks
 }) => {
   const formatEuro = (value: number) => {
     return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
@@ -124,6 +126,39 @@ export const Evolution: React.FC<EvolutionProps> = ({
   const latestMonth = historyData[historyData.length - 1];
   const firstMonth = historyData[0];
   const totalGrowth = latestMonth.poupancaAcumulada - firstMonth.poupancaAcumulada;
+
+  // Encontrar bancos de investimento
+  const investmentBanks = banks.filter(bank => {
+    const nameLower = bank.name.toLowerCase();
+    return nameLower.includes('trading') || nameLower.includes('invest') || nameLower.includes('ações') || nameLower.includes('acoes') || nameLower.includes('bolsa');
+  });
+
+  const getDailyBalanceHistory = (bankId: string) => {
+    const dataPoints = [];
+    const today = new Date();
+    
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      
+      // Calcular o saldo acumulado até esta data
+      const balance = transactions.reduce((sum, tx) => {
+        if (tx.date <= dateStr) {
+          if (tx.type === 'income' && tx.bankId === bankId) return sum + tx.amount;
+          if ((tx.type === 'expense' || tx.type === 'transfer') && tx.bankId === bankId) return sum - tx.amount;
+          if (tx.fromBankId === bankId) return sum - tx.amount;
+          if (tx.toBankId === bankId) return sum + tx.amount;
+        }
+        return sum;
+      }, 0);
+      
+      // Formatar label do dia (Ex: "10 Ago")
+      const label = d.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' }).replace('.', '');
+      dataPoints.push({ date: label, Saldo: balance });
+    }
+    return dataPoints;
+  };
 
   const hasData = transactions.length > 0;
 
@@ -282,6 +317,73 @@ export const Evolution: React.FC<EvolutionProps> = ({
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Gráficos de Evolução por Carteiras de Investimento */}
+      {investmentBanks.map(bank => {
+        const dailyHistory = getDailyBalanceHistory(bank.id);
+        const currentBalance = dailyHistory[dailyHistory.length - 1].Saldo;
+        const startBalance = dailyHistory[0].Saldo;
+        const diff = currentBalance - startBalance;
+        
+        return (
+          <div key={bank.id} className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium animate-in fade-in duration-300">
+            <div className="flex justify-between items-end">
+              <div>
+                <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Evolução: {bank.name}</h3>
+                <p className="text-2xl font-black text-brand-dark mt-1">
+                  {formatEuro(currentBalance)}
+                </p>
+              </div>
+              <div className="text-right">
+                <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-3 py-1 rounded-full shadow-sm ${
+                  diff >= 0 ? 'text-cat-green bg-cat-green/10 border border-cat-green/10' : 'text-cat-red bg-cat-red/10 border border-cat-red/10'
+                }`}>
+                  <TrendingUp className={`w-3 h-3 ${diff < 0 ? 'rotate-180' : ''}`} /> {diff >= 0 ? '+' : ''}{formatEuro(diff)}
+                </span>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-1.5">últimos 30 dias</p>
+              </div>
+            </div>
+
+            {/* Gráfico de Linha do Portefólio */}
+            <div className="h-44 w-full pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={dailyHistory} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id={`colorBank-${bank.id}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={diff >= 0 ? "#10b981" : "#ef4444"} stopOpacity={0.18}/>
+                      <stop offset="95%" stopColor={diff >= 0 ? "#10b981" : "#ef4444"} stopOpacity={0.0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 8, fill: '#94A3B8', fontWeight: 600 }}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    domain={['auto', 'auto']}
+                    tick={{ fontSize: 8, fill: '#94A3B8', fontWeight: 600 }}
+                  />
+                  <Tooltip 
+                    formatter={(value: any) => [formatEuro(Number(value)), 'Saldo']}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid #f1f5f9', padding: '6px 10px' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="Saldo" 
+                    stroke={diff >= 0 ? "#10b981" : "#ef4444"} 
+                    strokeWidth={2.5}
+                    fillOpacity={1} 
+                    fill={`url(#colorBank-${bank.id})`} 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        );
+      })}
 
       {/* Gráfico Comparativo Mensal */}
       <div className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium">

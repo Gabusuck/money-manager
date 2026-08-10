@@ -484,6 +484,7 @@ function App() {
             transactions={transactions} 
             budget={budget}
             onEditBudget={handleEditSalary}
+            banks={banks}
           />
         );
       case 'goals':
