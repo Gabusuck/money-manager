@@ -196,7 +196,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       ) : (
         <>
           {/* 2. Topo Premium "Património Total" */}
-          <div className="bg-gradient-to-br from-brand-purple-dark to-brand-purple rounded-[32px] p-5 mt-2 relative overflow-hidden shadow-premium">
+          <div className="bg-gradient-to-tr from-[#4c2d99] via-[#633bbf] to-[#05bde8] rounded-[32px] p-5 mt-2 relative overflow-hidden shadow-premium">
             {/* Decorações em degradê de fundo */}
             <div className="absolute right-[-10px] top-[-10px] w-24 h-24 rounded-full bg-white/10 blur-xl pointer-events-none" />
             <div className="absolute left-[-20px] bottom-[-20px] w-32 h-32 rounded-full bg-indigo-500/20 blur-xl pointer-events-none" />

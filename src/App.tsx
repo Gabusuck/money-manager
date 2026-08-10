@@ -515,13 +515,16 @@ function App() {
   };
 
   return (
-    <div className="h-[100dvh] w-full bg-gradient-to-tr from-purple-100/40 via-slate-50 to-pink-50/20 flex flex-col relative overflow-hidden font-sans antialiased selection:bg-purple-100 select-none">
+    <div className="h-[100dvh] w-full bg-gradient-to-tr from-purple-50/70 via-slate-50 to-cyan-50/30 flex flex-col relative overflow-hidden font-sans antialiased selection:bg-purple-100 select-none">
       
       {/* Cabeçalho da App (Flutuante sobre o Gradiente) */}
       <header className="px-5 pt-6 pb-3 flex justify-between items-center bg-transparent shrink-0 safe-pt">
-        <div>
-          <h1 className="text-lg font-black text-brand-dark tracking-tight">All My Money</h1>
-          <p className="text-[10px] text-brand-purple font-bold tracking-wider uppercase mt-0.5">Finanças Privadas</p>
+        <div className="flex items-center gap-2.5">
+          <img src="/icons/icon-192.png" className="w-8 h-8 rounded-xl shadow-sm border border-slate-100/50 object-cover" alt="Logo" />
+          <div>
+            <h1 className="text-base font-black text-brand-dark tracking-tight leading-none">All My Money</h1>
+            <p className="text-[9px] text-brand-purple font-bold tracking-wider uppercase mt-1">Finanças Privadas</p>
+          </div>
         </div>
         
         <div className="flex items-center gap-3">
@@ -598,7 +601,7 @@ function App() {
       {/* Botão de Ação Flutuante Lateral [ ➕ ] */}
       <button
         onClick={() => setIsTxOpen(true)}
-        className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white flex items-center justify-center shadow-purple-glow hover:scale-105 active:scale-95 transition-transform cursor-pointer border border-brand-purple/10 safe-mb"
+        className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-gradient-to-tr from-[#633bbf] to-[#05bde8] text-white flex items-center justify-center shadow-purple-glow hover:scale-105 active:scale-95 transition-transform cursor-pointer border border-brand-purple/10 safe-mb"
         title="Novo Lançamento"
       >
         <Plus className="w-5 h-5" />

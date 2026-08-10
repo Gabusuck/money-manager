@@ -6,17 +6,17 @@
   --color-brand-border: #f1f5f9;
   
   /* Roxo / Violeta do Design de Referência */
-  --color-brand-purple: #8b5cf6;
-  --color-brand-purple-dark: #7c3aed;
+  --color-brand-purple: #633bbf;
+  --color-brand-purple-dark: #4c2d99;
   
   /* Cores das Categorias (Cores Vivas nos Gráficos e Barras Laterais) */
   --color-cat-orange: #f97316;
   --color-cat-yellow: #eab308;
   --color-cat-gray: #64748b;
-  --color-cat-purple: #a855f7;
+  --color-cat-purple: #9f5bff;
   --color-cat-green: #10b981;
   --color-cat-red: #ef4444;
-  --color-cat-blue: #0ea5e9;
+  --color-cat-blue: #05bde8;
 }
 
 @layer base {
