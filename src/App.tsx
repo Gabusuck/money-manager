@@ -48,7 +48,7 @@ import { SubscriptionsView } from './components/SubscriptionsView';
 // Modals
 import { TransactionModal } from './components/TransactionModal';
 
-// Função utilitária para verificar e duplicar transações recorrentes para meses em falta
+// Função utilitária para verificar e duplicar transações recorrentes para meses em falta (Legado)
 const checkAndGenerateRecurring = (txs: Transaction[]): { updated: boolean; transactions: Transaction[] } => {
   let changed = false;
   const updatedTxs = [...txs];
@@ -80,7 +80,17 @@ const checkAndGenerateRecurring = (txs: Transaction[]): { updated: boolean; tran
         continue;
       }
 
-      // Formatando o mês-alvo YYYY-MM
+      const targetDate = new Date(year, month, startDay);
+      if (targetDate.getMonth() !== month) {
+        targetDate.setDate(0); 
+      }
+
+      // Se a data da transação for no futuro, paramos a geração para este molde
+      if (targetDate > now) {
+        break;
+      }
+
+      const dateString = targetDate.toISOString().split('T')[0];
       const targetMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
 
       // Verificar se já existe uma transação idêntica neste mês
@@ -92,14 +102,6 @@ const checkAndGenerateRecurring = (txs: Transaction[]): { updated: boolean; tran
       );
 
       if (!alreadyExists) {
-        // Gerar a data ajustada (ex: último dia se o dia exceder o tamanho do mês)
-        const targetDate = new Date(year, month, startDay);
-        if (targetDate.getMonth() !== month) {
-          targetDate.setDate(0); 
-        }
-
-        const dateString = targetDate.toISOString().split('T')[0];
-
         const newTx: Transaction = {
           id: Math.random().toString(36).substring(2, 9),
           description: template.description,
@@ -154,8 +156,13 @@ const generateRecurringTransactions = (
         if (targetDate.getMonth() !== month) {
           targetDate.setDate(0);
         }
-        const dateStr = targetDate.toISOString().split('T')[0];
 
+        // Se a data simulada for no futuro, paramos a geração para este molde
+        if (targetDate > now) {
+          break;
+        }
+
+        const dateStr = targetDate.toISOString().split('T')[0];
         const targetMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
         const alreadyExists = updatedTxs.some(tx => 
           tx.recurringId === template.id && 
@@ -217,8 +224,13 @@ const generateRecurringTransactions = (
         if (targetDate.getMonth() !== startMonth) {
           targetDate.setDate(0);
         }
-        const dateStr = targetDate.toISOString().split('T')[0];
 
+        // Se a data do ano corrente for no futuro, paramos a geração
+        if (targetDate > now) {
+          break;
+        }
+
+        const dateStr = targetDate.toISOString().split('T')[0];
         const alreadyExists = updatedTxs.some(tx => 
           tx.recurringId === template.id && 
           tx.date.startsWith(String(year))
