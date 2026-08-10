@@ -237,12 +237,12 @@ export const Evolution: React.FC<EvolutionProps> = ({
     <div className="px-4 pb-6 space-y-6">
       
       {/* 3. Barras de Progresso Horizontais da Distribuição Mensal (Movidas para aqui!) */}
-      <div className="bg-white rounded-3xl border border-slate-100 p-5 mt-2 space-y-4 shadow-premium">
+      <div className="glass-panel rounded-3xl p-5 mt-2 space-y-4 shadow-premium">
         <div className="flex justify-between items-center">
           <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Distribuição Mensal</h3>
           <button
             onClick={onEditBudget}
-            className="text-[9px] font-bold text-brand-purple hover:underline uppercase tracking-wider transition-custom"
+            className="text-[9px] font-bold text-brand-purple hover:underline uppercase tracking-wider transition-custom cursor-pointer"
           >
             Salário Base: {budget.salary}€
           </button>
@@ -252,10 +252,10 @@ export const Evolution: React.FC<EvolutionProps> = ({
           {/* Barra 1: Fixos */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-slate-500">Despesas Fixas</span>
-              <span className="text-brand-dark">{formatEuro(spentFixos)} / {formatEuro(effectiveSalary)} ({pctFixos.toFixed(0)}%)</span>
+              <span className="text-slate-450">Despesas Fixas</span>
+              <span className="text-white">{formatEuro(spentFixos)} / {formatEuro(effectiveSalary)} ({pctFixos.toFixed(0)}%)</span>
             </div>
-            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+            <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
               <div 
                 className="h-full bg-cat-red rounded-full transition-all duration-500" 
                 style={{ width: `${pctFixos}%` }} 
@@ -266,10 +266,10 @@ export const Evolution: React.FC<EvolutionProps> = ({
           {/* Barra 2: Poupança */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-slate-500">Poupança (TV/Câmara)</span>
-              <span className="text-brand-dark">{formatEuro(savedPoupanca)} / {formatEuro(effectiveSalary)} ({pctPoupanca.toFixed(0)}%)</span>
+              <span className="text-slate-455">Poupança (TV/Câmara)</span>
+              <span className="text-white">{formatEuro(savedPoupanca)} / {formatEuro(effectiveSalary)} ({pctPoupanca.toFixed(0)}%)</span>
             </div>
-            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+            <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
               <div 
                 className="h-full bg-cat-purple rounded-full transition-all duration-500" 
                 style={{ width: `${pctPoupanca}%` }} 
@@ -280,10 +280,10 @@ export const Evolution: React.FC<EvolutionProps> = ({
           {/* Barra 3: Investimento */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-slate-500">Investimento (Trading 212)</span>
-              <span className="text-brand-dark">{formatEuro(investedInvestimento)} / {formatEuro(effectiveSalary)} ({pctInvestimento.toFixed(0)}%)</span>
+              <span className="text-slate-455">Investimento (Trading 212)</span>
+              <span className="text-white">{formatEuro(investedInvestimento)} / {formatEuro(effectiveSalary)} ({pctInvestimento.toFixed(0)}%)</span>
             </div>
-            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+            <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
               <div 
                 className="h-full bg-cat-green rounded-full transition-all duration-500" 
                 style={{ width: `${pctInvestimento}%` }} 
@@ -294,12 +294,12 @@ export const Evolution: React.FC<EvolutionProps> = ({
           {/* Barra 4: Plafond Real */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-slate-500">Plafond Real (Gasto Variável)</span>
-              <span className={`font-semibold ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-brand-dark'}`}>
+              <span className="text-slate-455">Plafond Real (Gasto Variável)</span>
+              <span className={`font-semibold ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-white'}`}>
                 {formatEuro(spentPlafondReal)} / {formatEuro(allocatedPlafondReal)} ({pctPlafondReal.toFixed(0)}%)
               </span>
             </div>
-            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+            <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
               <div 
                 className={`h-full rounded-full transition-all duration-500 ${remainingPlafondReal < 0 ? 'bg-cat-red' : 'bg-brand-purple'}`} 
                 style={{ width: `${pctPlafondReal}%` }} 
@@ -309,7 +309,7 @@ export const Evolution: React.FC<EvolutionProps> = ({
         </div>
 
         {remainingPlafondReal < 0 && (
-          <div className="flex items-center gap-2.5 p-3.5 bg-red-50/50 border border-red-100 rounded-2xl text-xxs text-cat-red font-bold">
+          <div className="flex items-center gap-2.5 p-3.5 bg-red-950/20 border border-red-900/50 rounded-2xl text-xxs text-cat-red font-bold">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>Excedeste o Plafond Real planeado!</span>
           </div>
@@ -317,12 +317,12 @@ export const Evolution: React.FC<EvolutionProps> = ({
       </div>
       
       {/* Resumo de Evolução em Cartão Premium */}
-      <div className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium">
+      <div className="glass-panel rounded-3xl p-5 space-y-4 shadow-premium">
         <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Evolução do Património</h3>
         
         <div className="flex justify-between items-end">
           <div>
-            <p className="text-2xl font-black text-brand-dark">
+            <p className="text-2xl font-black text-white">
               {formatEuro(latestMonth.poupancaAcumulada)}
             </p>
             <p className="text-[10px] font-bold text-slate-400 mt-0.5">Total Poupado & Investido</p>
@@ -381,11 +381,11 @@ export const Evolution: React.FC<EvolutionProps> = ({
         const diff = currentBalance - startBalance;
         
         return (
-          <div key={bank.id} className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium animate-in fade-in duration-300">
+          <div key={bank.id} className="glass-panel rounded-3xl p-5 space-y-4 shadow-premium animate-in fade-in duration-300 border border-white/5">
             <div className="flex justify-between items-end">
               <div>
                 <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Evolução: {bank.name}</h3>
-                <p className="text-2xl font-black text-brand-dark mt-1">
+                <p className="text-2xl font-black text-white mt-1">
                   {formatEuro(currentBalance)}
                 </p>
               </div>
@@ -423,7 +423,7 @@ export const Evolution: React.FC<EvolutionProps> = ({
                   />
                   <Tooltip 
                     formatter={(value: any) => [formatEuro(Number(value)), 'Saldo']}
-                    contentStyle={{ borderRadius: '16px', border: '1px solid #f1f5f9', padding: '6px 10px' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: '#0f172a', padding: '6px 10px' }}
                   />
                   <Area 
                     type="monotone" 
@@ -440,7 +440,7 @@ export const Evolution: React.FC<EvolutionProps> = ({
         );
       })}
       {/* Gráfico: Dinheiro Guardado nas Contas (Sem ser Trading) */}
-      <div className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium animate-in fade-in duration-300">
+      <div className="glass-panel rounded-3xl p-5 space-y-4 shadow-premium animate-in fade-in duration-300 border border-white/5">
         <div>
           <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
             <PiggyBank className="w-3.5 h-3.5 text-brand-purple shrink-0" />
@@ -465,9 +465,9 @@ export const Evolution: React.FC<EvolutionProps> = ({
               />
               <Tooltip 
                 formatter={(value: any) => [formatEuro(Number(value)), 'Poupança Corrente']}
-                contentStyle={{ borderRadius: '16px', border: '1px solid #f1f5f9', padding: '6px 10px' }}
+                contentStyle={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: '#0f172a', padding: '6px 10px' }}
               />
-              <ReferenceLine y={0} stroke="#cbd5e1" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeDasharray="3 3" />
               <Bar dataKey="Poupança Líquida" radius={6}>
                 {monthlyRegularSavingsData.map((entry, index) => {
                   const val = entry["Poupança Líquida"];
@@ -485,7 +485,7 @@ export const Evolution: React.FC<EvolutionProps> = ({
       </div>
 
       {/* Gráfico Comparativo Mensal */}
-      <div className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium">
+      <div className="glass-panel rounded-3xl p-5 space-y-4 shadow-premium border border-white/5">
         <div>
           <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Despesas vs Poupanças</h3>
           <p className="text-xxs text-slate-400 mt-0.5">Distribuição mensal dos teus recursos</p>
@@ -508,14 +508,14 @@ export const Evolution: React.FC<EvolutionProps> = ({
               />
               <Tooltip 
                 formatter={(value: any) => [formatEuro(Number(value))]}
-                contentStyle={{ borderRadius: '16px', border: '1px solid #f1f5f9', padding: '6px 10px' }}
+                contentStyle={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: '#0f172a', padding: '6px 10px' }}
               />
               <Legend 
                 verticalAlign="bottom" 
                 height={36} 
                 iconType="circle"
                 iconSize={8}
-                wrapperStyle={{ fontSize: 9, fontWeight: 700, paddingTop: 10, color: '#64748B' }}
+                wrapperStyle={{ fontSize: 9, fontWeight: 700, paddingTop: 10, color: '#94A3B8' }}
               />
               <Bar dataKey="fixos" name="Fixos" fill="#ef4444" radius={[4, 4, 0, 0]} />
               <Bar dataKey="plafond" name="Plafond" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
@@ -526,11 +526,11 @@ export const Evolution: React.FC<EvolutionProps> = ({
       </div>
 
       {/* Dicas Financeiras Premium */}
-      <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-premium space-y-3.5">
-        <h4 className="text-xs font-black text-brand-dark flex items-center gap-1.5">
+      <div className="glass-panel rounded-3xl p-5 shadow-premium space-y-3.5 border border-white/5">
+        <h4 className="text-xs font-black text-white flex items-center gap-1.5">
           <BarChart2 className="w-4.5 h-4.5 text-brand-purple" /> Observações do Mês
         </h4>
-        <ul className="text-xxs text-slate-500 space-y-2 list-disc pl-4 leading-relaxed font-semibold">
+        <ul className="text-xxs text-slate-400 space-y-2 list-disc pl-4 leading-relaxed font-semibold">
           <li>As dicas e observações serão atualizadas à medida que registares dados de despesas e poupanças.</li>
           <li>Podes alterar o teu salário líquido de referência a qualquer momento tocando em "Salário Base" no topo da área de Evolução.</li>
         </ul>

@@ -15,7 +15,8 @@ import {
   Plus,
   Trash2,
   Edit3,
-  Repeat
+  Repeat,
+  Wallet
 } from 'lucide-react';
 import type { Transaction, BudgetAllocation, Bank, TransactionType } from '../types';
 
@@ -179,13 +180,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
       
       {/* 1. Onboarding inicial caso o salário efetivo seja 0 */}
       {effectiveSalary === 0 ? (
-        <div className="bg-white rounded-3xl border border-slate-100 p-6 mt-2 text-center space-y-4 shadow-premium animate-in fade-in zoom-in-95 duration-200">
-          <div className="w-14 h-14 rounded-full bg-purple-50 border border-purple-100 text-brand-purple flex items-center justify-center mx-auto shadow-sm">
+        <div className="glass-panel rounded-3xl p-6 mt-2 text-center space-y-4 shadow-premium animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-14 h-14 rounded-full bg-purple-950/40 border border-purple-900/50 text-brand-purple flex items-center justify-center mx-auto shadow-sm">
             <DollarSign className="w-6 h-6" />
           </div>
           <div className="space-y-1.5">
-            <h3 className="text-sm font-bold text-brand-dark">Bem-vindo ao All My Money</h3>
-            <p className="text-xs text-gray-400 max-w-[280px] mx-auto leading-relaxed">
+            <h3 className="text-sm font-bold text-white">Bem-vindo ao All My Money</h3>
+            <p className="text-xs text-slate-400 max-w-[280px] mx-auto leading-relaxed">
               Vamos começar a organizar o teu dinheiro. Registar uma **Renda** (ex: o teu salário) ou define o teu salário de referência base.
             </p>
           </div>
@@ -198,43 +199,51 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       ) : (
         <>
-          {/* 2. Topo Premium "Património Total" */}
-          <div className="bg-gradient-to-tr from-[#4c2d99] via-[#633bbf] to-[#05bde8] rounded-[32px] p-5 mt-2 relative overflow-hidden shadow-premium">
-            {/* Decorações em degradê de fundo */}
-            <div className="absolute right-[-10px] top-[-10px] w-24 h-24 rounded-full bg-white/10 blur-xl pointer-events-none" />
-            <div className="absolute left-[-20px] bottom-[-20px] w-32 h-32 rounded-full bg-indigo-500/20 blur-xl pointer-events-none" />
-            
-            <div className="relative space-y-4">
-              {/* Título */}
-              <div className="flex justify-between items-center text-white/90">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-purple-200">Património Total</span>
+          {/* 2. Topo Premium "Património Total" em Cartões Reestruturados */}
+          <div className="space-y-3 mt-2 animate-in fade-in duration-300">
+            {/* Cartão do Património Total */}
+            <div className="glass-panel rounded-3xl p-5 relative overflow-hidden shadow-premium border border-white/5">
+              {/* Brilho neon de fundo */}
+              <div className="absolute right-[-20px] top-[-20px] w-28 h-28 rounded-full bg-brand-purple/10 blur-xl pointer-events-none" />
+              <div className="absolute left-[-20px] bottom-[-20px] w-28 h-28 rounded-full bg-[#0494b7]/10 blur-xl pointer-events-none" />
+              
+              <div className="relative flex justify-between items-center">
+                <div>
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block mb-1">Património Total</span>
+                  <p className="text-3xl font-black text-white tracking-tight leading-none">
+                    {formatEuro(patrimonioTotal)}
+                  </p>
+                </div>
+                {/* Ícone de Carteira elegante */}
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-purple to-brand-purple-dark flex items-center justify-center text-white shadow-purple-glow shrink-0">
+                  <Wallet className="w-5 h-5" />
+                </div>
+              </div>
+            </div>
+
+            {/* Grid de Entradas / Saídas */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Entradas */}
+              <div className="glass-panel rounded-2xl p-4 relative overflow-hidden shadow-premium border border-white/5 flex flex-col justify-between h-20">
+                <div className="absolute right-[-10px] top-[-10px] w-14 h-14 rounded-full bg-cat-green/5 blur-md pointer-events-none" />
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Entradas do Mês (In)</span>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <div className="w-6 h-6 rounded-full bg-cat-green/10 flex items-center justify-center text-cat-green shrink-0">
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-base font-black text-cat-green tracking-tight">{formatEuro(effectiveSalary)}</span>
+                </div>
               </div>
 
-              {/* Património Principal */}
-              <p className="text-3xl font-black text-white tracking-tight">
-                {formatEuro(patrimonioTotal)}
-              </p>
-
-              {/* Cartão de Overlay Branco */}
-              <div className="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center text-brand-dark">
-                {/* Salário Líquido (Start Income) */}
-                <div className="space-y-0.5">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Entradas do Mês (In)</span>
-                  <div className="flex items-center gap-1 text-xs font-extrabold text-cat-green">
-                    <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
-                    <span>{formatEuro(effectiveSalary)}</span>
+              {/* Saídas */}
+              <div className="glass-panel rounded-2xl p-4 relative overflow-hidden shadow-premium border border-white/5 flex flex-col justify-between h-20">
+                <div className="absolute right-[-10px] top-[-10px] w-14 h-14 rounded-full bg-cat-red/5 blur-md pointer-events-none" />
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Saídas do Mês (Out)</span>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <div className="w-6 h-6 rounded-full bg-cat-red/10 flex items-center justify-center text-cat-red shrink-0">
+                    <ArrowDownRight className="w-3.5 h-3.5" />
                   </div>
-                </div>
-
-                <div className="h-8 w-px bg-slate-100" />
-
-                {/* Despesas Totais */}
-                <div className="space-y-0.5 text-right">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Saídas do Mês (Out)</span>
-                  <div className="flex items-center justify-end gap-1 text-xs font-extrabold text-cat-red">
-                    <ArrowDownRight className="w-3.5 h-3.5 shrink-0" />
-                    <span>-{formatEuro(totalSpent)}</span>
-                  </div>
+                  <span className="text-base font-black text-cat-red tracking-tight">-{formatEuro(totalSpent)}</span>
                 </div>
               </div>
             </div>
@@ -259,10 +268,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     onMouseDown={() => startPress(bank)}
                     onMouseUp={cancelPress}
                     onMouseLeave={cancelPress}
-                    className={`bg-white rounded-2xl border p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 transition-all duration-300 group select-none cursor-pointer ${
+                    className={`glass-panel rounded-2xl p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 transition-all duration-350 group select-none cursor-pointer ${
                       pressedBankId === bank.id 
-                        ? 'scale-[0.94] border-brand-purple/30 bg-slate-100/50 brightness-95' 
-                        : 'border-slate-100 hover:translate-y-[-1px]'
+                        ? 'scale-[0.94] border-brand-purple/50 bg-slate-950/80 brightness-95' 
+                        : 'border-white/5 hover:border-brand-purple/30'
                     }`}
                     title="Mantém pressionado para editar/gerir"
                   >
@@ -270,14 +279,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     {banks.length > 1 && (
                       <button
                         onClick={() => onDeleteBank(bank.id)}
-                        className="absolute right-1.5 top-1.5 text-slate-300 hover:text-cat-red opacity-0 group-hover:opacity-100 transition-opacity w-4.5 h-4.5 flex items-center justify-center rounded-full bg-slate-50 border border-slate-150"
+                        className="absolute right-1.5 top-1.5 text-slate-400 hover:text-cat-red opacity-0 group-hover:opacity-100 transition-opacity w-4.5 h-4.5 flex items-center justify-center rounded-full bg-slate-900 border border-slate-800"
                         title="Apagar Conta"
                       >
                         <X className="w-2.5 h-2.5" />
                       </button>
                     )}
                     
-                    <span className="text-[10px] font-bold text-slate-500 truncate pr-4">{bank.name}</span>
+                    <span className="text-[10px] font-bold text-slate-300 truncate pr-4">{bank.name}</span>
                     <span className={`text-xs font-black tracking-tight ${balance < 0 ? 'text-cat-red' : 'text-cat-green'}`}>
                       {formatEuro(balance)}
                     </span>
@@ -288,7 +297,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               {/* Botão dashed de Nova Conta */}
               <button
                 onClick={handleAddBankClick}
-                className="bg-white/50 rounded-2xl border border-dashed border-slate-350 p-3.5 w-32 shrink-0 flex flex-col items-center justify-center h-20 text-slate-400 hover:border-brand-purple hover:text-brand-purple transition-custom cursor-pointer"
+                className="bg-slate-900/30 rounded-2xl border border-dashed border-slate-800 p-3.5 w-32 shrink-0 flex flex-col items-center justify-center h-20 text-slate-500 hover:border-brand-purple hover:text-brand-purple transition-custom cursor-pointer"
               >
                 <Plus className="w-4 h-4 mb-1" />
                 <span className="text-[9px] font-bold uppercase tracking-wider">Novo Banco</span>
@@ -300,7 +309,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* 4. Secção Gráfico Circular "Divisão do Plafond" */}
       {budget.salary > 0 && (
-        <div className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium">
+        <div className="glass-panel rounded-3xl p-5 space-y-4 shadow-premium">
           <div>
             <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Divisão do Plafond</h3>
             <p className="text-xxs text-slate-400 mt-0.5">Foco apenas em despesas variáveis</p>
@@ -329,7 +338,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </ResponsiveContainer>
             ) : (
               <div className="flex flex-col items-center justify-center text-center p-4">
-                <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mb-2">
+                <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mb-2">
                   <Info className="w-4 h-4 text-slate-400" />
                 </div>
                 <p className="text-xxs text-slate-400 max-w-[200px]">Sem despesas do Plafond este mês.</p>
@@ -339,20 +348,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {activeDonutData.length > 0 && (
               <div className="absolute flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400">Plafond Rest.</span>
-                <span className={`text-sm font-black ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-brand-dark'}`}>{formatEuro(remainingPlafondReal)}</span>
+                <span className={`text-sm font-black ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-white'}`}>{formatEuro(remainingPlafondReal)}</span>
               </div>
             )}
           </div>
 
           {/* Legenda Detalhada */}
-          <div className="grid grid-cols-1 gap-2 pt-2 border-t border-slate-50">
+          <div className="grid grid-cols-1 gap-2 pt-2 border-t border-white/5">
             {donutData.map((item, idx) => {
               const IconComponent = item.icon;
               const percentage = totalDonutSpent > 0 ? (item.value / totalDonutSpent) * 100 : 0;
               return (
                 <div 
                   key={idx}
-                  className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-custom"
+                  className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-900/40 transition-custom"
                 >
                   <div className="flex items-center gap-3">
                     <div 
@@ -362,12 +371,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <IconComponent className="w-4 h-4" style={{ color: item.color }} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-brand-dark">{item.name}</p>
+                      <p className="text-xs font-bold text-white">{item.name}</p>
                       <p className="text-[10px] text-slate-400">{percentage.toFixed(0)}% do Plafond</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-black text-brand-dark">{formatEuro(item.value)}</p>
+                    <p className="text-xs font-black text-white">{formatEuro(item.value)}</p>
                   </div>
                 </div>
               );
@@ -385,7 +394,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         <div className="space-y-2.5">
           {currentMonthTransactions.length === 0 ? (
-            <div className="bg-white rounded-3xl border border-slate-100 p-8 text-center shadow-premium">
+            <div className="glass-panel rounded-3xl border border-white/5 p-8 text-center shadow-premium">
               <p className="text-xxs text-slate-400">Nenhuma transação registada.</p>
             </div>
           ) : (
@@ -396,7 +405,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               return (
                 <div 
                   key={tx.id} 
-                  className="bg-white rounded-[24px] border border-slate-100 p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden"
+                  className="glass-panel rounded-[24px] p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden border border-white/5"
                 >
                   {/* Barra Vertical de Categoria à esquerda */}
                   <div 
@@ -410,18 +419,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <Icon className="w-4 h-4" style={{ color: catDetails.color }} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-brand-dark leading-tight">{tx.description}</p>
+                      <p className="text-xs font-bold text-white leading-tight">{tx.description}</p>
                       <p className="text-[9px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
                         <span>{tx.category}</span>
                         <span>•</span>
                         <span>{tx.date}</span>
                         {/* Badge do Banco */}
                         {tx.fromBankId && tx.toBankId ? (
-                          <span className="bg-purple-50 text-brand-purple border border-purple-100/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                          <span className="bg-purple-950/40 text-brand-purple border border-purple-900/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                             {banks.find(b => b.id === tx.fromBankId)?.name} ➔ {banks.find(b => b.id === tx.toBankId)?.name}
                           </span>
                         ) : tx.bankId ? (
-                          <span className="bg-slate-55 text-slate-500 border border-slate-200/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                          <span className="bg-slate-900 text-slate-400 border border-slate-800 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                             {banks.find(b => b.id === tx.bankId)?.name}
                           </span>
                         ) : null}
@@ -433,7 +442,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     {tx.type === 'income' ? (
                       <span className="text-cat-green">+{formatEuro(tx.amount)}</span>
                     ) : tx.type === 'transfer' ? (
-                      <span className="text-brand-purple">-{formatEuro(tx.amount)}</span>
+                      <span className="text-[#a855f7]">-{formatEuro(tx.amount)}</span>
                     ) : (
                       <span className="text-cat-red">-{formatEuro(tx.amount)}</span>
                     )}
@@ -448,17 +457,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* iOS Context Menu Backdrop */}
       {activeContextMenuBank && (
         <div 
-          className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-50 flex items-center justify-center p-6 animate-in fade-in duration-200" 
+          className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-6 animate-in fade-in duration-200" 
           onClick={() => setActiveContextMenuBank(null)}
         >
           <div 
-            className="bg-white/90 backdrop-blur-md rounded-[24px] border border-slate-100/50 shadow-premium w-full max-w-[280px] overflow-hidden animate-in zoom-in-95 duration-200"
+            className="bg-slate-900/95 backdrop-blur-xl rounded-[24px] border border-white/10 shadow-premium w-full max-w-[280px] overflow-hidden animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-4 border-b border-slate-100 text-center">
-              <h4 className="text-xs font-black text-brand-dark truncate">{activeContextMenuBank.name}</h4>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5">Gestão de Conta</p>
+            <div className="p-4 border-b border-white/5 text-center">
+              <h4 className="text-xs font-black text-white truncate">{activeContextMenuBank.name}</h4>
+              <p className="text-[10px] font-bold text-slate-450 mt-0.5">Gestão de Conta</p>
             </div>
             
             {/* Opções */}
@@ -468,7 +477,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   onOpenPrefilledTxModal('expense', activeContextMenuBank.id);
                   setActiveContextMenuBank(null);
                 }}
-                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 border-b border-slate-50 transition-custom text-left text-xs font-bold text-brand-dark"
+                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-800/50 border-b border-white/5 transition-custom text-left text-xs font-bold text-white cursor-pointer"
               >
                 <span>Nova Despesa</span>
                 <ArrowDownRight className="w-4 h-4 text-cat-red" />
@@ -479,7 +488,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   onOpenPrefilledTxModal('income', activeContextMenuBank.id);
                   setActiveContextMenuBank(null);
                 }}
-                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 border-b border-slate-50 transition-custom text-left text-xs font-bold text-brand-dark"
+                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-800/50 border-b border-white/5 transition-custom text-left text-xs font-bold text-white cursor-pointer"
               >
                 <span>Nova Renda</span>
                 <ArrowUpRight className="w-4 h-4 text-cat-green" />
@@ -490,7 +499,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   onOpenRecurringModal(activeContextMenuBank);
                   setActiveContextMenuBank(null);
                 }}
-                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 border-b border-slate-50 transition-custom text-left text-xs font-bold text-brand-dark"
+                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-800/50 border-b border-white/5 transition-custom text-left text-xs font-bold text-white cursor-pointer"
               >
                 <span>Assinaturas / Recorrências</span>
                 <Repeat className="w-4 h-4 text-brand-purple" />
@@ -503,7 +512,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   setEditBalance(getBankBalance(activeContextMenuBank.id).toString());
                   setActiveContextMenuBank(null);
                 }}
-                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 border-b border-slate-50 transition-custom text-left text-xs font-bold text-brand-dark"
+                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-800/50 border-b border-white/5 transition-custom text-left text-xs font-bold text-white cursor-pointer"
               >
                 <span>Editar Conta</span>
                 <Edit3 className="w-4 h-4 text-brand-purple" />
@@ -515,7 +524,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     onDeleteBank(activeContextMenuBank.id);
                     setActiveContextMenuBank(null);
                   }}
-                  className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 transition-custom text-left text-xs font-bold text-cat-red"
+                  className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-800/50 transition-custom text-left text-xs font-bold text-cat-red cursor-pointer"
                 >
                   <span>Eliminar Conta</span>
                   <Trash2 className="w-4 h-4 text-cat-red" />
@@ -526,7 +535,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Fechar */}
             <button 
               onClick={() => setActiveContextMenuBank(null)}
-              className="w-full py-3.5 bg-slate-50 hover:bg-slate-100 text-center text-[10px] font-black uppercase tracking-wider text-slate-400 border-t border-slate-100"
+              className="w-full py-3.5 bg-slate-950 hover:bg-slate-900 text-center text-[10px] font-black uppercase tracking-wider text-slate-500 border-t border-white/5 cursor-pointer"
             >
               Cancelar
             </button>
@@ -536,13 +545,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Edit Bank Modal Overlay */}
       {editingBank && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-in fade-in duration-200">
-          <div className="bg-slate-50 w-full max-w-sm rounded-[32px] border border-slate-100 p-5 shadow-premium space-y-4.5 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-in fade-in duration-200">
+          <div className="bg-[#0c1220]/95 backdrop-blur-xl w-full max-w-sm rounded-[32px] border border-white/5 p-5 shadow-premium space-y-4.5 animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center">
-              <h4 className="text-xs font-black text-brand-dark uppercase tracking-widest">Editar Conta</h4>
+              <h4 className="text-xs font-black text-white uppercase tracking-widest">Editar Conta</h4>
               <button
                 onClick={() => setEditingBank(null)}
-                className="w-7 h-7 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-custom"
+                className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:bg-slate-800 transition-custom cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -550,22 +559,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             <div className="space-y-3.5">
               <div className="space-y-1">
-                <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest px-1">Nome da Conta</label>
+                <label className="text-xxs font-extrabold text-slate-405 uppercase tracking-widest px-1">Nome da Conta</label>
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full p-3.5 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-premium"
+                  className="w-full p-3.5 bg-slate-950/60 border border-white/5 rounded-2xl focus:outline-none focus:border-brand-purple text-white text-xs font-bold shadow-inner-soft"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest px-1">Saldo Atual</label>
+                <label className="text-xxs font-extrabold text-slate-405 uppercase tracking-widest px-1">Saldo Atual</label>
                 <input
                   type="text"
                   value={editBalance}
                   onChange={(e) => setEditBalance(e.target.value)}
-                  className="w-full p-3.5 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-premium"
+                  className="w-full p-3.5 bg-slate-950/60 border border-white/5 rounded-2xl focus:outline-none focus:border-brand-purple text-white text-xs font-bold shadow-inner-soft"
                 />
               </div>
             </div>
@@ -584,7 +593,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 onEditBank(editingBank.id, editName.trim(), parsed);
                 setEditingBank(null);
               }}
-              className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
+              className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform cursor-pointer"
             >
               Gravar Alterações
             </button>
@@ -594,13 +603,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Add Bank Modal Overlay */}
       {isAddingBank && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-in fade-in duration-200">
-          <div className="bg-slate-50 w-full max-w-sm rounded-[32px] border border-slate-100 p-5 shadow-premium space-y-4.5 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-in fade-in duration-200">
+          <div className="bg-[#0c1220]/95 backdrop-blur-xl w-full max-w-sm rounded-[32px] border border-white/5 p-5 shadow-premium space-y-4.5 animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center">
-              <h4 className="text-xs font-black text-brand-dark uppercase tracking-widest">Nova Conta / Banco</h4>
+              <h4 className="text-xs font-black text-white uppercase tracking-widest">Nova Conta / Banco</h4>
               <button
                 onClick={() => setIsAddingBank(false)}
-                className="w-7 h-7 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-custom"
+                className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:bg-slate-800 transition-custom cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -608,25 +617,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             <div className="space-y-3.5">
               <div className="space-y-1">
-                <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest px-1">Nome do Banco/Conta</label>
+                <label className="text-xxs font-extrabold text-slate-405 uppercase tracking-widest px-1">Nome do Banco/Conta</label>
                 <input
                   type="text"
                   placeholder="Ex: ActivoBank, Santander, Revolut, Dinheiro..."
                   value={newBankName}
                   onChange={(e) => setNewBankName(e.target.value)}
-                  className="w-full p-3.5 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-premium"
+                  className="w-full p-3.5 bg-slate-950/60 border border-white/5 rounded-2xl focus:outline-none focus:border-brand-purple text-white text-xs font-bold shadow-inner-soft"
                   autoFocus
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest px-1">Saldo Inicial</label>
+                <label className="text-xxs font-extrabold text-slate-405 uppercase tracking-widest px-1">Saldo Inicial</label>
                 <input
                   type="text"
                   placeholder="0,00"
                   value={newBankBalance}
                   onChange={(e) => setNewBankBalance(e.target.value)}
-                  className="w-full p-3.5 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-premium"
+                  className="w-full p-3.5 bg-slate-950/60 border border-white/5 rounded-2xl focus:outline-none focus:border-brand-purple text-white text-xs font-bold shadow-inner-soft"
                 />
               </div>
             </div>
@@ -645,7 +654,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 onAddBank(newBankName.trim(), parsed);
                 setIsAddingBank(false);
               }}
-              className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
+              className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform cursor-pointer"
             >
               Criar Conta
             </button>

@@ -723,18 +723,18 @@ function App() {
   };
 
   return (
-    <div className="h-[100dvh] w-full bg-gradient-to-tr from-purple-50/70 via-slate-50 to-cyan-50/30 flex flex-col relative overflow-hidden font-sans antialiased selection:bg-purple-100 select-none">
+    <div className="h-[100dvh] w-full bg-[#070b13] flex flex-col relative overflow-hidden font-sans antialiased selection:bg-purple-900/50 select-none">
       
       {/* Orbes de ambiente dinâmicas e modernas no fundo */}
-      <div className="absolute top-[-10%] left-[-20%] w-[80vw] h-[80vw] rounded-full bg-purple-200/25 blur-[120px] pointer-events-none z-0 animate-pulse duration-[6s]" />
-      <div className="absolute bottom-[-10%] right-[-20%] w-[80vw] h-[80vw] rounded-full bg-cyan-200/15 blur-[120px] pointer-events-none z-0 animate-pulse duration-[8s]" />
+      <div className="absolute top-[-10%] left-[-20%] w-[80vw] h-[80vw] rounded-full bg-purple-650/10 blur-[130px] pointer-events-none z-0 animate-pulse duration-[7s]" />
+      <div className="absolute bottom-[-10%] right-[-20%] w-[80vw] h-[80vw] rounded-full bg-cyan-550/10 blur-[130px] pointer-events-none z-0 animate-pulse duration-[9s]" />
 
       {/* Cabeçalho da App (Flutuante sobre o Gradiente) */}
       <header className="relative z-10 px-5 pt-6 pb-3 flex justify-between items-center bg-transparent shrink-0 safe-pt">
         <div className="flex items-center gap-2.5">
-          <img src="/icons/icon-192.png" className="w-8 h-8 rounded-xl shadow-sm border border-slate-100/50 object-cover" alt="Logo" />
+          <img src="/icons/icon-192.png" className="w-8 h-8 rounded-xl shadow-sm border border-white/10 object-cover" alt="Logo" />
           <div>
-            <h1 className="text-base font-black text-brand-dark tracking-tight leading-none">All My Money</h1>
+            <h1 className="text-base font-black text-white tracking-tight leading-none">All My Money</h1>
             <p className="text-[9px] text-brand-purple font-bold tracking-wider uppercase mt-1">Finanças Privadas</p>
           </div>
         </div>
@@ -742,7 +742,7 @@ function App() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsCloudOpen(true)}
-            className="text-[9px] font-bold text-gray-400 hover:text-brand-purple uppercase tracking-wider transition-custom flex items-center gap-1 cursor-pointer"
+            className="text-[9px] font-bold text-slate-400 hover:text-brand-purple uppercase tracking-wider transition-custom flex items-center gap-1 cursor-pointer"
             title="Sincronização na nuvem"
           >
             <Cloud className="w-3.5 h-3.5 text-slate-400 hover:text-brand-purple transition-colors" />
@@ -750,7 +750,7 @@ function App() {
           </button>
 
           {!isOnline && (
-            <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
+            <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-950/40 border border-red-900/50 px-2.5 py-1 rounded-full">
               <WifiOff className="w-2.5 h-2.5" /> Offline
             </span>
           )}
@@ -765,14 +765,14 @@ function App() {
         <div className="h-36 w-full block pointer-events-none shrink-0" />
       </main>
 
-      {/* Barra de Navegação Inferior (Dock Flutuante Premium Compacta) */}
-      <nav className="fixed bottom-2.5 left-6 right-6 max-w-xs mx-auto z-40 bg-white/80 backdrop-blur-md border border-slate-100 px-6 py-3.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
+      {/* Barra de Navegação Inferior (Dock Flutuante Premium Compacta Glassmorphic) */}
+      <nav className="fixed bottom-2.5 left-6 right-6 max-w-xs mx-auto z-40 bg-slate-900/60 backdrop-blur-xl border border-white/5 px-6 py-3.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
         
         {/* Aba Evolução */}
         <button
           onClick={() => setCurrentTab('evolution')}
           className={`flex items-center justify-center p-1.5 transition-custom ${
-            currentTab === 'evolution' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
+            currentTab === 'evolution' ? 'text-brand-purple scale-110 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]' : 'text-slate-500 hover:text-slate-350'
           }`}
           title="Evolução"
         >
@@ -783,7 +783,7 @@ function App() {
         <button
           onClick={() => setCurrentTab('goals')}
           className={`flex items-center justify-center p-1.5 transition-custom ${
-            currentTab === 'goals' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
+            currentTab === 'goals' ? 'text-brand-purple scale-110 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]' : 'text-slate-500 hover:text-slate-350'
           }`}
           title="Metas"
         >
@@ -794,7 +794,7 @@ function App() {
         <button
           onClick={() => setCurrentTab('home')}
           className={`flex items-center justify-center p-1.5 transition-custom ${
-            currentTab === 'home' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
+            currentTab === 'home' ? 'text-brand-purple scale-110 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]' : 'text-slate-500 hover:text-slate-350'
           }`}
           title="Início"
         >
@@ -805,7 +805,7 @@ function App() {
         <button
           onClick={() => setCurrentTab('recurring')}
           className={`flex items-center justify-center p-1.5 transition-custom ${
-            currentTab === 'recurring' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
+            currentTab === 'recurring' ? 'text-brand-purple scale-110 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]' : 'text-slate-500 hover:text-slate-350'
           }`}
           title="Assinaturas"
         >
@@ -816,7 +816,7 @@ function App() {
         <button
           onClick={() => setCurrentTab('ledger')}
           className={`flex items-center justify-center p-1.5 transition-custom ${
-            currentTab === 'ledger' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
+            currentTab === 'ledger' ? 'text-brand-purple scale-110 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]' : 'text-slate-500 hover:text-slate-350'
           }`}
           title="Extrato"
         >
@@ -828,7 +828,7 @@ function App() {
       {/* Botão de Ação Flutuante Lateral [ ➕ ] */}
       <button
         onClick={() => setIsTxOpen(true)}
-        className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-gradient-to-tr from-[#633bbf] to-[#05bde8] text-white flex items-center justify-center shadow-purple-glow hover:scale-105 active:scale-95 transition-transform cursor-pointer border border-brand-purple/10 safe-mb"
+        className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-gradient-to-tr from-[#8b5cf6] to-[#06b6d4] text-white flex items-center justify-center shadow-purple-glow hover:scale-105 active:scale-95 transition-transform cursor-pointer border border-white/10 safe-mb"
         title="Novo Lançamento"
       >
         <Plus className="w-5 h-5" />

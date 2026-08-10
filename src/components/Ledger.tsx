@@ -83,15 +83,15 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
     <div className="px-4 pb-6 space-y-5">
       
       {/* Barra de Pesquisa e Filtros de Categoria */}
-      <div className="bg-white rounded-3xl border border-slate-100 p-4 mt-2 space-y-3.5 shadow-premium">
+      <div className="glass-panel rounded-3xl p-4 mt-2 space-y-3.5 shadow-premium">
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-450" />
           <input
             type="text"
             placeholder="Pesquisar movimentos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark placeholder-slate-300 shadow-inner-soft"
+            className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-950/60 border border-white/5 rounded-2xl focus:outline-none focus:border-brand-purple text-white placeholder-slate-500 shadow-inner-soft"
           />
         </div>
 
@@ -103,10 +103,10 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat as any)}
-                className={`px-3.5 py-1.5 text-[10px] font-bold rounded-full border transition-custom whitespace-nowrap ${
+                className={`px-3.5 py-1.5 text-[10px] font-bold rounded-full border transition-custom whitespace-nowrap cursor-pointer ${
                   isSelected
                     ? 'bg-brand-purple border-brand-purple text-white shadow-purple-glow'
-                    : 'bg-white border-slate-100 text-slate-400 hover:bg-slate-50'
+                    : 'bg-slate-900/40 border-white/5 text-slate-400 hover:bg-slate-800/60'
                 }`}
               >
                 {cat}
@@ -127,7 +127,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
             className={`flex flex-col items-center justify-center px-4.5 py-3 rounded-2xl border min-w-14 h-16 transition-custom shadow-premium cursor-pointer ${
               selectedDateFilter === 'Todas'
                 ? 'bg-brand-purple border-brand-purple text-white shadow-purple-glow'
-                : 'bg-white border-slate-100 text-slate-400 hover:bg-slate-50'
+                : 'bg-slate-900/40 border-white/5 text-slate-400 hover:bg-slate-800/60'
             }`}
           >
             <span className="text-[10px] font-black uppercase tracking-wider">Todos</span>
@@ -143,7 +143,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                 className={`flex flex-col items-center justify-center p-3 rounded-2xl border w-14 h-16 transition-custom shadow-premium cursor-pointer ${
                   isSelected
                     ? 'bg-brand-purple border-brand-purple text-white shadow-purple-glow'
-                    : 'bg-white border-slate-100 text-slate-400 hover:bg-slate-50'
+                    : 'bg-slate-900/40 border-white/5 text-slate-400 hover:bg-slate-800/60'
                 }`}
               >
                 <span className="text-base font-black leading-none">{day.dayNum}</span>
@@ -157,7 +157,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
       {/* Lista de Transações Agrupadas */}
       <div className="space-y-5">
         {sortedDates.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-slate-100 p-8 text-center shadow-premium">
+          <div className="glass-panel rounded-3xl border border-white/5 p-8 text-center shadow-premium">
             <p className="text-xxs text-slate-400">Nenhum movimento encontrado.</p>
           </div>
         ) : (
@@ -177,7 +177,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                   return (
                     <div
                       key={tx.id}
-                      className="bg-white rounded-[24px] border border-slate-100 p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden group"
+                      className="glass-panel rounded-[24px] p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden group border border-white/5"
                     >
                       {/* Barra Vertical de Categoria à esquerda */}
                       <div 
@@ -191,21 +191,21 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                           <Icon className="w-4 h-4" style={{ color: catDetails.color }} />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-brand-dark leading-tight">{tx.description}</p>
+                          <p className="text-xs font-bold text-white leading-tight">{tx.description}</p>
                           <span className="text-[9px] text-slate-400 font-semibold mt-0.5 flex items-center gap-1.5 flex-wrap">
                             <span>{tx.category}</span>
                             {/* Badges de Banco */}
                             {tx.fromBankId && tx.toBankId ? (
                               <>
                                 <span>•</span>
-                                <span className="bg-purple-50 text-brand-purple border border-purple-100/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                                <span className="bg-purple-950/40 text-brand-purple border border-purple-900/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                                   {banks.find(b => b.id === tx.fromBankId)?.name} ➔ {banks.find(b => b.id === tx.toBankId)?.name}
                                 </span>
                               </>
                             ) : tx.bankId ? (
                               <>
                                 <span>•</span>
-                                <span className="bg-slate-50 text-slate-500 border border-slate-200/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                                <span className="bg-slate-900 text-slate-400 border border-slate-800 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                                   {banks.find(b => b.id === tx.bankId)?.name}
                                 </span>
                               </>
@@ -219,7 +219,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                           {tx.type === 'income' ? (
                             <span className="text-cat-green">+{formatEuro(tx.amount)}</span>
                           ) : tx.type === 'transfer' ? (
-                            <span className="text-brand-purple">-{formatEuro(tx.amount)}</span>
+                            <span className="text-[#a855f7]">-{formatEuro(tx.amount)}</span>
                           ) : (
                             <span className="text-cat-red">-{formatEuro(tx.amount)}</span>
                           )}
@@ -227,7 +227,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                         
                         <button
                           onClick={() => onDeleteTransaction(tx.id)}
-                          className="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-cat-red flex items-center justify-center active:scale-95 transition-custom shrink-0"
+                          className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-red-950/40 hover:text-cat-red hover:border-red-900/50 flex items-center justify-center active:scale-95 transition-custom shrink-0 cursor-pointer"
                           title="Eliminar"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

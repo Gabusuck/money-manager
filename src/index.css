@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-dark: #1e293b;
-  --color-brand-gray: #f8fafc;
-  --color-brand-border: #f1f5f9;
+  --color-brand-dark: #f8fafc;
+  --color-brand-gray: #0b0f19;
+  --color-brand-border: #1e293b;
   
   /* Roxo / Violeta do Design de Referência */
-  --color-brand-purple: #633bbf;
-  --color-brand-purple-dark: #4c2d99;
+  --color-brand-purple: #8b5cf6;
+  --color-brand-purple-dark: #633bbf;
   
-  /* Cores das Categorias (Cores Vivas nos Gráficos e Barras Laterais) */
+  /* Cores das Categorias */
   --color-cat-orange: #f97316;
-  --color-cat-yellow: #eab308;
-  --color-cat-gray: #64748b;
-  --color-cat-purple: #9f5bff;
+  --color-cat-yellow: #f59e0b;
+  --color-cat-gray: #94a3b8;
+  --color-cat-purple: #a855f7;
   --color-cat-green: #10b981;
   --color-cat-red: #ef4444;
-  --color-cat-blue: #05bde8;
+  --color-cat-blue: #06b6d4;
 }
 
 @layer base {
   html, body, #root {
-    @apply h-full w-full overflow-hidden bg-slate-50 text-brand-dark font-sans select-none antialiased;
+    @apply h-full w-full overflow-hidden bg-[#070b13] text-slate-200 font-sans select-none antialiased;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
   }
@@ -52,25 +52,25 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Sombra Premium Suave e Difusa (Estilo da Imagem) */
+/* Sombra Premium Suave e Difusa */
 .shadow-premium {
-  box-shadow: 0 12px 35px -4px rgba(99, 59, 191, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.02);
-  transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
 }
 
 .shadow-premium:hover {
-  box-shadow: 0 20px 40px -4px rgba(99, 59, 191, 0.08), 0 12px 24px -6px rgba(0, 0, 0, 0.03);
-  transform: translateY(-1px);
+  box-shadow: 0 24px 48px -4px rgba(139, 92, 246, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform: translateY(-1.5px);
 }
 
 /* Sombra Interna Suave para Inputs */
 .shadow-inner-soft {
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+  box-shadow: inset 0 2px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
-/* Sombra Brilhante para o Botão Roxo */
+/* Sombra Brilhante Roxo/Cyan */
 .shadow-purple-glow {
-  box-shadow: 0 8px 24px -2px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 8px 24px -2px rgba(139, 92, 246, 0.4);
 }
 
 /* Animação de Mudança de View Premium */
@@ -91,9 +91,29 @@
 
 /* Estilização dos gráficos Recharts */
 .recharts-default-tooltip {
-  background-color: #ffffff !important;
-  border: 1px solid #f1f5f9 !important;
+  background-color: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 16px !important;
-  box-shadow: 0 10px 25px -4px rgba(139, 92, 246, 0.05) !important;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.4) !important;
+  color: #f8fafc !important;
   font-family: inherit !important;
+}
+
+/* Glassmorphism custom components */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-input {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.glass-input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
 }

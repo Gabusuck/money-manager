@@ -67,12 +67,12 @@ export const Goals: React.FC<GoalsProps> = ({
       {/* Cabeçalho */}
       <div className="flex justify-between items-center mt-2">
         <div>
-          <h2 className="text-sm font-bold text-brand-dark uppercase tracking-wider">Metas & Objetivos</h2>
-          <p className="text-xxs text-gray-400 mt-0.5">Define e acompanha as tuas poupanças</p>
+          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Metas & Objetivos</h2>
+          <p className="text-xxs text-slate-400 mt-0.5">Define e acompanha as tuas poupanças</p>
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-tr from-brand-purple to-brand-purple-dark rounded-full hover:scale-102 active:scale-98 transition-transform shadow-purple-glow"
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-tr from-brand-purple to-brand-purple-dark rounded-full hover:scale-102 active:scale-98 transition-transform shadow-purple-glow cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           Nova Meta
@@ -83,16 +83,16 @@ export const Goals: React.FC<GoalsProps> = ({
       {isAdding && (
         <form 
           onSubmit={handleCreateGoal}
-          className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium animate-in fade-in slide-in-from-top-4 duration-200"
+          className="glass-panel rounded-3xl p-5 space-y-4 shadow-premium animate-in fade-in slide-in-from-top-4 duration-200"
         >
           <div className="flex justify-between items-center">
-            <h3 className="text-xs font-black text-brand-dark uppercase tracking-widest flex items-center gap-1.5">
+            <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-1.5">
               <Target className="w-4 h-4 text-brand-purple" /> Criar Novo Objetivo
             </h3>
             <button 
               type="button" 
               onClick={() => setIsAdding(false)} 
-              className="text-xs font-bold text-slate-400 hover:text-brand-dark"
+              className="text-xs font-bold text-slate-400 hover:text-white cursor-pointer"
             >
               Cancelar
             </button>
@@ -106,7 +106,7 @@ export const Goals: React.FC<GoalsProps> = ({
                 placeholder="Ex: Novo Portátil, Férias de Verão..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-3 text-xs bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark shadow-inner-soft"
+                className="w-full p-3 text-xs bg-slate-950/60 border border-white/5 rounded-2xl focus:outline-none focus:border-brand-purple text-white shadow-inner-soft"
                 required
               />
             </div>
@@ -119,7 +119,7 @@ export const Goals: React.FC<GoalsProps> = ({
                   placeholder="Ex: 800"
                   value={target}
                   onChange={(e) => setTarget(e.target.value)}
-                  className="w-full p-3 text-xs bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark shadow-inner-soft"
+                  className="w-full p-3 text-xs bg-slate-950/60 border border-white/5 rounded-2xl focus:outline-none focus:border-brand-purple text-white shadow-inner-soft"
                   required
                 />
               </div>
@@ -129,7 +129,7 @@ export const Goals: React.FC<GoalsProps> = ({
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as any)}
-                  className="w-full p-3 text-xs bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark shadow-inner-soft"
+                  className="w-full p-3 text-xs bg-slate-950/60 border border-white/5 rounded-2xl focus:outline-none focus:border-brand-purple text-white shadow-inner-soft"
                 >
                   <option value="Poupança">Poupança (TV/Câmara)</option>
                   <option value="Investimento">Investimento (T212)</option>
@@ -143,13 +143,13 @@ export const Goals: React.FC<GoalsProps> = ({
                 type="date"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full p-3 text-xs bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark shadow-inner-soft"
+                className="w-full p-3 text-xs bg-slate-950/60 border border-white/5 rounded-2xl focus:outline-none focus:border-brand-purple text-white shadow-inner-soft"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
+              className="w-full py-3 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform cursor-pointer"
             >
               Criar Meta
             </button>
@@ -160,7 +160,7 @@ export const Goals: React.FC<GoalsProps> = ({
       {/* Lista de Metas em Cartões Flutuantes com cantos rounded-3xl */}
       <div className="space-y-4">
         {goals.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-slate-100 p-8 text-center shadow-premium">
+          <div className="glass-panel rounded-3xl border border-white/5 p-8 text-center shadow-premium">
             <PiggyBank className="w-8 h-8 text-slate-300 mx-auto mb-2" />
             <p className="text-xxs text-slate-400">Ainda não definiste metas de poupança.</p>
           </div>
@@ -173,7 +173,7 @@ export const Goals: React.FC<GoalsProps> = ({
             return (
               <div 
                 key={goal.id} 
-                className="bg-white rounded-[28px] border border-slate-100 p-5 space-y-4 shadow-premium hover:border-slate-200 transition-custom relative overflow-hidden"
+                className="glass-panel rounded-[28px] border border-white/5 p-5 space-y-4 shadow-premium hover:border-brand-purple/20 transition-custom relative overflow-hidden"
               >
                 {/* Indicador de Categoria Lateral */}
                 <div 
@@ -187,7 +187,7 @@ export const Goals: React.FC<GoalsProps> = ({
                       {isPoupanca ? <PiggyBank className="w-4.5 h-4.5" /> : <TrendingUp className="w-4.5 h-4.5" />}
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-brand-dark leading-tight">{goal.title}</h4>
+                      <h4 className="text-xs font-bold text-white leading-tight">{goal.title}</h4>
                       <div className="flex items-center gap-1.5 mt-1">
                         <span className={`text-[8px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${isPoupanca ? 'bg-cat-purple/10 text-cat-purple' : 'bg-cat-green/10 text-cat-green'}`}>
                           {goal.category}
@@ -203,7 +203,7 @@ export const Goals: React.FC<GoalsProps> = ({
 
                   <button
                     onClick={() => onDeleteGoal(goal.id)}
-                    className="w-7 h-7 text-slate-400 hover:text-cat-red hover:bg-red-50 rounded-lg flex items-center justify-center transition-custom"
+                    className="w-7 h-7 text-slate-400 hover:text-cat-red hover:bg-red-950/40 rounded-lg flex items-center justify-center transition-custom cursor-pointer"
                     title="Eliminar meta"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -214,9 +214,9 @@ export const Goals: React.FC<GoalsProps> = ({
                 <div className="space-y-1.5 pl-1">
                   <div className="flex justify-between text-xxs font-semibold text-slate-400">
                     <span>{formatEuro(goal.current)} de {formatEuro(goal.target)}</span>
-                    <span className="font-extrabold text-brand-dark">{pct.toFixed(0)}%</span>
+                    <span className="font-extrabold text-white">{pct.toFixed(0)}%</span>
                   </div>
-                  <div className="h-2 w-full bg-slate-50 border border-slate-100/50 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-slate-950 border border-white/5 rounded-full overflow-hidden">
                     <div 
                       className={`h-full rounded-full transition-all duration-500 ${isPoupanca ? 'bg-cat-purple' : 'bg-cat-green'}`} 
                       style={{ width: `${pct}%` }} 
@@ -225,7 +225,7 @@ export const Goals: React.FC<GoalsProps> = ({
                 </div>
 
                 {/* Ações da Meta (Contributo rápido) */}
-                <div className="flex justify-between items-center pt-2 border-t border-slate-50 pl-1">
+                <div className="flex justify-between items-center pt-2 border-t border-white/5 pl-1">
                   {isFinished ? (
                     <span className="text-[10px] font-black text-cat-green uppercase tracking-widest">🎯 Objetivo Alcançado!</span>
                   ) : contributingId === goal.id ? (
@@ -238,20 +238,20 @@ export const Goals: React.FC<GoalsProps> = ({
                         placeholder="Valor (€)"
                         value={contributionAmount}
                         onChange={(e) => setContributionAmount(e.target.value)}
-                        className="flex-1 p-2 text-xxs bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:border-brand-purple text-brand-dark shadow-inner-soft"
+                        className="flex-1 p-2 text-xxs bg-slate-950/60 border border-white/5 rounded-xl focus:outline-none focus:border-brand-purple text-white shadow-inner-soft"
                         required
                         autoFocus
                       />
                       <button
                         type="submit"
-                        className="px-3 py-2 bg-brand-purple text-white text-xxs font-bold rounded-xl hover:bg-brand-purple-dark shadow-sm transition-custom"
+                        className="px-3 py-2 bg-brand-purple text-white text-xxs font-bold rounded-xl hover:bg-brand-purple-dark shadow-sm transition-custom cursor-pointer"
                       >
                         Reforçar
                       </button>
                       <button
                         type="button"
                         onClick={() => setContributingId(null)}
-                        className="px-2 py-2 text-xxs font-bold text-slate-400 hover:text-brand-dark transition-custom"
+                        className="px-2 py-2 text-xxs font-bold text-slate-400 hover:text-white transition-custom cursor-pointer"
                       >
                         Cancelar
                       </button>
@@ -259,7 +259,7 @@ export const Goals: React.FC<GoalsProps> = ({
                   ) : (
                     <button
                       onClick={() => setContributingId(goal.id)}
-                      className="flex items-center gap-1 text-xxs font-extrabold text-brand-purple hover:underline transition-custom"
+                      className="flex items-center gap-1 text-xxs font-extrabold text-brand-purple hover:underline transition-custom cursor-pointer"
                     >
                       <PlusCircle className="w-3.5 h-3.5" /> Adicionar Reforço
                     </button>
