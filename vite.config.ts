@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/icon-apple.png'],
       manifest: {
-        name: 'GerePoup - Finanças Pessoais',
-        short_name: 'GerePoup',
+        name: 'All My Money - Finanças Pessoais',
+        short_name: 'All My Money',
         description: 'Gestão de finanças pessoais elegante, minimalista e com tema claro.',
         theme_color: '#ffffff',
         background_color: '#ffffff',

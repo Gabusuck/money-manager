@@ -181,7 +181,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <DollarSign className="w-6 h-6" />
           </div>
           <div className="space-y-1.5">
-            <h3 className="text-sm font-bold text-brand-dark">Bem-vindo ao GerePoup</h3>
+            <h3 className="text-sm font-bold text-brand-dark">Bem-vindo ao All My Money</h3>
             <p className="text-xs text-gray-400 max-w-[280px] mx-auto leading-relaxed">
               Vamos começar a organizar o teu dinheiro. Registar uma **Renda** (ex: o teu salário) ou define o teu salário de referência base.
             </p>

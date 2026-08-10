@@ -520,7 +520,7 @@ function App() {
       {/* Cabeçalho da App (Flutuante sobre o Gradiente) */}
       <header className="px-5 pt-6 pb-3 flex justify-between items-center bg-transparent shrink-0 safe-pt">
         <div>
-          <h1 className="text-lg font-black text-brand-dark tracking-tight">GerePoup</h1>
+          <h1 className="text-lg font-black text-brand-dark tracking-tight">All My Money</h1>
           <p className="text-[10px] text-brand-purple font-bold tracking-wider uppercase mt-0.5">Finanças Privadas</p>
         </div>
         
