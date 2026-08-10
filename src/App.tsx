@@ -335,14 +335,14 @@ function App() {
     }
   };
 
-  // Handler para editar nome e saldo de banco/conta
+  // Handler para editar nome e saldo de banco/conta (Com registo de histórico diário de poupança/investimento)
   const handleEditBank = async (bankId: string, newName: string, newBalance: number) => {
     // 1. Atualizar nome do banco
     const updatedBanks = banks.map(b => b.id === bankId ? { ...b, name: newName } : b);
     setBanks(updatedBanks);
     await saveBanks(updatedBanks);
 
-    // 2. Ajustar saldo da transação inicial ou criar ajuste para corresponder ao novo saldo
+    // 2. Ajustar saldo da transação criando um registo para o dia atual para rastreio
     // Calcular o saldo atual
     const currentBalance = transactions.reduce((balance, tx) => {
       if (tx.type === 'income' && tx.bankId === bankId) return balance + tx.amount;
@@ -355,53 +355,66 @@ function App() {
     const difference = newBalance - currentBalance;
 
     if (difference !== 0) {
-      // Procurar transação de saldo inicial deste banco
-      const initialTxIndex = transactions.findIndex(tx => 
+      // Determinar a categoria com base no nome do banco
+      const nameLower = newName.toLowerCase();
+      let category: TransactionCategory = 'Outros';
+      if (nameLower.includes('trading') || nameLower.includes('invest') || nameLower.includes('ações') || nameLower.includes('bolsa') || nameLower.includes('acoes')) {
+        category = 'Investimento';
+      } else if (nameLower.includes('poupança') || nameLower.includes('poup') || nameLower.includes('aforro') || nameLower.includes('poupanca')) {
+        category = 'Poupança';
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Procurar se já existe um ajuste feito HOJE para o mesmo banco para o sobrescrever ou agrupar
+      const existingTodayTxIndex = transactions.findIndex(tx => 
         tx.bankId === bankId && 
-        (tx.description.startsWith('Saldo Inicial') || tx.description.startsWith('Ajuste de Saldo'))
+        tx.date === todayStr && 
+        tx.description.startsWith('Ajuste:')
       );
 
       let updatedTxs = [...transactions];
-      if (initialTxIndex !== -1) {
-        // Atualiza a transação existente de saldo inicial para englobar a diferença
-        const targetTx = updatedTxs[initialTxIndex];
-        const newAmount = targetTx.amount + difference;
-        if (newAmount >= 0) {
-          updatedTxs[initialTxIndex] = {
-            ...targetTx,
-            description: `Saldo Inicial: ${newName}`,
-            amount: newAmount,
-            type: 'income'
-          };
+      
+      if (existingTodayTxIndex !== -1) {
+        // Se já editou hoje, acumula a diferença na mesma transação de hoje
+        const todayTx = updatedTxs[existingTodayTxIndex];
+        // Calculamos o montante original antes do ajuste de hoje
+        const netAdjustment = (todayTx.type === 'income' ? todayTx.amount : -todayTx.amount) + difference;
+        
+        if (netAdjustment === 0) {
+          // Se o ajuste final for 0, removemos a transação de hoje
+          updatedTxs.splice(existingTodayTxIndex, 1);
         } else {
-          // Se for negativo, converte em despesa
-          updatedTxs[initialTxIndex] = {
-            ...targetTx,
-            description: `Saldo Inicial: ${newName}`,
-            amount: Math.abs(newAmount),
-            type: 'expense'
+          updatedTxs[existingTodayTxIndex] = {
+            ...todayTx,
+            amount: Math.abs(netAdjustment),
+            type: netAdjustment > 0 ? 'income' : 'expense',
+            description: `Ajuste: ${newName}`,
+            category
           };
         }
       } else {
-        // Se não houver transação de saldo inicial, cria uma nova
+        // Se for a primeira edição de hoje, cria um novo registo de ajuste de saldo
         const adjustTx: Transaction = {
-          id: 'tx-' + Date.now(),
-          description: `Ajuste de Saldo: ${newName}`,
+          id: 'tx-adj-' + Date.now() + '-' + Math.random().toString(36).substring(2, 5),
+          description: `Ajuste: ${newName}`,
           amount: Math.abs(difference),
           type: difference > 0 ? 'income' : 'expense',
-          category: 'Outros',
-          date: new Date().toISOString().split('T')[0],
+          category,
+          date: todayStr,
           bankId
         };
         updatedTxs = [adjustTx, ...updatedTxs];
       }
+      
       setTransactions(updatedTxs);
       await saveTransactions(updatedTxs);
     } else {
-      // Se a diferença for 0, só atualiza as descrições das transações iniciais com o novo nome
+      // Se a diferença for 0, só atualiza as descrições das transações passadas deste banco com o novo nome
       const updatedTxs = transactions.map(tx => {
-        if (tx.bankId === bankId && tx.description.startsWith('Saldo Inicial')) {
-          return { ...tx, description: `Saldo Inicial: ${newName}` };
+        if (tx.bankId === bankId && (tx.description.startsWith('Saldo Inicial') || tx.description.startsWith('Ajuste'))) {
+          const suffix = tx.description.includes(':') ? tx.description.split(':')[0] : 'Ajuste';
+          return { ...tx, description: `${suffix}: ${newName}` };
         }
         return tx;
       });

@@ -88,7 +88,9 @@ export const Evolution: React.FC<EvolutionProps> = ({
         const txDate = new Date(tx.date);
         return (tx.category === 'Poupança' || tx.category === 'Investimento') && txDate < limitDate;
       })
-      .reduce((sum, tx) => sum + tx.amount, 0);
+      .reduce((sum, tx) => {
+        return tx.type === 'expense' ? sum - tx.amount : sum + tx.amount;
+      }, 0);
   };
 
   const firstMonthDate = new Date(last6Months[0].year, last6Months[0].monthIndex, 1);
@@ -102,7 +104,11 @@ export const Evolution: React.FC<EvolutionProps> = ({
 
     const fixos = txsInMonth.filter(tx => tx.category === 'Fixos').reduce((sum, tx) => sum + tx.amount, 0);
     const plafond = txsInMonth.filter(tx => ['Transportes', 'Lazer', 'Outros'].includes(tx.category)).reduce((sum, tx) => sum + tx.amount, 0);
-    const poupanca = txsInMonth.filter(tx => ['Poupança', 'Investimento'].includes(tx.category)).reduce((sum, tx) => sum + tx.amount, 0);
+    const poupanca = txsInMonth
+      .filter(tx => ['Poupança', 'Investimento'].includes(tx.category))
+      .reduce((sum, tx) => {
+        return tx.type === 'expense' ? sum - tx.amount : sum + tx.amount;
+      }, 0);
     
     accumulatedSavings += poupanca;
 
