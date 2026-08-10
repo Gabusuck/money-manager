@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Edit3, Tag, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign } from 'lucide-react';
+import { X, Calendar, Edit3, Tag, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign, ChevronDown } from 'lucide-react';
 import type { TransactionCategory, Transaction, TransactionType } from '../types';
 
 interface TransactionModalProps {
@@ -16,18 +16,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [amount, setAmount] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [type, setType] = useState<TransactionType>('expense');
-  const [category, setCategory] = useState<TransactionCategory>('Outros');
+  const [category, setCategory] = useState<TransactionCategory | null>(null);
+  const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
-  // Atualizar a categoria padrão quando o tipo muda
+  // Resetar a categoria selecionada quando o tipo muda (deixa vazio/null)
   useEffect(() => {
-    if (type === 'expense') {
-      setCategory('Outros');
-    } else if (type === 'transfer') {
-      setCategory('Poupança');
-    } else if (type === 'income') {
-      setCategory('Salário');
-    }
+    setCategory(null);
+    setShowCategorySelector(false);
   }, [type]);
 
   if (!isOpen) return null;
@@ -43,6 +39,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       alert('Por favor, introduz uma descrição.');
       return;
     }
+    if (!category) {
+      alert('Por favor, seleciona uma categoria para este lançamento.');
+      setShowCategorySelector(true); // Abre a lista para facilitar a escolha
+      return;
+    }
 
     onAddTransaction({
       description: description.trim(),
@@ -56,7 +57,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     setAmount('');
     setDescription('');
     setType('expense');
-    setCategory('Outros');
+    setCategory(null);
+    setShowCategorySelector(false);
     setDate(new Date().toISOString().split('T')[0]);
     onClose();
   };
@@ -82,17 +84,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     }
   });
 
+  const selectedCatDetails = category ? categoriesList.find(c => c.name === category) : null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-xs overflow-hidden select-none">
-      <form 
-        onSubmit={handleSubmit}
-        className="w-full max-w-md bg-slate-50 rounded-t-[32px] border-t border-slate-100 p-6 flex flex-col max-h-[92vh] shadow-2xl animate-in slide-in-from-bottom duration-300"
+      <div 
+        className="w-full max-w-md bg-slate-50 rounded-t-[32px] border-t border-slate-100 p-6 space-y-6 max-h-[92vh] overflow-y-auto overflow-x-hidden no-scrollbar safe-pb shadow-2xl animate-in slide-in-from-bottom duration-300"
       >
-        {/* Header Modal (Fixo no Topo) */}
-        <div className="flex justify-between items-center shrink-0 pb-4">
+        {/* Header Modal */}
+        <div className="flex justify-between items-center">
           <h3 className="text-sm font-black text-brand-dark uppercase tracking-widest">Novo Lançamento</h3>
           <button 
-            type="button"
             onClick={onClose} 
             className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-slate-100 text-slate-400 hover:text-brand-dark transition-custom shadow-sm"
           >
@@ -100,46 +102,45 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           </button>
         </div>
 
-        {/* Corpo do Formulário (Scrollable) */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar space-y-5 pb-4">
-          
-          {/* Segmented Control para selecionar o Tipo de Movimento */}
-          <div className="bg-slate-100 p-1 rounded-2xl flex w-full border border-slate-200/50">
-            <button
-              type="button"
-              onClick={() => setType('expense')}
-              className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
-                type === 'expense' 
-                  ? 'bg-white text-brand-dark shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              Despesa
-            </button>
-            <button
-              type="button"
-              onClick={() => setType('transfer')}
-              className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
-                type === 'transfer' 
-                  ? 'bg-white text-brand-dark shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              Transferência
-            </button>
-            <button
-              type="button"
-              onClick={() => setType('income')}
-              className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
-                type === 'income' 
-                  ? 'bg-white text-brand-dark shadow-sm' 
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              Renda
-            </button>
-          </div>
+        {/* Segmented Control para selecionar o Tipo de Movimento */}
+        <div className="bg-slate-100 p-1 rounded-2xl flex w-full border border-slate-200/50">
+          <button
+            type="button"
+            onClick={() => setType('expense')}
+            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
+              type === 'expense' 
+                ? 'bg-white text-brand-dark shadow-sm' 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            Despesa
+          </button>
+          <button
+            type="button"
+            onClick={() => setType('transfer')}
+            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
+              type === 'transfer' 
+                ? 'bg-white text-brand-dark shadow-sm' 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            Transferência
+          </button>
+          <button
+            type="button"
+            onClick={() => setType('income')}
+            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
+              type === 'income' 
+                ? 'bg-white text-brand-dark shadow-sm' 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            Renda
+          </button>
+        </div>
 
+        <form onSubmit={handleSubmit} className="space-y-5">
+          
           {/* Campo Valor Grande */}
           <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-premium relative text-center py-5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Valor do Lançamento</span>
@@ -175,54 +176,84 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             />
           </div>
 
-          {/* Seleção de Categoria Dinâmica */}
+          {/* Seleção de Categoria Dinâmica e Expansível */}
           <div className="space-y-2">
             <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 px-1">
               <Tag className="w-3.5 h-3.5" /> Categoria
             </label>
             
-            <div className="space-y-2 max-h-60 overflow-y-auto overflow-x-hidden no-scrollbar pr-0.5 py-0.5">
-              {filteredCategories.map((cat) => {
-                const Icon = cat.icon;
-                const isSelected = category === cat.name;
-                return (
-                  <button
-                    key={cat.name}
-                    type="button"
-                    onClick={() => setCategory(cat.name)}
-                    className={`w-full bg-white rounded-2xl border p-3 flex items-center justify-between shadow-premium transition-custom relative overflow-hidden text-left ${
-                      isSelected ? 'border-brand-purple' : 'border-slate-100 hover:translate-y-[-1px]'
-                    }`}
-                  >
-                    {/* Barra Vertical de Categoria */}
-                    <div 
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 rounded-r-lg"
-                      style={{ backgroundColor: cat.color }}
-                    />
-
-                    <div className="flex items-center gap-3 pl-1.5">
-                      {/* Círculo com Ícone */}
-                      <div className={`w-8.5 h-8.5 rounded-full flex items-center justify-center border ${cat.border} ${cat.bg} shadow-sm shrink-0`}>
-                        <Icon className="w-4 h-4" style={{ color: cat.color }} />
-                      </div>
-                      <span className="text-xs font-bold text-brand-dark">{cat.label}</span>
+            <div className="space-y-2">
+              {/* Botão Gatilho (Mostra Selecionado ou Placeholder) */}
+              {!category ? (
+                <button
+                  type="button"
+                  onClick={() => setShowCategorySelector(!showCategorySelector)}
+                  className="w-full bg-white rounded-2xl border border-slate-100 p-4 flex items-center justify-between shadow-premium hover:translate-y-[-1px] transition-custom text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8.5 h-8.5 rounded-full flex items-center justify-center border border-dashed border-slate-200 bg-slate-50 text-slate-300">
+                      <Tag className="w-4 h-4" />
                     </div>
-
-                    {/* Botão de Rádio Checkmark Customizado */}
-                    <div 
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-custom ${
-                        isSelected 
-                          ? 'border-brand-purple' 
-                          : 'border-slate-300'
-                      }`}
-                    >
-                      {isSelected && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-brand-purple shadow-sm" />
-                      )}
+                    <span className="text-xs font-bold text-slate-300">Escolher categoria...</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-slate-300 transition-transform duration-300 ${showCategorySelector ? 'rotate-180' : ''}`} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowCategorySelector(!showCategorySelector)}
+                  className="w-full bg-white rounded-2xl border border-brand-purple p-4 flex items-center justify-between shadow-premium transition-custom relative overflow-hidden text-left"
+                >
+                  <div 
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 rounded-r-lg"
+                    style={{ backgroundColor: selectedCatDetails?.color }}
+                  />
+                  <div className="flex items-center gap-3 pl-1.5">
+                    <div className={`w-8.5 h-8.5 rounded-full flex items-center justify-center border ${selectedCatDetails?.border} ${selectedCatDetails?.bg} shadow-sm shrink-0`}>
+                      {selectedCatDetails && React.createElement(selectedCatDetails.icon, { className: "w-4 h-4", style: { color: selectedCatDetails.color } })}
                     </div>
-                  </button>
-                );
-              })}
+                    <span className="text-xs font-bold text-brand-dark">{selectedCatDetails?.label}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${showCategorySelector ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+
+              {/* Lista Desdobrável das Categorias */}
+              {showCategorySelector && (
+                <div className="space-y-2 max-h-60 overflow-y-auto overflow-x-hidden no-scrollbar pr-0.5 py-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {filteredCategories.map((cat) => {
+                    const Icon = cat.icon;
+                    const isSelected = category === cat.name;
+                    return (
+                      <button
+                        key={cat.name}
+                        type="button"
+                        onClick={() => {
+                          setCategory(cat.name);
+                          setShowCategorySelector(false);
+                        }}
+                        className={`w-full bg-white rounded-2xl border p-3.5 flex items-center justify-between shadow-premium transition-custom relative overflow-hidden text-left ${
+                          isSelected ? 'border-brand-purple bg-purple-50/5' : 'border-slate-100 hover:translate-y-[-1px]'
+                        }`}
+                      >
+                        {/* Barra Vertical de Categoria */}
+                        <div 
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 rounded-r-lg"
+                          style={{ backgroundColor: cat.color }}
+                        />
+
+                        <div className="flex items-center gap-3 pl-1.5">
+                          {/* Círculo com Ícone */}
+                          <div className={`w-8.5 h-8.5 rounded-full flex items-center justify-center border ${cat.border} ${cat.bg} shadow-sm shrink-0`}>
+                            <Icon className="w-4 h-4" style={{ color: cat.color }} />
+                          </div>
+                          <span className="text-xs font-bold text-brand-dark">{cat.label}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -239,18 +270,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             />
           </div>
 
-        </div>
-
-        {/* Rodapé Fixo com o Botão de Confirmar Lançamento (Sempre visível) */}
-        <div className="shrink-0 pt-3 border-t border-slate-100/50 bg-slate-50 safe-pb">
+          {/* Botão de Gravar Pill-Shape */}
           <button
             type="submit"
-            className="w-full py-4 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
+            className="w-full py-4 mt-3 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
           >
             Confirmar Lançamento
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };
