@@ -83,10 +83,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   // Gasto/Saída total do mês (Fixos + Poupança + Investimento + Plafond Real)
   const totalSpent = spentFixos + savedPoupanca + investedInvestimento + spentPlafondReal;
 
-  // Património Total (Salário de referência + Rendas - Despesas Fixas e Variáveis)
-  const allTimeIncomes = transactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
-  const allTimeExpenses = transactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
-  const patrimonioTotal = budget.salary + allTimeIncomes - allTimeExpenses;
+
 
 
 
@@ -129,6 +126,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       return balance;
     }, 0);
   };
+
+  // Património Total é a soma de todos os saldos bancários
+  const patrimonioTotal = banks.reduce((sum, bank) => sum + getBankBalance(bank.id), 0);
 
   const handleAddBankClick = () => {
     setNewBankName('');
