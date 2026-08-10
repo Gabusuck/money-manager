@@ -251,7 +251,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-tr from-purple-100/40 via-slate-50 to-pink-50/20 flex flex-col relative overflow-hidden font-sans antialiased selection:bg-purple-100 select-none">
+    <div className="h-[100dvh] w-full bg-gradient-to-tr from-purple-100/40 via-slate-50 to-pink-50/20 flex flex-col relative overflow-hidden font-sans antialiased selection:bg-purple-100 select-none">
       
       {/* Cabeçalho da App (Flutuante sobre o Gradiente) */}
       <header className="px-5 pt-6 pb-3 flex justify-between items-center bg-transparent shrink-0 safe-pt">
