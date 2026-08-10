@@ -40,8 +40,30 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
   }, [isOpen]);
 
   if (!isOpen) return null;
+  // Helpers para codificação/decodificação UTF-8 Base64Url
+  const utf8ToB64 = (str: string) => {
+    return window.btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => {
+      return String.fromCharCode(parseInt(p1, 16));
+    }));
+  };
+  
+  const b64ToUtf8 = (str: string) => {
+    return decodeURIComponent(Array.prototype.map.call(window.atob(str), (c: string) => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+  };
 
+  const encodeBase64Url = (str: string) => {
+    return utf8ToB64(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  };
 
+  const decodeBase64Url = (safeStr: string) => {
+    let base64 = safeStr.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+    return b64ToUtf8(base64);
+  };
 
   const getPayload = () => {
     return {
@@ -53,47 +75,40 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
       updatedAt: new Date().toISOString()
     };
   };
+
   const handleBackup = async () => {
     setLoading(true);
     setStatusText('A guardar cópia na nuvem...');
     const payload = getPayload();
+    const jsonStr = JSON.stringify(payload);
+    const base64url = encodeBase64Url(jsonStr);
 
     try {
-      if (syncCode) {
-        // Atualizar backup existente
-        const response = await fetch(`https://api.restful-api.dev/objects/${syncCode}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            name: 'all_my_money_backup',
-            data: payload
-          })
+      if (syncCode && syncCode.length === 8) {
+        // Atualizar backup existente no keyvalue.immanuel.co
+        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${syncCode}/backupData/${base64url}`, {
+          method: 'POST'
         });
         if (!response.ok) throw new Error('Falha ao atualizar backup.');
         setStatusText('Sincronizado com sucesso!');
       } else {
+        // Obter nova AppKey do keyvalue.immanuel.co
+        const keyResponse = await fetch('https://keyvalue.immanuel.co/api/KeyVal/GetAppKey');
+        if (!keyResponse.ok) throw new Error('Falha ao contactar servidor de chaves.');
+        const rawKey = await keyResponse.text();
+        const newAppKey = rawKey.replace(/"/g, '').trim();
+
+        if (!newAppKey) throw new Error('Nenhuma chave recebida do servidor.');
+
         // Criar novo backup
-        const response = await fetch('https://api.restful-api.dev/objects', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            name: 'all_my_money_backup',
-            data: payload
-          })
+        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${newAppKey}/backupData/${base64url}`, {
+          method: 'POST'
         });
         if (!response.ok) throw new Error('Falha ao criar backup.');
-        const data = await response.json();
-        if (data.id) {
-          localStorage.setItem('allmymoney_sync_code', data.id);
-          setSyncCode(data.id);
-          setStatusText('Código de sincronização gerado com sucesso!');
-        } else {
-          throw new Error('Código não recebido da nuvem.');
-        }
+        
+        localStorage.setItem('allmymoney_sync_code', newAppKey);
+        setSyncCode(newAppKey);
+        setStatusText('Código de sincronização gerado com sucesso!');
       }
     } catch (err: any) {
       console.error(err);
@@ -117,18 +132,32 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
 
     try {
       let payload;
-      if (code.length < 20) {
-        // Fallback compatibilidade npoint
-        const response = await fetch(`https://api.npoint.io/bins/${code}`);
+      
+      if (code.length === 8) {
+        // keyvalue.immanuel.co (nosso novo padrão de 8 dígitos)
+        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${code}/backupData`);
         if (!response.ok) throw new Error('Código inválido ou dados não encontrados.');
-        const data = await response.json();
-        payload = data.contents ? data.contents : data;
-      } else {
-        // api.restful-api.dev
+        const rawResult = await response.text();
+        const cleanResult = rawResult.replace(/^"|"$/g, '').trim();
+        
+        if (!cleanResult || cleanResult === 'null') {
+          throw new Error('Nenhuma cópia de segurança encontrada com este código.');
+        }
+        
+        const decoded = decodeBase64Url(cleanResult);
+        payload = JSON.parse(decoded);
+      } else if (code.length >= 24) {
+        // Fallback api.restful-api.dev (caso tenham algum código de 32 caracteres)
         const response = await fetch(`https://api.restful-api.dev/objects/${code}`);
-        if (!response.ok) throw new Error('Código inválido ou dados não encontrados.');
+        if (!response.ok) throw new Error('Cópia de segurança não encontrada.');
         const data = await response.json();
         payload = data.data;
+      } else {
+        // Fallback antigo npoint
+        const response = await fetch(`https://api.npoint.io/bins/${code}`);
+        if (!response.ok) throw new Error('Cópia de segurança não encontrada.');
+        const data = await response.json();
+        payload = data.contents ? data.contents : data;
       }
 
       // Validação básica de integridade
