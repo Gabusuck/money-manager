@@ -1,5 +1,4 @@
-import React from 'react';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { 
   DollarSign, 
   Car, 
@@ -171,8 +170,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <p className="text-xxs text-slate-400 mt-0.5">Foco apenas em despesas variáveis</p>
           </div>
 
-          {/* Gráfico Donut */}
-          <div className="relative h-44 flex items-center justify-center">
+          {/* Gráfico Donut (Estático, Não Clicável/Hoverable) */}
+          <div className="relative h-44 flex items-center justify-center pointer-events-none select-none">
             {activeDonutData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -184,15 +183,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     outerRadius={70}
                     paddingAngle={5}
                     dataKey="value"
+                    isAnimationActive={false}
                   >
                     {donutData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    formatter={(value: any) => [formatEuro(Number(value)), 'Gasto']}
-                    contentStyle={{ borderRadius: '16px', border: '1px solid #f1f5f9', padding: '6px 10px' }}
-                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
