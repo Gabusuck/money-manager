@@ -526,7 +526,7 @@ function App() {
       </main>
 
       {/* Barra de Navegação Inferior (Dock Flutuante Premium) */}
-      <nav className="fixed bottom-5 left-4 right-4 z-40 bg-white/80 backdrop-blur-md border border-slate-100 px-5 py-2.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
+      <nav className="fixed bottom-2.5 left-4 right-4 z-40 bg-white/80 backdrop-blur-md border border-slate-100 px-5 py-2.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
         
         {/* Aba Início */}
         <button
