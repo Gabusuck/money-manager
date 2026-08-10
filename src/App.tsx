@@ -5,8 +5,10 @@ import {
   Target, 
   FileText, 
   Plus, 
-  WifiOff 
+  WifiOff,
+  Cloud
 } from 'lucide-react';
+import { CloudSyncModal } from './components/CloudSyncModal';
 import { 
   getTransactions, 
   saveTransactions, 
@@ -126,6 +128,7 @@ function App() {
   
   // Modals
   const [isTxOpen, setIsTxOpen] = useState(false);
+  const [isCloudOpen, setIsCloudOpen] = useState(false);
   const [defaultTxType, setDefaultTxType] = useState<TransactionType>('expense');
   const [defaultBankId, setDefaultBankId] = useState<string>('');
   
@@ -459,6 +462,24 @@ function App() {
     setIsTxOpen(true);
   };
 
+  // Handler para restaurar dados importados/sincronizados da nuvem
+  const handleRestoreData = async (data: {
+    transactions: Transaction[];
+    banks: Bank[];
+    budget: BudgetAllocation;
+    goals: SavingGoal[];
+  }) => {
+    await saveTransactions(data.transactions);
+    await saveBanks(data.banks);
+    await saveBudget(data.budget);
+    await saveGoals(data.goals);
+
+    setTransactions(data.transactions);
+    setBanks(data.banks);
+    setBudget(data.budget);
+    setGoals(data.goals);
+  };
+
   // Handler para limpar todos os dados e recomeçar do zero
   const handleClearAllData = async () => {
     if (window.confirm('Tens a certeza que queres apagar todos os dados e começar do zero? Esta ação é irreversível.')) {
@@ -529,8 +550,17 @@ function App() {
         
         <div className="flex items-center gap-3">
           <button
+            onClick={() => setIsCloudOpen(true)}
+            className="text-[9px] font-bold text-gray-400 hover:text-brand-purple uppercase tracking-wider transition-custom flex items-center gap-1 cursor-pointer"
+            title="Sincronização na nuvem"
+          >
+            <Cloud className="w-3.5 h-3.5 text-slate-400 hover:text-brand-purple transition-colors" />
+            Nuvem
+          </button>
+          <span className="text-slate-200 text-xxs">|</span>
+          <button
             onClick={handleClearAllData}
-            className="text-[9px] font-bold text-gray-400 hover:text-cat-red uppercase tracking-wider transition-custom"
+            className="text-[9px] font-bold text-gray-400 hover:text-cat-red uppercase tracking-wider transition-custom cursor-pointer"
             title="Recomeçar do zero"
           >
             Reiniciar
@@ -619,6 +649,16 @@ function App() {
         banks={banks}
         defaultType={defaultTxType}
         defaultBankId={defaultBankId}
+      />
+
+      <CloudSyncModal 
+        isOpen={isCloudOpen} 
+        onClose={() => setIsCloudOpen(false)}
+        transactions={transactions}
+        banks={banks}
+        budget={budget}
+        goals={goals}
+        onRestoreData={handleRestoreData}
       />
 
     </div>
