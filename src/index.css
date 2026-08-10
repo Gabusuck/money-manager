@@ -21,7 +21,7 @@
 
 @layer base {
   html, body, #root {
-    @apply h-full w-full overflow-hidden bg-black text-slate-100 font-sans select-none antialiased;
+    @apply h-full w-full overflow-hidden bg-[#f4f5f8] text-slate-800 font-sans select-none antialiased;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
   }

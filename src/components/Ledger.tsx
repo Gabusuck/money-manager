@@ -164,7 +164,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
           sortedDates.map((dateStr) => (
             <div key={dateStr} className="space-y-2">
               {/* Título do Grupo de Data */}
-              <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest px-1">
+              <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest px-1">
                 {formatDateTitle(dateStr)}
               </h3>
 

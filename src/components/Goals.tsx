@@ -67,12 +67,12 @@ export const Goals: React.FC<GoalsProps> = ({
       {/* Cabeçalho */}
       <div className="flex justify-between items-center mt-2">
         <div>
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Metas & Objetivos</h2>
-          <p className="text-xxs text-slate-400 mt-0.5">Define e acompanha as tuas poupanças</p>
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Metas & Objetivos</h2>
+          <p className="text-xxs text-slate-500 mt-0.5">Define e acompanha as tuas poupanças</p>
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-tr from-brand-purple to-brand-purple-dark rounded-full hover:scale-102 active:scale-98 transition-transform shadow-purple-glow cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#1c1d22] hover:bg-[#282a30] rounded-full hover:scale-102 active:scale-98 transition-transform shadow-premium cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           Nova Meta

@@ -223,7 +223,7 @@ export const Evolution: React.FC<EvolutionProps> = ({
           <TrendingUp className="w-8 h-8" />
         </div>
         <div className="space-y-1.5">
-          <h3 className="text-sm font-black text-white">Sem Histórico de Evolução</h3>
+          <h3 className="text-sm font-black text-slate-900">Sem Histórico de Evolução</h3>
           <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
             Regista transações no teu extrato ou define o teu salário para veres a distribuição de orçamento e evolução patrimonial.
           </p>

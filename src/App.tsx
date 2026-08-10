@@ -723,17 +723,17 @@ function App() {
   };
 
   return (
-    <div className="h-[100dvh] w-full bg-black flex flex-col relative overflow-hidden font-sans antialiased selection:bg-slate-800 select-none">
+    <div className="h-[100dvh] w-full bg-[#f4f5f8] flex flex-col relative overflow-hidden font-sans antialiased selection:bg-slate-200 select-none">
       
       {/* Decoração minimalista de fundo */}
-      <div className="absolute top-[-10%] left-[-20%] w-[80vw] h-[80vw] rounded-full bg-slate-900/10 blur-[130px] pointer-events-none z-0" />
+      <div className="absolute top-[-10%] left-[-20%] w-[80vw] h-[80vw] rounded-full bg-slate-200/40 blur-[130px] pointer-events-none z-0" />
 
       {/* Cabeçalho da App */}
       <header className="relative z-10 px-5 pt-6 pb-3 flex justify-between items-center bg-transparent shrink-0 safe-pt">
         <div className="flex items-center gap-2.5">
-          <img src="/icons/icon-192.png" className="w-8 h-8 rounded-xl shadow-sm border border-slate-850 object-cover" alt="Logo" />
+          <img src="/icons/icon-192.png" className="w-8 h-8 rounded-xl shadow-sm border border-slate-200 object-cover" alt="Logo" />
           <div>
-            <h1 className="text-base font-black text-white tracking-tight leading-none">All My Money</h1>
+            <h1 className="text-base font-black text-slate-900 tracking-tight leading-none">All My Money</h1>
             <p className="text-[9px] text-slate-500 font-bold tracking-wider uppercase mt-1">Finanças Privadas</p>
           </div>
         </div>
@@ -741,15 +741,15 @@ function App() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsCloudOpen(true)}
-            className="text-[9px] font-bold text-slate-400 hover:text-white uppercase tracking-wider transition-custom flex items-center gap-1 cursor-pointer"
+            className="text-[9px] font-bold text-slate-500 hover:text-slate-950 uppercase tracking-wider transition-custom flex items-center gap-1 cursor-pointer"
             title="Sincronização na nuvem"
           >
-            <Cloud className="w-3.5 h-3.5 text-slate-400 hover:text-white transition-colors" />
+            <Cloud className="w-3.5 h-3.5 text-slate-500 hover:text-slate-950 transition-colors" />
             Nuvem
           </button>
 
           {!isOnline && (
-            <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-950/40 border border-red-900/50 px-2.5 py-1 rounded-full">
+            <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-50 border border-red-200 px-2.5 py-1 rounded-full">
               <WifiOff className="w-2.5 h-2.5" /> Offline
             </span>
           )}
@@ -764,14 +764,14 @@ function App() {
         <div className="h-36 w-full block pointer-events-none shrink-0" />
       </main>
 
-      {/* Barra de Navegação Inferior (Dock Flutuante de Alto Contraste) */}
-      <nav className="fixed bottom-2.5 left-6 right-6 max-w-xs mx-auto z-40 bg-[#1c1d22] border border-[#2b2d35] px-6 py-3.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
+      {/* Barra de Navegação Inferior (Dock Flutuante de Alto Contraste Claro) */}
+      <nav className="fixed bottom-2.5 left-6 right-6 max-w-xs mx-auto z-40 bg-white/85 border border-slate-200/60 backdrop-blur-xl px-6 py-3.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
         
         {/* Aba Evolução */}
         <button
           onClick={() => setCurrentTab('evolution')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'evolution' ? 'text-white scale-110 drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : 'text-slate-500 hover:text-slate-300'
+            currentTab === 'evolution' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
           }`}
           title="Evolução"
         >
@@ -782,7 +782,7 @@ function App() {
         <button
           onClick={() => setCurrentTab('goals')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'goals' ? 'text-white scale-110 drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : 'text-slate-500 hover:text-slate-300'
+            currentTab === 'goals' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
           }`}
           title="Metas"
         >
@@ -793,7 +793,7 @@ function App() {
         <button
           onClick={() => setCurrentTab('home')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'home' ? 'text-white scale-110 drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : 'text-slate-500 hover:text-slate-300'
+            currentTab === 'home' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
           }`}
           title="Início"
         >
@@ -804,7 +804,7 @@ function App() {
         <button
           onClick={() => setCurrentTab('recurring')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'recurring' ? 'text-white scale-110 drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : 'text-slate-500 hover:text-slate-300'
+            currentTab === 'recurring' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
           }`}
           title="Assinaturas"
         >
@@ -815,7 +815,7 @@ function App() {
         <button
           onClick={() => setCurrentTab('ledger')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'ledger' ? 'text-white scale-110 drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]' : 'text-slate-500 hover:text-slate-300'
+            currentTab === 'ledger' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
           }`}
           title="Extrato"
         >
@@ -827,7 +827,7 @@ function App() {
       {/* Botão de Ação Flutuante Lateral [ ➕ ] */}
       <button
         onClick={() => setIsTxOpen(true)}
-        className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shadow-premium hover:scale-105 active:scale-95 transition-transform cursor-pointer border border-slate-200 safe-mb"
+        className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-[#1c1d22] text-white flex items-center justify-center shadow-premium hover:scale-105 active:scale-95 transition-transform cursor-pointer border-none safe-mb"
         title="Novo Lançamento"
       >
         <Plus className="w-5 h-5" />
