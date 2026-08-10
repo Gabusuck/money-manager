@@ -734,8 +734,10 @@ function App() {
       </header>
 
       {/* Conteúdo Principal (Scrollable) */}
-      <main className="flex-1 overflow-y-auto no-scrollbar w-full min-h-0 overscroll-none pb-36 safe-pb">
+      <main className="flex-1 overflow-y-auto no-scrollbar w-full min-h-0 overscroll-none">
         {renderActiveView()}
+        {/* Espaçador físico no fim do scroll para empurrar o conteúdo acima da navbar no iOS Safari */}
+        <div className="h-36 w-full block pointer-events-none shrink-0" />
       </main>
 
       {/* Barra de Navegação Inferior (Dock Flutuante Premium Compacta) */}
