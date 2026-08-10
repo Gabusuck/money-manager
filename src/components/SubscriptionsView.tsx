@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Plus, Trash2, Repeat, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign } from 'lucide-react';
+import { Calendar, Plus, Trash2, Repeat, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign, X } from 'lucide-react';
 import type { RecurringTransaction, RecurringInterval, TransactionCategory, Bank } from '../types';
 
 interface SubscriptionsViewProps {
@@ -10,20 +10,56 @@ interface SubscriptionsViewProps {
 }
 
 const CATEGORIES: { label: string; value: TransactionCategory; color: string; icon: any }[] = [
-  { label: 'Despesas Fixas', value: 'Fixos', color: '#6366f1', icon: Shield },
-  { label: 'Transportes', value: 'Transportes', color: '#f97316', icon: Car },
-  { label: 'Lazer', value: 'Lazer', color: '#eab308', icon: Smile },
-  { label: 'Poupança', value: 'Poupança', color: '#a855f7', icon: PiggyBank },
-  { label: 'Investimento', value: 'Investimento', color: '#10b981', icon: TrendingUp },
-  { label: 'Salário', value: 'Salário', color: '#10b981', icon: DollarSign },
-  { label: 'Outros', value: 'Outros', color: '#64748b', icon: HelpCircle },
+  { label: 'Despesas Fixas',  value: 'Fixos',        color: '#EF4444', icon: Shield },
+  { label: 'Transportes',     value: 'Transportes',  color: '#F97316', icon: Car },
+  { label: 'Lazer',           value: 'Lazer',        color: '#F59E0B', icon: Smile },
+  { label: 'Poupança',        value: 'Poupança',     color: '#8B5CF6', icon: PiggyBank },
+  { label: 'Investimento',    value: 'Investimento', color: '#16C784', icon: TrendingUp },
+  { label: 'Salário',         value: 'Salário',      color: '#16C784', icon: DollarSign },
+  { label: 'Outros',          value: 'Outros',       color: '#94A3B8', icon: HelpCircle },
 ];
+
+const P = {
+  brand: '#4F6EF7',
+  brandDark: '#3A58E0',
+  brandLight: '#EEF1FE',
+  success: '#16C784',
+  danger: '#EF4444',
+  ink: '#111827',
+  inkMuted: '#6B7280',
+  inkSubtle: '#9CA3AF',
+  border: '#E5E8F8',
+  surface: '#FFFFFF',
+};
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 14px',
+  borderRadius: 12,
+  border: `1.5px solid ${P.border}`,
+  background: P.surface,
+  color: P.ink,
+  fontSize: 13,
+  fontWeight: 600,
+  outline: 'none',
+  boxSizing: 'border-box',
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 800,
+  color: P.inkSubtle,
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  display: 'block',
+  marginBottom: 6,
+};
 
 export const SubscriptionsView: React.FC<SubscriptionsViewProps> = ({
   recurringTxs,
   banks,
   onAddRecurring,
-  onDeleteRecurring
+  onDeleteRecurring,
 }) => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -41,189 +77,140 @@ export const SubscriptionsView: React.FC<SubscriptionsViewProps> = ({
       alert('Preenche todos os campos corretamente.');
       return;
     }
-
-    onAddRecurring({
-      description: description.trim(),
-      amount: parsedAmount,
-      type,
-      category,
-      frequency,
-      startDate,
-      bankId: selectedBankId
-    });
-
-    // Reset form
-    setDescription('');
-    setAmount('');
-    setType('expense');
-    setCategory('Fixos');
-    setFrequency('monthly');
-    setStartDate(new Date().toISOString().split('T')[0]);
+    onAddRecurring({ description: description.trim(), amount: parsedAmount, type, category, frequency, startDate, bankId: selectedBankId });
+    setDescription(''); setAmount(''); setType('expense'); setCategory('Fixos');
+    setFrequency('monthly'); setStartDate(new Date().toISOString().split('T')[0]);
     setShowAddForm(false);
   };
 
-  const formatEuro = (value: number) => {
-    return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
-  };
+  const formatEuro = (value: number) =>
+    new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
 
-  const translateFrequency = (freq: RecurringInterval) => {
-    switch (freq) {
-      case 'weekly': return 'Semanal';
-      case 'monthly': return 'Mensal';
-      case 'yearly': return 'Anual';
-      default: return freq;
-    }
-  };
+  const translateFrequency = (freq: RecurringInterval) =>
+    ({ weekly: 'Semanal', monthly: 'Mensal', yearly: 'Anual' }[freq] ?? freq);
 
-  // Calcular o custo mensal estimado de todas as despesas fixas (despesa)
-  const monthlyCostEstimate = recurringTxs
-    .filter(item => item.isActive && item.type === 'expense')
-    .reduce((sum, item) => {
-      if (item.frequency === 'monthly') return sum + item.amount;
-      if (item.frequency === 'weekly') return sum + (item.amount * 52) / 12;
-      if (item.frequency === 'yearly') return sum + item.amount / 12;
-      return sum;
-    }, 0);
+  const monthlyCost = recurringTxs
+    .filter(i => i.isActive && i.type === 'expense')
+    .reduce((s, i) => s + (i.frequency === 'monthly' ? i.amount : i.frequency === 'weekly' ? (i.amount * 52) / 12 : i.amount / 12), 0);
 
-  // Calcular receita mensal estimada
-  const monthlyIncomeEstimate = recurringTxs
-    .filter(item => item.isActive && item.type === 'income')
-    .reduce((sum, item) => {
-      if (item.frequency === 'monthly') return sum + item.amount;
-      if (item.frequency === 'weekly') return sum + (item.amount * 52) / 12;
-      if (item.frequency === 'yearly') return sum + item.amount / 12;
-      return sum;
-    }, 0);
+  const monthlyIncome = recurringTxs
+    .filter(i => i.isActive && i.type === 'income')
+    .reduce((s, i) => s + (i.frequency === 'monthly' ? i.amount : i.frequency === 'weekly' ? (i.amount * 52) / 12 : i.amount / 12), 0);
+
+  const expenses = recurringTxs.filter(i => i.type === 'expense');
+  const incomes  = recurringTxs.filter(i => i.type === 'income');
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 pt-2 pb-6 space-y-5">
-      {/* Top Banner "Resumo Financeiro de Recorrências" */}
-      <div className="bg-gradient-to-tr from-[#311c66] via-[#4c2d99] to-[#0494b7] text-white rounded-[28px] p-5 shadow-premium space-y-4 border border-white/5">
-        <div className="flex justify-between items-center">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-purple-200">Resumo de Assinaturas</span>
-          <span className="text-[10px] font-extrabold bg-white/10 px-2.5 py-1 rounded-full text-white">
+    <div style={{ padding: '4px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Hero Summary */}
+      <div style={{
+        background: 'linear-gradient(135deg,#4F6EF7 0%,#7C5CFC 100%)',
+        borderRadius: 24,
+        padding: '20px 20px',
+        color: '#fff',
+        boxShadow: '0 8px 32px rgba(79,110,247,0.30)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{position:'absolute',top:-24,right:-24,width:120,height:120,borderRadius:'50%',background:'rgba(255,255,255,0.07)'}} />
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14}}>
+          <p style={{fontSize:10,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',opacity:0.7}}>
+            Resumo de Assinaturas
+          </p>
+          <span style={{fontSize:11,fontWeight:800,background:'rgba(255,255,255,0.18)',borderRadius:999,padding:'4px 12px'}}>
             {recurringTxs.length} Ativas
           </span>
         </div>
-
-        <div className="grid grid-cols-2 gap-4 pt-1">
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
           <div>
-            <span className="text-[9px] font-bold text-purple-200 uppercase tracking-wider block">Custo Mensal Estimado</span>
-            <p className="text-xl font-black text-white tracking-tight mt-0.5">
-              {formatEuro(monthlyCostEstimate)}
-            </p>
+            <span style={{fontSize:9,fontWeight:700,opacity:0.65,textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:4}}>Custo Mensal</span>
+            <span style={{fontSize:22,fontWeight:900,letterSpacing:'-0.02em'}}>-{formatEuro(monthlyCost)}</span>
           </div>
-          <div className="text-right">
-            <span className="text-[9px] font-bold text-purple-200 uppercase tracking-wider block">Receitas Mensais</span>
-            <p className="text-xl font-black text-white tracking-tight mt-0.5">
-              {formatEuro(monthlyIncomeEstimate)}
-            </p>
+          <div style={{textAlign:'right'}}>
+            <span style={{fontSize:9,fontWeight:700,opacity:0.65,textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:4}}>Receitas Mensais</span>
+            <span style={{fontSize:22,fontWeight:900,letterSpacing:'-0.02em'}}>+{formatEuro(monthlyIncome)}</span>
           </div>
         </div>
       </div>
 
-      {/* Button to show form */}
+      {/* Botão Adicionar */}
       {!showAddForm && (
         <button
           onClick={() => setShowAddForm(true)}
-          className="w-full py-4 bg-slate-900/40 border border-white/5 hover:bg-slate-900/70 text-brand-purple text-xs font-black rounded-2xl shadow-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          style={{
+            width:'100%',
+            padding:'14px',
+            borderRadius:16,
+            background:'linear-gradient(135deg,#4F6EF7,#7C5CFC)',
+            color:'#fff',
+            fontSize:12,
+            fontWeight:800,
+            letterSpacing:'0.05em',
+            border:'none',
+            display:'flex',
+            alignItems:'center',
+            justifyContent:'center',
+            gap:8,
+            cursor:'pointer',
+            boxShadow:'0 4px 16px rgba(79,110,247,0.30)',
+          }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus style={{width:16,height:16}} />
           Adicionar Nova Assinatura
         </button>
       )}
 
-      {/* Form Container */}
+      {/* Formulário */}
       {showAddForm && (
-        <form onSubmit={handleSubmit} className="glass-panel rounded-3xl p-5 shadow-premium space-y-4">
-          <div className="flex justify-between items-center border-b border-white/5 pb-2">
-            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Novo Agendamento</span>
-            <button
-              type="button"
-              onClick={() => setShowAddForm(false)}
-              className="text-[10px] font-bold text-brand-purple uppercase hover:underline cursor-pointer"
-            >
-              Cancelar
+        <form onSubmit={handleSubmit} style={{background:P.surface,borderRadius:20,border:`1px solid ${P.border}`,padding:20,display:'flex',flexDirection:'column',gap:14,boxShadow:'0 4px 20px rgba(79,110,247,0.08)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:`1px solid ${P.border}`,paddingBottom:12}}>
+            <span style={{fontSize:12,fontWeight:900,color:P.ink}}>Novo Agendamento</span>
+            <button type="button" onClick={() => setShowAddForm(false)} style={{width:28,height:28,borderRadius:8,background:P.brandLight,border:'none',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+              <X style={{width:12,height:12,color:P.brand}} />
             </button>
           </div>
 
-          {/* Type Selector (Despesa / Receita) */}
-          <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => setType('expense')}
-              className={`py-2 text-[10px] font-extrabold rounded-lg uppercase tracking-wider transition-all cursor-pointer ${
-                type === 'expense'
-                  ? 'bg-white text-cat-red shadow-sm border border-black/5'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Despesa / Assinatura
-            </button>
-            <button
-              type="button"
-              onClick={() => setType('income')}
-              className={`py-2 text-[10px] font-extrabold rounded-lg uppercase tracking-wider transition-all cursor-pointer ${
-                type === 'income'
-                  ? 'bg-white text-cat-green shadow-sm border border-black/5'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Receita Recorrente
-            </button>
+          {/* Tipo */}
+          <div style={{display:'flex',background:'#F7F8FF',border:`1px solid ${P.border}`,borderRadius:14,padding:4,gap:4}}>
+            {(['expense','income'] as const).map(t => {
+              const labels = { expense:'Despesa / Assinatura', income:'Receita Recorrente' };
+              const colors = { expense:'#EF4444', income:'#16C784' };
+              const active = type === t;
+              return (
+                <button key={t} type="button" onClick={() => setType(t)}
+                  style={{flex:1,padding:'9px 4px',borderRadius:10,border:'none',cursor:'pointer',fontSize:10,fontWeight:800,textTransform:'uppercase' as const,letterSpacing:'0.05em',transition:'all 0.2s',background:active?P.surface:'transparent',color:active?colors[t]:'#9CA3AF',boxShadow:active?'0 1px 6px rgba(0,0,0,0.08)':'none'}}
+                >
+                  {labels[t]}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Bank Selector */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Banco Associado</label>
-            <select
-              value={selectedBankId}
-              onChange={e => setSelectedBankId(e.target.value)}
-              className="w-full px-4 py-3 glass-input rounded-xl text-xs font-semibold focus:outline-none placeholder-slate-400 transition-colors shadow-inner-soft"
-              required
-            >
+          {/* Banco */}
+          <div>
+            <label style={labelStyle}>Banco Associado</label>
+            <select value={selectedBankId} onChange={e => setSelectedBankId(e.target.value)} style={inputStyle} required>
               <option value="" disabled>Seleciona um banco</option>
-              {banks.map(b => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
+              {banks.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </div>
 
-          {/* Description */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Descrição</label>
-            <input
-              type="text"
-              placeholder="Ex: Netflix, Spotify, Renda, Salário"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              className="w-full px-4 py-3 glass-input rounded-xl text-xs font-semibold focus:outline-none placeholder-slate-400 transition-colors shadow-inner-soft"
-              required
-            />
+          {/* Descrição */}
+          <div>
+            <label style={labelStyle}>Descrição</label>
+            <input type="text" placeholder="Netflix, Spotify, Renda, Salário…" value={description} onChange={e => setDescription(e.target.value)} style={inputStyle} required />
           </div>
 
-          {/* Amount & Frequency */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Valor (€)</label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
-                className="w-full px-4 py-3 glass-input rounded-xl text-xs font-semibold focus:outline-none placeholder-slate-400 transition-colors shadow-inner-soft"
-                required
-              />
+          {/* Valor + Frequência */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div>
+              <label style={labelStyle}>Valor (€)</label>
+              <input type="number" step="0.01" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} required />
             </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Frequência</label>
-              <select
-                value={frequency}
-                onChange={e => setFrequency(e.target.value as RecurringInterval)}
-                className="w-full px-4 py-3 glass-input rounded-xl text-xs font-semibold focus:outline-none placeholder-slate-400 transition-colors shadow-inner-soft"
-              >
+            <div>
+              <label style={labelStyle}>Frequência</label>
+              <select value={frequency} onChange={e => setFrequency(e.target.value as RecurringInterval)} style={inputStyle}>
                 <option value="weekly">Semanal</option>
                 <option value="monthly">Mensal</option>
                 <option value="yearly">Anual</option>
@@ -231,114 +218,113 @@ export const SubscriptionsView: React.FC<SubscriptionsViewProps> = ({
             </div>
           </div>
 
-          {/* Category & Date */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Categoria</label>
-              <select
-                value={category}
-                onChange={e => setCategory(e.target.value as TransactionCategory)}
-                className="w-full px-4 py-3 glass-input rounded-xl text-xs font-semibold focus:outline-none placeholder-slate-400 transition-colors shadow-inner-soft"
-              >
-                {CATEGORIES.map(cat => (
-                  <option key={cat.value} value={cat.value}>{cat.label}</option>
-                ))}
+          {/* Categoria + Início */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div>
+              <label style={labelStyle}>Categoria</label>
+              <select value={category} onChange={e => setCategory(e.target.value as TransactionCategory)} style={inputStyle}>
+                {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" /> Início
+            <div>
+              <label style={{...labelStyle,display:'flex',alignItems:'center',gap:4}}>
+                <Calendar style={{width:10,height:10}} /> Início
               </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={e => setStartDate(e.target.value)}
-                className="w-full px-4 py-3 glass-input rounded-xl text-xs font-semibold focus:outline-none placeholder-slate-400 transition-colors shadow-inner-soft"
-                required
-              />
+              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle} required />
             </div>
           </div>
 
           {/* Submit */}
-          <button
-            type="submit"
-            className="w-full py-4 bg-black text-white text-xs font-black rounded-2xl shadow-md hover:scale-[1.01] active:scale-99 transition-transform flex items-center justify-center gap-1.5 cursor-pointer"
-          >
+          <button type="submit" style={{width:'100%',padding:'14px',borderRadius:14,background:'linear-gradient(135deg,#4F6EF7,#7C5CFC)',color:'#fff',fontSize:12,fontWeight:900,letterSpacing:'0.07em',border:'none',cursor:'pointer',boxShadow:'0 6px 20px rgba(79,110,247,0.35)',textTransform:'uppercase' as const}}>
             Criar Assinatura
           </button>
         </form>
       )}
 
-      {/* List of Subscriptions */}
-      <div className="space-y-3">
-        <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest px-1">Todas as Assinaturas</h3>
-
-        {recurringTxs.length === 0 ? (
-          <div className="glass-panel rounded-3xl p-8 text-center shadow-premium border border-slate-200/50">
-            <Repeat className="w-8 h-8 text-slate-350 mx-auto mb-2" />
-            <p className="text-xs text-slate-800 font-bold">Sem assinaturas ou recorrências</p>
-            <p className="text-[10px] text-slate-500 mt-1 font-semibold">Cria a tua primeira despesa agendada para acompanhar os teus custos.</p>
+      {/* Lista de Despesas */}
+      {expenses.length > 0 && (
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0 2px'}}>
+            <span style={{fontSize:11,fontWeight:800,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.08em'}}>Despesas</span>
+            <span style={{fontSize:10,fontWeight:700,color:'#EF4444'}}>-{formatEuro(monthlyCost)}/mês</span>
           </div>
-        ) : (
-          <div className="space-y-2">
-            {recurringTxs.map(item => {
-              const catObj = CATEGORIES.find(c => c.value === item.category) || CATEGORIES[6];
-              const CatIcon = catObj.icon;
-              const associatedBank = banks.find(b => b.id === item.bankId);
-              const bankName = associatedBank ? associatedBank.name : 'Desconhecido';
+          {expenses.map(item => <SubscriptionCard key={item.id} item={item} banks={banks} formatEuro={formatEuro} translateFrequency={translateFrequency} onDelete={onDeleteRecurring} />)}
+        </div>
+      )}
 
-              return (
-                <div
-                  key={item.id}
-                  className="glass-panel rounded-2xl p-4 flex justify-between items-center shadow-premium relative group hover:border-black/10 transition-colors border border-slate-100/50"
-                >
-                  {/* Left Category Indicator Bar */}
-                  <div
-                    className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl"
-                    style={{ backgroundColor: catObj.color }}
-                  />
-
-                  {/* Details */}
-                  <div className="flex items-center gap-3.5 pl-2">
-                    <div className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 shrink-0 border border-slate-200/50">
-                      <CatIcon className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-800 truncate max-w-[160px]">{item.description}</p>
-                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mt-0.5">
-                        {translateFrequency(item.frequency)} • {bankName}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Value and Actions */}
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className={`text-xs font-black ${item.type === 'expense' ? 'text-cat-red' : 'text-cat-green'}`}>
-                        {item.type === 'expense' ? '-' : '+'}{formatEuro(item.amount)}
-                      </p>
-                      <span className="text-[9px] font-bold text-slate-400 block mt-0.5">Desde: {item.startDate}</span>
-                    </div>
-                    
-                    <button
-                      onClick={() => {
-                        if (window.confirm(`Tens a certeza que desejas cancelar a assinatura "${item.description}"?`)) {
-                          onDeleteRecurring(item.id);
-                        }
-                      }}
-                      className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 text-slate-500 hover:bg-red-50 hover:text-cat-red hover:border-red-200 flex items-center justify-center transition-all cursor-pointer shrink-0"
-                      title="Apagar Assinatura"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+      {/* Lista de Receitas */}
+      {incomes.length > 0 && (
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0 2px'}}>
+            <span style={{fontSize:11,fontWeight:800,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.08em'}}>Receitas</span>
+            <span style={{fontSize:10,fontWeight:700,color:'#16C784'}}>+{formatEuro(monthlyIncome)}/mês</span>
           </div>
-        )}
-      </div>
+          {incomes.map(item => <SubscriptionCard key={item.id} item={item} banks={banks} formatEuro={formatEuro} translateFrequency={translateFrequency} onDelete={onDeleteRecurring} />)}
+        </div>
+      )}
+
+      {/* Estado vazio */}
+      {recurringTxs.length === 0 && !showAddForm && (
+        <div style={{background:P.surface,borderRadius:20,border:`1px solid ${P.border}`,padding:'40px 20px',textAlign:'center',boxShadow:'0 2px 12px rgba(79,110,247,0.06)'}}>
+          <div style={{width:48,height:48,borderRadius:'50%',background:P.brandLight,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 14px'}}>
+            <Repeat style={{width:20,height:20,color:P.brand}} />
+          </div>
+          <p style={{fontSize:13,fontWeight:700,color:P.ink,marginBottom:6}}>Sem assinaturas ainda</p>
+          <p style={{fontSize:11,color:P.inkSubtle}}>Adiciona a tua primeira despesa agendada para acompanhar os teus custos recorrentes.</p>
+        </div>
+      )}
     </div>
   );
 };
+
+// Card individual de assinatura
+function SubscriptionCard({ item, banks, formatEuro, translateFrequency, onDelete }: {
+  item: RecurringTransaction;
+  banks: Bank[];
+  formatEuro: (v: number) => string;
+  translateFrequency: (f: RecurringInterval) => string;
+  onDelete: (id: string) => void;
+}) {
+  const catObj = CATEGORIES.find(c => c.value === item.category) || CATEGORIES[6];
+  const CatIcon = catObj.icon;
+  const bankName = banks.find(b => b.id === item.bankId)?.name ?? 'Desconhecido';
+  const isExpense = item.type === 'expense';
+
+  const P2 = { brand:'#4F6EF7', brandLight:'#EEF1FE', ink:'#111827', inkSubtle:'#9CA3AF', border:'#E5E8F8', surface:'#FFFFFF' };
+
+  return (
+    <div style={{background:P2.surface,borderRadius:18,border:`1px solid ${P2.border}`,padding:'13px 14px',display:'flex',alignItems:'center',justifyContent:'space-between',boxShadow:'0 1px 8px rgba(79,110,247,0.04)',position:'relative',overflow:'hidden'}}>
+      {/* Color bar */}
+      <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:catObj.color,borderRadius:'18px 0 0 18px'}} />
+
+      <div style={{display:'flex',alignItems:'center',gap:10,paddingLeft:8,flex:1,minWidth:0}}>
+        <div style={{width:36,height:36,borderRadius:'50%',background:`${catObj.color}15`,border:`1px solid ${catObj.color}25`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+          <CatIcon style={{width:15,height:15,color:catObj.color}} />
+        </div>
+        <div style={{minWidth:0}}>
+          <p style={{fontSize:12,fontWeight:700,color:P2.ink,lineHeight:1.3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.description}</p>
+          <div style={{display:'flex',alignItems:'center',gap:6,marginTop:3}}>
+            <span style={{fontSize:10,color:P2.inkSubtle}}>{translateFrequency(item.frequency)}</span>
+            <span style={{fontSize:9,fontWeight:700,background:P2.brandLight,color:P2.brand,borderRadius:999,padding:'1px 7px'}}>{bankName}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{display:'flex',alignItems:'center',gap:10,flexShrink:0,paddingLeft:8}}>
+        <div style={{textAlign:'right'}}>
+          <p style={{fontSize:13,fontWeight:900,color: isExpense ? '#EF4444' : '#16C784'}}>
+            {isExpense ? '-' : '+'}{formatEuro(item.amount)}
+          </p>
+          <span style={{fontSize:9,color:P2.inkSubtle}}>desde {item.startDate}</span>
+        </div>
+        <button
+          onClick={() => { if (window.confirm(`Cancelar "${item.description}"?`)) onDelete(item.id); }}
+          style={{width:30,height:30,borderRadius:10,background:'#FEF2F2',border:'1px solid #FECACA',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0}}
+          title="Apagar"
+        >
+          <Trash2 style={{width:13,height:13,color:'#EF4444'}} />
+        </button>
+      </div>
+    </div>
+  );
+}

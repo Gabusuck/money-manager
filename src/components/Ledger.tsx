@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Trash2, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp } from 'lucide-react';
+import { Search, Trash2, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign } from 'lucide-react';
 import type { Transaction, TransactionCategory, Bank } from '../types';
 
 interface LedgerProps {
@@ -8,35 +8,43 @@ interface LedgerProps {
   banks: Bank[];
 }
 
+const P = {
+  brand: '#4F6EF7',
+  brandLight: '#EEF1FE',
+  success: '#16C784',
+  danger: '#EF4444',
+  ink: '#111827',
+  inkMuted: '#6B7280',
+  inkSubtle: '#9CA3AF',
+  border: '#E5E8F8',
+  surface: '#FFFFFF',
+  bg: '#EFF1FB',
+};
+
 export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransaction, banks }) => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<TransactionCategory | 'Todas'>('Todas');
   const [selectedDateFilter, setSelectedDateFilter] = useState<string | 'Todas'>('Todas');
 
-  const formatEuro = (value: number) => {
-    return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
-  };
+  const formatEuro = (value: number) =>
+    new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
 
-  // Gerar os últimos 7 dias para o seletor de datas horizontal (Estilo iOS da Imagem)
   const getLast7Days = () => {
-    const days = [];
-    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    
-    for (let i = 6; i >= 0; i--) {
+    const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return Array.from({ length: 7 }, (_, i) => {
       const d = new Date();
-      d.setDate(d.getDate() - i);
-      days.push({
+      d.setDate(d.getDate() - (6 - i));
+      return {
         dateString: d.toISOString().split('T')[0],
         dayNum: d.getDate(),
-        monthName: monthNames[d.getMonth()]
-      });
-    }
-    return days;
+        monthName: monthNames[d.getMonth()],
+        isToday: i === 6,
+      };
+    });
   };
 
   const calendarDays = getLast7Days();
 
-  // Filtrar transações por pesquisa, categoria e seletor de data
   const filteredTransactions = transactions.filter((tx) => {
     const matchesSearch = tx.description.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = selectedCategory === 'Todas' || tx.category === selectedCategory;
@@ -44,193 +52,269 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
     return matchesSearch && matchesCategory && matchesDate;
   });
 
-  // Agrupar transações por Data
   const groupedTransactions = filteredTransactions.reduce<Record<string, Transaction[]>>((groups, tx) => {
-    const dateStr = tx.date;
-    if (!groups[dateStr]) {
-      groups[dateStr] = [];
-    }
-    groups[dateStr].push(tx);
+    if (!groups[tx.date]) groups[tx.date] = [];
+    groups[tx.date].push(tx);
     return groups;
   }, {});
 
-  // Ordenar as datas de forma decrescente
   const sortedDates = Object.keys(groupedTransactions).sort((a, b) => b.localeCompare(a));
 
   const formatDateTitle = (dateString: string) => {
     const today = new Date().toISOString().split('T')[0];
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
     if (dateString === today) return 'Hoje';
     if (dateString === yesterday) return 'Ontem';
-
-    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-    return new Date(dateString).toLocaleDateString('pt-PT', options);
+    return new Date(dateString).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   const getCategoryDetails = (cat: TransactionCategory) => {
     switch (cat) {
-      case 'Transportes': return { color: '#f97316', border: 'border-cat-orange/20', bg: 'bg-cat-orange/10', icon: Car };
-      case 'Lazer': return { color: '#eab308', border: 'border-cat-yellow/20', bg: 'bg-cat-yellow/10', icon: Smile };
-      case 'Fixos': return { color: '#ef4444', border: 'border-cat-red/20', bg: 'bg-cat-red/10', icon: Shield };
-      case 'Poupança': return { color: '#a855f7', border: 'border-cat-purple/20', bg: 'bg-cat-purple/10', icon: PiggyBank };
-      case 'Investimento': return { color: '#10b981', border: 'border-cat-green/20', bg: 'bg-cat-green/10', icon: TrendingUp };
-      default: return { color: '#64748b', border: 'border-cat-gray/20', bg: 'bg-cat-gray/10', icon: HelpCircle };
+      case 'Transportes':  return { color: '#F97316', bg: '#FFF7ED', border: '#FEDD9A', icon: Car };
+      case 'Lazer':        return { color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A', icon: Smile };
+      case 'Fixos':        return { color: '#EF4444', bg: '#FEF2F2', border: '#FECACA', icon: Shield };
+      case 'Poupança':     return { color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE', icon: PiggyBank };
+      case 'Investimento': return { color: '#16C784', bg: '#ECFDF5', border: '#A7F3D0', icon: TrendingUp };
+      case 'Salário':      return { color: '#16C784', bg: '#ECFDF5', border: '#A7F3D0', icon: DollarSign };
+      default:             return { color: '#94A3B8', bg: '#F8FAFC', border: '#E2E8F0', icon: HelpCircle };
     }
   };
 
-  return (
-    <div className="px-4 pb-6 space-y-5">
-      
-      {/* Barra de Pesquisa e Filtros de Categoria */}
-      <div className="glass-panel rounded-3xl p-4 mt-2 space-y-3.5 shadow-premium">
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Pesquisar movimentos..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-xs glass-input rounded-2xl focus:outline-none placeholder-slate-400 shadow-inner-soft"
-          />
-        </div>
+  const categories = ['Todas','Transportes','Lazer','Outros','Fixos','Poupança','Investimento'];
 
-        {/* Categorias Pills horizontais */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
-          {['Todas', 'Transportes', 'Lazer', 'Outros', 'Fixos', 'Poupança', 'Investimento'].map((cat) => {
-            const isSelected = selectedCategory === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat as any)}
-                className={`px-3.5 py-1.5 text-[10px] font-bold rounded-full border transition-custom whitespace-nowrap cursor-pointer ${
-                  isSelected
-                    ? 'bg-black border-black text-white shadow-sm'
-                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                }`}
-              >
-                {cat}
-              </button>
-            );
-          })}
+  // Totais do dia ou de tudo
+  const visibleTxs = filteredTransactions;
+  const totalIn = visibleTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const totalOut = visibleTxs.filter(t => t.type !== 'income').reduce((s, t) => s + t.amount, 0);
+
+  return (
+    <div style={{ padding: '4px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Hero Summary */}
+      <div style={{
+        background: 'linear-gradient(135deg,#4F6EF7 0%,#7C5CFC 100%)',
+        borderRadius: 24,
+        padding: '20px 20px',
+        color: '#fff',
+        boxShadow: '0 8px 32px rgba(79,110,247,0.30)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{position:'absolute',top:-24,right:-24,width:120,height:120,borderRadius:'50%',background:'rgba(255,255,255,0.07)'}} />
+        <p style={{fontSize:10,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',opacity:0.7,marginBottom:14}}>
+          Extrato
+        </p>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <div>
+            <span style={{fontSize:9,fontWeight:700,opacity:0.65,textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:4}}>Entradas</span>
+            <span style={{fontSize:20,fontWeight:900,letterSpacing:'-0.02em'}}>+{formatEuro(totalIn)}</span>
+          </div>
+          <div style={{textAlign:'right'}}>
+            <span style={{fontSize:9,fontWeight:700,opacity:0.65,textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:4}}>Saídas</span>
+            <span style={{fontSize:20,fontWeight:900,letterSpacing:'-0.02em'}}>-{formatEuro(totalOut)}</span>
+          </div>
         </div>
       </div>
 
-      {/* Seletor de Datas Horizontal (Estilo iOS da Imagem) */}
-      <div className="space-y-2">
-        <h4 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest px-1">Selecione o Dia</h4>
-        
-        <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1">
-          {/* Card 'Todos' */}
+      {/* Pesquisa */}
+      <div style={{position:'relative'}}>
+        <Search style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',width:14,height:14,color:P.inkSubtle}} />
+        <input
+          type="text"
+          placeholder="Pesquisar movimentos..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{
+            width:'100%',
+            paddingLeft:40,
+            paddingRight:16,
+            paddingTop:12,
+            paddingBottom:12,
+            borderRadius:14,
+            border:`1.5px solid ${P.border}`,
+            background:P.surface,
+            color:P.ink,
+            fontSize:13,
+            fontWeight:600,
+            outline:'none',
+            boxSizing:'border-box',
+          }}
+        />
+      </div>
+
+      {/* Filtros de Categoria */}
+      <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}} className="no-scrollbar">
+        {categories.map(cat => {
+          const active = selectedCategory === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat as any)}
+              style={{
+                flexShrink:0,
+                padding:'7px 14px',
+                borderRadius:999,
+                border: active ? `1.5px solid ${P.brand}` : `1.5px solid ${P.border}`,
+                background: active ? P.brand : P.surface,
+                color: active ? '#fff' : P.inkMuted,
+                fontSize:11,
+                fontWeight:700,
+                cursor:'pointer',
+                transition:'all 0.18s',
+                whiteSpace:'nowrap' as const,
+              }}
+            >
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Seletor de Dias */}
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+        <span style={{fontSize:10,fontWeight:800,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.08em',padding:'0 2px'}}>
+          Selecione o Dia
+        </span>
+        <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}} className="no-scrollbar">
+          {/* Todos */}
           <button
             onClick={() => setSelectedDateFilter('Todas')}
-            className={`flex flex-col items-center justify-center px-4.5 py-3 rounded-2xl border min-w-14 h-16 transition-custom shadow-premium cursor-pointer ${
-              selectedDateFilter === 'Todas'
-                ? 'bg-black border-black text-white shadow-sm'
-                : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-            }`}
+            style={{
+              flexShrink:0,
+              width:56,
+              height:64,
+              borderRadius:16,
+              border: selectedDateFilter === 'Todas' ? `1.5px solid ${P.brand}` : `1.5px solid ${P.border}`,
+              background: selectedDateFilter === 'Todas' ? P.brand : P.surface,
+              color: selectedDateFilter === 'Todas' ? '#fff' : P.inkMuted,
+              display:'flex',
+              alignItems:'center',
+              justifyContent:'center',
+              fontSize:10,
+              fontWeight:800,
+              cursor:'pointer',
+              transition:'all 0.18s',
+              boxShadow: selectedDateFilter === 'Todas' ? '0 4px 14px rgba(79,110,247,0.30)' : '0 1px 4px rgba(0,0,0,0.04)',
+            }}
           >
-            <span className="text-[10px] font-black uppercase tracking-wider">Todos</span>
+            Todos
           </button>
 
-          {/* Cards dos Dias */}
-          {calendarDays.map((day) => {
-            const isSelected = selectedDateFilter === day.dateString;
+          {calendarDays.map(day => {
+            const active = selectedDateFilter === day.dateString;
             return (
               <button
                 key={day.dateString}
                 onClick={() => setSelectedDateFilter(day.dateString)}
-                className={`flex flex-col items-center justify-center p-3 rounded-2xl border w-14 h-16 transition-custom shadow-premium cursor-pointer ${
-                  isSelected
-                    ? 'bg-black border-black text-white shadow-sm'
-                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                }`}
+                style={{
+                  flexShrink:0,
+                  width:56,
+                  height:64,
+                  borderRadius:16,
+                  border: active ? `1.5px solid ${P.brand}` : `1.5px solid ${P.border}`,
+                  background: active ? P.brand : day.isToday ? P.brandLight : P.surface,
+                  color: active ? '#fff' : day.isToday ? P.brand : P.inkMuted,
+                  display:'flex',
+                  flexDirection:'column' as const,
+                  alignItems:'center',
+                  justifyContent:'center',
+                  gap:2,
+                  cursor:'pointer',
+                  transition:'all 0.18s',
+                  boxShadow: active ? '0 4px 14px rgba(79,110,247,0.30)' : '0 1px 4px rgba(0,0,0,0.04)',
+                }}
               >
-                <span className="text-base font-black leading-none">{day.dayNum}</span>
-                <span className="text-[8px] font-bold uppercase tracking-widest mt-1 opacity-80">{day.monthName}</span>
+                <span style={{fontSize:18,fontWeight:900,lineHeight:1}}>{day.dayNum}</span>
+                <span style={{fontSize:8,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.06em',opacity:0.8}}>{day.monthName}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Lista de Transações Agrupadas */}
-      <div className="space-y-5">
+      {/* Lista de Transações */}
+      <div style={{display:'flex',flexDirection:'column',gap:20}}>
         {sortedDates.length === 0 ? (
-          <div className="glass-panel rounded-3xl border border-slate-200/50 p-8 text-center shadow-premium">
-            <p className="text-xxs text-slate-400 font-bold">Nenhum movimento encontrado.</p>
+          <div style={{background:P.surface,borderRadius:20,border:`1px solid ${P.border}`,padding:'40px 20px',textAlign:'center',boxShadow:'0 2px 12px rgba(79,110,247,0.06)'}}>
+            <div style={{width:44,height:44,borderRadius:'50%',background:P.brandLight,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}>
+              <Search style={{width:18,height:18,color:P.brand}} />
+            </div>
+            <p style={{fontSize:13,fontWeight:700,color:P.ink}}>Nenhum movimento encontrado</p>
+            <p style={{fontSize:11,color:P.inkSubtle,marginTop:4}}>Tenta ajustar os filtros ou a pesquisa.</p>
           </div>
         ) : (
-          sortedDates.map((dateStr) => (
-            <div key={dateStr} className="space-y-2.5">
-              {/* Título do Grupo de Data */}
-              <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest px-1">
-                {formatDateTitle(dateStr)}
-              </h3>
+          sortedDates.map(dateStr => (
+            <div key={dateStr} style={{display:'flex',flexDirection:'column',gap:8}}>
+              {/* Data label */}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0 2px'}}>
+                <span style={{fontSize:11,fontWeight:800,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.08em'}}>
+                  {formatDateTitle(dateStr)}
+                </span>
+                <span style={{fontSize:10,fontWeight:600,color:P.inkSubtle}}>
+                  {groupedTransactions[dateStr].length} mov.
+                </span>
+              </div>
 
-              {/* Lista do Dia em Cartões Flutuantes Individuais */}
-              <div className="space-y-2.5">
-                {groupedTransactions[dateStr].map((tx) => {
-                  const catDetails = getCategoryDetails(tx.category);
-                  const Icon = catDetails.icon;
+              {/* Transações do dia */}
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {groupedTransactions[dateStr].map(tx => {
+                  const catD = getCategoryDetails(tx.category);
+                  const Icon = catD.icon;
+                  const isIncome = tx.type === 'income';
+                  const isTransfer = tx.type === 'transfer';
+                  const amountColor = isIncome ? '#16C784' : isTransfer ? '#8B5CF6' : '#EF4444';
+                  const amountPrefix = isIncome ? '+' : '-';
 
                   return (
                     <div
                       key={tx.id}
-                      className="glass-panel rounded-[24px] p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden group border border-slate-100/50"
+                      style={{
+                        background: P.surface,
+                        borderRadius: 18,
+                        border: `1px solid ${P.border}`,
+                        padding: '12px 14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 1px 8px rgba(79,110,247,0.04)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
                     >
-                      {/* Barra Vertical de Categoria à esquerda */}
-                      <div 
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 rounded-r-lg" 
-                        style={{ backgroundColor: catDetails.color }}
-                      />
+                      {/* Color bar */}
+                      <div style={{position:'absolute',left:0,top:0,bottom:0,width:3,background:catD.color,borderRadius:'18px 0 0 18px'}} />
 
-                      <div className="flex items-center gap-3 pl-1.5">
-                        {/* Círculo com Ícone */}
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center border border-slate-100 bg-slate-50 shadow-sm shrink-0">
-                          <Icon className="w-4 h-4" style={{ color: catDetails.color }} />
+                      <div style={{display:'flex',alignItems:'center',gap:10,paddingLeft:8,flex:1,minWidth:0}}>
+                        <div style={{width:36,height:36,borderRadius:'50%',background:catD.bg,border:`1px solid ${catD.border}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                          <Icon style={{width:15,height:15,color:catD.color}} />
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-800 leading-tight">{tx.description}</p>
-                          <span className="text-[9px] text-slate-400 font-semibold mt-0.5 flex items-center gap-1.5 flex-wrap">
-                            <span>{tx.category}</span>
-                            {/* Badges de Banco */}
+                        <div style={{minWidth:0}}>
+                          <p style={{fontSize:12,fontWeight:700,color:P.ink,lineHeight:1.3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tx.description}</p>
+                          <div style={{display:'flex',alignItems:'center',gap:6,marginTop:3,flexWrap:'wrap'}}>
+                            <span style={{fontSize:10,color:P.inkSubtle}}>{tx.category}</span>
                             {tx.fromBankId && tx.toBankId ? (
-                              <>
-                                <span>•</span>
-                                <span className="bg-purple-50 text-brand-purple border border-purple-100/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
-                                  {banks.find(b => b.id === tx.fromBankId)?.name} ➔ {banks.find(b => b.id === tx.toBankId)?.name}
-                                </span>
-                              </>
-                            ) : tx.bankId ? (
-                              <>
-                                <span>•</span>
-                                <span className="bg-slate-100 text-slate-500 border border-slate-200/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
-                                  {banks.find(b => b.id === tx.bankId)?.name}
-                                </span>
-                              </>
-                            ) : null}
-                          </span>
+                              <span style={{fontSize:9,fontWeight:700,background:'#F5F3FF',color:'#8B5CF6',borderRadius:999,padding:'1px 7px',border:'1px solid #DDD6FE'}}>
+                                {banks.find(b => b.id === tx.fromBankId)?.name} → {banks.find(b => b.id === tx.toBankId)?.name}
+                              </span>
+                            ) : tx.bankId && (
+                              <span style={{fontSize:9,fontWeight:700,background:P.brandLight,color:P.brand,borderRadius:999,padding:'1px 7px',border:`1px solid #C7D2FE`}}>
+                                {banks.find(b => b.id === tx.bankId)?.name}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 pr-1">
-                        <span className="text-xs font-black">
-                          {tx.type === 'income' ? (
-                            <span className="text-cat-green">+{formatEuro(tx.amount)}</span>
-                          ) : tx.type === 'transfer' ? (
-                            <span className="text-[#a855f7]">-{formatEuro(tx.amount)}</span>
-                          ) : (
-                            <span className="text-cat-red">-{formatEuro(tx.amount)}</span>
-                          )}
+                      <div style={{display:'flex',alignItems:'center',gap:10,flexShrink:0,paddingLeft:8}}>
+                        <span style={{fontSize:13,fontWeight:900,color:amountColor}}>
+                          {amountPrefix}{formatEuro(tx.amount)}
                         </span>
-                        
                         <button
                           onClick={() => onDeleteTransaction(tx.id)}
-                          className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-red-950/40 hover:text-cat-red hover:border-red-900/50 flex items-center justify-center active:scale-95 transition-custom shrink-0 cursor-pointer"
+                          style={{width:30,height:30,borderRadius:10,background:'#FEF2F2',border:'1px solid #FECACA',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,transition:'all 0.18s'}}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 style={{width:13,height:13,color:'#EF4444'}} />
                         </button>
                       </div>
                     </div>
