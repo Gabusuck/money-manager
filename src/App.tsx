@@ -5,7 +5,6 @@ import {
   Target, 
   FileText, 
   Plus, 
-  Wifi, 
   WifiOff 
 } from 'lucide-react';
 import { 
@@ -238,116 +237,100 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center md:py-8 font-sans antialiased selection:bg-brand-gray select-none">
+    <div className="min-h-screen w-full bg-white flex flex-col relative overflow-hidden font-sans antialiased selection:bg-brand-gray select-none">
       
-      {/* Moldura de iPhone para Desktop / Ecrã Inteiro em Telemóveis */}
-      <div className="relative w-full max-w-md h-screen md:h-[820px] bg-white md:rounded-[40px] md:border-[10px] md:border-brand-dark md:shadow-2xl flex flex-col overflow-hidden">
-        
-        {/* Barra de Estado do iPhone simulada no topo (Apenas Desktop) */}
-        <div className="hidden md:flex justify-between items-center px-8 py-3 text-xxs font-bold text-brand-dark bg-white border-b border-brand-border shrink-0 select-none">
-          <span>9:41</span>
-          <div className="w-16 h-4 bg-brand-dark rounded-full absolute left-1/2 -translate-x-1/2 top-2" />
-          <div className="flex items-center gap-1.5">
-            {isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5 text-cat-red" />}
-            <div className="w-4 h-2 border border-brand-dark rounded-xs p-0.5 flex items-center">
-              <div className="w-full h-full bg-brand-dark rounded-2xs" />
-            </div>
-          </div>
+      {/* Cabeçalho da App */}
+      <header className="px-5 pt-6 pb-4 flex justify-between items-center bg-white border-b border-brand-border shrink-0 safe-pt">
+        <div>
+          <h1 className="text-lg font-extrabold text-brand-dark tracking-tight">GerePoup</h1>
+          <p className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase mt-0.5">Finanças Offline</p>
         </div>
+        
+        <div className="flex items-center gap-2">
+          {!isOnline && (
+            <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
+              <WifiOff className="w-2.5 h-2.5" /> Offline
+            </span>
+          )}
+          <span className="w-2 h-2 rounded-full bg-cat-green animate-pulse" />
+        </div>
+      </header>
 
-        {/* Cabeçalho da App */}
-        <header className="px-5 pt-6 pb-4 flex justify-between items-center bg-white border-b border-brand-border shrink-0 safe-pt">
-          <div>
-            <h1 className="text-lg font-extrabold text-brand-dark tracking-tight">GerePoup</h1>
-            <p className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase mt-0.5">Finanças Offline</p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {!isOnline && (
-              <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
-                <WifiOff className="w-2.5 h-2.5" /> Offline
-              </span>
-            )}
-            <span className="w-2 h-2 rounded-full bg-cat-green animate-pulse" />
-          </div>
-        </header>
+      {/* Conteúdo Principal (Scrollable) */}
+      {renderActiveView()}
 
-        {/* Conteúdo Principal (Scrollable) */}
-        {renderActiveView()}
+      {/* Barra de Navegação Inferior (Dock Style) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-brand-border px-4 pt-2 pb-4 safe-pb flex justify-between items-center shadow-lg rounded-t-2xl">
+        
+        {/* Aba Início */}
+        <button
+          onClick={() => setCurrentTab('home')}
+          className={`flex flex-col items-center gap-1 py-1 px-3 transition-custom ${
+            currentTab === 'home' ? 'text-brand-dark font-bold scale-105' : 'text-gray-400'
+          }`}
+        >
+          <Home className="w-4 h-4 shrink-0" />
+          <span className="text-[9px] uppercase tracking-wider">Início</span>
+        </button>
 
-        {/* Barra de Navegação Inferior (Dock Style) */}
-        <nav className="fixed md:absolute bottom-0 left-0 right-0 z-40 bg-white border-t border-brand-border px-4 pt-2 pb-4 safe-pb flex justify-between items-center shadow-lg rounded-t-2xl">
-          
-          {/* Aba Início */}
-          <button
-            onClick={() => setCurrentTab('home')}
-            className={`flex flex-col items-center gap-1 py-1 px-3 transition-custom ${
-              currentTab === 'home' ? 'text-brand-dark font-bold scale-105' : 'text-gray-400'
-            }`}
-          >
-            <Home className="w-4 h-4 shrink-0" />
-            <span className="text-[9px] uppercase tracking-wider">Início</span>
-          </button>
+        {/* Aba Evolução */}
+        <button
+          onClick={() => setCurrentTab('evolution')}
+          className={`flex flex-col items-center gap-1 py-1 px-3 transition-custom ${
+            currentTab === 'evolution' ? 'text-brand-dark font-bold scale-105' : 'text-gray-400'
+          }`}
+        >
+          <TrendingUp className="w-4 h-4 shrink-0" />
+          <span className="text-[9px] uppercase tracking-wider">Evolução</span>
+        </button>
 
-          {/* Aba Evolução */}
-          <button
-            onClick={() => setCurrentTab('evolution')}
-            className={`flex flex-col items-center gap-1 py-1 px-3 transition-custom ${
-              currentTab === 'evolution' ? 'text-brand-dark font-bold scale-105' : 'text-gray-400'
-            }`}
-          >
-            <TrendingUp className="w-4 h-4 shrink-0" />
-            <span className="text-[9px] uppercase tracking-wider">Evolução</span>
-          </button>
+        {/* Botão de Ação Central [ ➕ Novo ] */}
+        <button
+          onClick={() => setIsTxOpen(true)}
+          className="w-12 h-12 rounded-full bg-brand-dark text-white flex items-center justify-center shadow-lg -translate-y-4 border-4 border-white hover:bg-slate-800 transition-transform active:scale-95"
+          title="Registar Despesa"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
 
-          {/* Botão de Ação Central [ ➕ Novo ] */}
-          <button
-            onClick={() => setIsTxOpen(true)}
-            className="w-12 h-12 rounded-full bg-brand-dark text-white flex items-center justify-center shadow-lg -translate-y-4 border-4 border-white hover:bg-slate-800 transition-transform active:scale-95"
-            title="Registar Despesa"
-          >
-            <Plus className="w-6 h-6" />
-          </button>
+        {/* Aba Metas */}
+        <button
+          onClick={() => setCurrentTab('goals')}
+          className={`flex flex-col items-center gap-1 py-1 px-3 transition-custom ${
+            currentTab === 'goals' ? 'text-brand-dark font-bold scale-105' : 'text-gray-400'
+          }`}
+        >
+          <Target className="w-4 h-4 shrink-0" />
+          <span className="text-[9px] uppercase tracking-wider">Metas</span>
+        </button>
 
-          {/* Aba Metas */}
-          <button
-            onClick={() => setCurrentTab('goals')}
-            className={`flex flex-col items-center gap-1 py-1 px-3 transition-custom ${
-              currentTab === 'goals' ? 'text-brand-dark font-bold scale-105' : 'text-gray-400'
-            }`}
-          >
-            <Target className="w-4 h-4 shrink-0" />
-            <span className="text-[9px] uppercase tracking-wider">Metas</span>
-          </button>
+        {/* Aba Extrato */}
+        <button
+          onClick={() => setCurrentTab('ledger')}
+          className={`flex flex-col items-center gap-1 py-1 px-3 transition-custom ${
+            currentTab === 'ledger' ? 'text-brand-dark font-bold scale-105' : 'text-gray-400'
+          }`}
+        >
+          <FileText className="w-4 h-4 shrink-0" />
+          <span className="text-[9px] uppercase tracking-wider">Extrato</span>
+        </button>
 
-          {/* Aba Extrato */}
-          <button
-            onClick={() => setCurrentTab('ledger')}
-            className={`flex flex-col items-center gap-1 py-1 px-3 transition-custom ${
-              currentTab === 'ledger' ? 'text-brand-dark font-bold scale-105' : 'text-gray-400'
-            }`}
-          >
-            <FileText className="w-4 h-4 shrink-0" />
-            <span className="text-[9px] uppercase tracking-wider">Extrato</span>
-          </button>
+      </nav>
 
-        </nav>
+      {/* Modals da Aplicação */}
+      <TransactionModal 
+        isOpen={isTxOpen} 
+        onClose={() => setIsTxOpen(false)} 
+        onAddTransaction={handleAddTransaction} 
+      />
 
-        {/* Modals da Aplicação */}
-        <TransactionModal 
-          isOpen={isTxOpen} 
-          onClose={() => setIsTxOpen(false)} 
-          onAddTransaction={handleAddTransaction} 
-        />
+      <BudgetModal 
+        isOpen={isBudgetOpen} 
+        onClose={() => setIsBudgetOpen(false)} 
+        budget={budget} 
+        onSaveBudget={handleSaveBudget} 
+      />
 
-        <BudgetModal 
-          isOpen={isBudgetOpen} 
-          onClose={() => setIsBudgetOpen(false)} 
-          budget={budget} 
-          onSaveBudget={handleSaveBudget} 
-        />
-
-      </div>
     </div>
   );
 }
