@@ -263,12 +263,12 @@ function App() {
     setGoals(updatedGoals);
     await saveGoals(updatedGoals);
 
-    // 2. Registar transação correspondente
+    // 2. Registar transação correspondente (Transferência reduz o Plafond Real)
     const contributionTx: Transaction = {
       id: 'tx-' + Date.now(),
       description: `Reforço: ${targetGoal.title}`,
       amount,
-      type: 'expense',
+      type: 'transfer',
       category: targetGoal.category as TransactionCategory,
       date: new Date().toISOString().split('T')[0]
     };
