@@ -45,6 +45,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [editingBank, setEditingBank] = useState<Bank | null>(null);
   const [editName, setEditName] = useState('');
   const [editBalance, setEditBalance] = useState('');
+  const [isAddingBank, setIsAddingBank] = useState(false);
+  const [newBankName, setNewBankName] = useState('');
+  const [newBankBalance, setNewBankBalance] = useState('');
   const currentMonthTransactions = transactions; 
 
   // Soma de gastos por categoria e tipo
@@ -128,16 +131,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const handleAddBankClick = () => {
-    const name = prompt('Qual é o nome do Banco/Conta? (Ex: ActivoBank, Santander, Revolut, Cash...)');
-    if (!name || !name.trim()) return;
-    const balanceStr = prompt(`Qual é o saldo inicial para a conta "${name.trim()}"?`, '0');
-    if (balanceStr === null) return;
-    const balance = parseFloat(balanceStr.replace(',', '.'));
-    if (isNaN(balance) || balance < 0) {
-      alert('Por favor, introduz um saldo inicial válido superior ou igual a 0.');
-      return;
-    }
-    onAddBank(name.trim(), balance);
+    setNewBankName('');
+    setNewBankBalance('0');
+    setIsAddingBank(true);
   };
 
   // Funções de Toque Longo (Long-Press) para editar bancos
@@ -577,6 +573,67 @@ export const Dashboard: React.FC<DashboardProps> = ({
               className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
             >
               Gravar Alterações
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add Bank Modal Overlay */}
+      {isAddingBank && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-in fade-in duration-200">
+          <div className="bg-slate-50 w-full max-w-sm rounded-[32px] border border-slate-100 p-5 shadow-premium space-y-4.5 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center">
+              <h4 className="text-xs font-black text-brand-dark uppercase tracking-widest">Nova Conta / Banco</h4>
+              <button
+                onClick={() => setIsAddingBank(false)}
+                className="w-7 h-7 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-custom"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5">
+              <div className="space-y-1">
+                <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest px-1">Nome do Banco/Conta</label>
+                <input
+                  type="text"
+                  placeholder="Ex: ActivoBank, Santander, Revolut, Dinheiro..."
+                  value={newBankName}
+                  onChange={(e) => setNewBankName(e.target.value)}
+                  className="w-full p-3.5 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-premium"
+                  autoFocus
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest px-1">Saldo Inicial</label>
+                <input
+                  type="text"
+                  placeholder="0,00"
+                  value={newBankBalance}
+                  onChange={(e) => setNewBankBalance(e.target.value)}
+                  className="w-full p-3.5 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-premium"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (!newBankName.trim()) {
+                  alert('O nome do banco não pode estar vazio!');
+                  return;
+                }
+                const parsed = parseFloat(newBankBalance.replace(',', '.'));
+                if (isNaN(parsed) || parsed < 0) {
+                  alert('Introduz um saldo inicial válido igual ou superior a 0.');
+                  return;
+                }
+                onAddBank(newBankName.trim(), parsed);
+                setIsAddingBank(false);
+              }}
+              className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
+            >
+              Criar Conta
             </button>
           </div>
         </div>
