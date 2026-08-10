@@ -54,7 +54,13 @@
 
 /* Sombra Premium Suave e Difusa (Estilo da Imagem) */
 .shadow-premium {
-  box-shadow: 0 12px 30px -4px rgba(139, 92, 246, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 12px 35px -4px rgba(99, 59, 191, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.02);
+  transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shadow-premium:hover {
+  box-shadow: 0 20px 40px -4px rgba(99, 59, 191, 0.08), 0 12px 24px -6px rgba(0, 0, 0, 0.03);
+  transform: translateY(-1px);
 }
 
 /* Sombra Interna Suave para Inputs */
@@ -64,7 +70,23 @@
 
 /* Sombra Brilhante para o Botão Roxo */
 .shadow-purple-glow {
-  box-shadow: 0 8px 24px -2px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 8px 24px -2px rgba(139, 92, 246, 0.3);
+}
+
+/* Animação de Mudança de View Premium */
+@keyframes view-change {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-view-change {
+  animation: view-change 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Estilização dos gráficos Recharts */

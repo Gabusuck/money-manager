@@ -725,8 +725,12 @@ function App() {
   return (
     <div className="h-[100dvh] w-full bg-gradient-to-tr from-purple-50/70 via-slate-50 to-cyan-50/30 flex flex-col relative overflow-hidden font-sans antialiased selection:bg-purple-100 select-none">
       
+      {/* Orbes de ambiente dinâmicas e modernas no fundo */}
+      <div className="absolute top-[-10%] left-[-20%] w-[80vw] h-[80vw] rounded-full bg-purple-200/25 blur-[120px] pointer-events-none z-0 animate-pulse duration-[6s]" />
+      <div className="absolute bottom-[-10%] right-[-20%] w-[80vw] h-[80vw] rounded-full bg-cyan-200/15 blur-[120px] pointer-events-none z-0 animate-pulse duration-[8s]" />
+
       {/* Cabeçalho da App (Flutuante sobre o Gradiente) */}
-      <header className="px-5 pt-6 pb-3 flex justify-between items-center bg-transparent shrink-0 safe-pt">
+      <header className="relative z-10 px-5 pt-6 pb-3 flex justify-between items-center bg-transparent shrink-0 safe-pt">
         <div className="flex items-center gap-2.5">
           <img src="/icons/icon-192.png" className="w-8 h-8 rounded-xl shadow-sm border border-slate-100/50 object-cover" alt="Logo" />
           <div>
@@ -754,8 +758,8 @@ function App() {
         </div>
       </header>
 
-      {/* Conteúdo Principal (Scrollable) */}
-      <main ref={mainRef} className="flex-1 overflow-y-auto no-scrollbar w-full min-h-0 overscroll-none">
+      {/* Conteúdo Principal (Scrollable com Animação Premium de Entrada de View) */}
+      <main ref={mainRef} key={currentTab} className="relative z-10 flex-1 overflow-y-auto no-scrollbar w-full min-h-0 overscroll-none animate-view-change">
         {renderActiveView()}
         {/* Espaçador físico no fim do scroll para empurrar o conteúdo acima da navbar no iOS Safari */}
         <div className="h-36 w-full block pointer-events-none shrink-0" />
