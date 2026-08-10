@@ -82,39 +82,8 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
 
   const categories = ['Todas','Transportes','Lazer','Outros','Fixos','Poupança','Investimento'];
 
-  // Totais do dia ou de tudo
-  const visibleTxs = filteredTransactions;
-  const totalIn = visibleTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const totalOut = visibleTxs.filter(t => t.type !== 'income').reduce((s, t) => s + t.amount, 0);
-
   return (
     <div style={{ padding: '4px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-      {/* Hero Summary */}
-      <div style={{
-        background: 'linear-gradient(135deg,#4F6EF7 0%,#7C5CFC 100%)',
-        borderRadius: 24,
-        padding: '20px 20px',
-        color: '#fff',
-        boxShadow: '0 8px 32px rgba(79,110,247,0.30)',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        <div style={{position:'absolute',top:-24,right:-24,width:120,height:120,borderRadius:'50%',background:'rgba(255,255,255,0.07)'}} />
-        <p style={{fontSize:10,fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',opacity:0.7,marginBottom:14}}>
-          Extrato
-        </p>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-          <div>
-            <span style={{fontSize:9,fontWeight:700,opacity:0.65,textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:4}}>Entradas</span>
-            <span style={{fontSize:20,fontWeight:900,letterSpacing:'-0.02em'}}>+{formatEuro(totalIn)}</span>
-          </div>
-          <div style={{textAlign:'right'}}>
-            <span style={{fontSize:9,fontWeight:700,opacity:0.65,textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:4}}>Saídas</span>
-            <span style={{fontSize:20,fontWeight:900,letterSpacing:'-0.02em'}}>-{formatEuro(totalOut)}</span>
-          </div>
-        </div>
-      </div>
 
       {/* Pesquisa */}
       <div style={{position:'relative'}}>

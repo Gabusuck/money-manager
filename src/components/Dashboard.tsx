@@ -17,7 +17,6 @@ import {
   Edit3,
   Repeat,
   Bell,
-  Wallet
 } from 'lucide-react';
 import type { Transaction, BudgetAllocation, Bank, TransactionType } from '../types';
 
@@ -91,7 +90,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const effectiveSalary = budget.salary + totalIncome;
   const allocatedPlafondReal = Math.max(0, effectiveSalary - spentFixos - savedPoupanca - investedInvestimento);
   const remainingPlafondReal = allocatedPlafondReal - spentPlafondReal;
-  const totalSpent = spentFixos + savedPoupanca + investedInvestimento + spentPlafondReal;
 
   const formatEuro = (value: number) => {
     return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
@@ -239,21 +237,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </button>
             </div>
 
-            {/* Taxa de poupança */}
-            <div style={{marginTop:18,display:'flex',alignItems:'center',gap:12}}>
-              <div style={{display:'flex',alignItems:'center',gap:6,background:'rgba(255,255,255,0.15)',borderRadius:'999px',padding:'5px 12px'}}>
-                <TrendingUp style={{width:12,height:12}} />
-                <span style={{fontSize:11,fontWeight:800}}>
-                  {(() => {
-                    const rate = effectiveSalary > 0 ? ((effectiveSalary - totalSpent) / effectiveSalary) * 100 : 0;
-                    return rate >= 0 ? `+${rate.toFixed(1)}%` : `${rate.toFixed(1)}%`;
-                  })()}
-                </span>
-                <span style={{fontSize:10,opacity:0.75}}>poupança</span>
+            {/* Entradas vs Saídas */}
+            <div style={{marginTop:18,display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+              <div style={{background:'rgba(255,255,255,0.15)',borderRadius:14,padding:'10px 12px'}}>
+                <p style={{fontSize:9,fontWeight:700,opacity:0.7,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>Entradas</p>
+                <p style={{fontSize:15,fontWeight:900,letterSpacing:'-0.01em'}}>
+                  +{formatEuro(currentMonthTransactions.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0))}
+                </p>
               </div>
-              <div style={{display:'flex',alignItems:'center',gap:6,background:'rgba(255,255,255,0.15)',borderRadius:'999px',padding:'5px 12px'}}>
-                <Wallet style={{width:12,height:12}} />
-                <span style={{fontSize:11,fontWeight:700,opacity:0.9}}>{formatEuro(remainingPlafondReal)} livre</span>
+              <div style={{background:'rgba(255,255,255,0.15)',borderRadius:14,padding:'10px 12px'}}>
+                <p style={{fontSize:9,fontWeight:700,opacity:0.7,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>Saídas</p>
+                <p style={{fontSize:15,fontWeight:900,letterSpacing:'-0.01em'}}>
+                  -{formatEuro(currentMonthTransactions.filter(t => t.type !== 'income').reduce((s,t) => s + t.amount, 0))}
+                </p>
               </div>
             </div>
           </div>
