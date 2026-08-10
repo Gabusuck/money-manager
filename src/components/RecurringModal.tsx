@@ -157,7 +157,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
         {!showAddForm && (
           <button
             onClick={() => setShowAddForm(true)}
-            className="w-full mb-4 py-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-100 text-brand-purple text-xs font-black rounded-2xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="w-full mb-4 py-3.5 bg-black hover:bg-slate-900 text-white text-xs font-black rounded-2xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Adicionar Nova Assinatura
@@ -172,7 +172,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="text-[10px] font-bold text-brand-purple uppercase hover:underline"
+                className="text-[10px] font-bold text-slate-850 uppercase hover:underline"
               >
                 Cancelar
               </button>
@@ -212,7 +212,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
                 placeholder="Ex: Netflix, Renda, Salário Base"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-purple transition-colors"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-black transition-colors"
                 required
               />
             </div>
@@ -227,7 +227,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
                   placeholder="0.00"
                   value={amount}
                   onChange={e => setAmount(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-purple transition-colors"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-black transition-colors"
                   required
                 />
               </div>
@@ -237,7 +237,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
                 <select
                   value={frequency}
                   onChange={e => setFrequency(e.target.value as RecurringInterval)}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-purple transition-colors"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-black transition-colors"
                 >
                   <option value="weekly">Semanal</option>
                   <option value="monthly">Mensal</option>
@@ -253,7 +253,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
                 <select
                   value={category}
                   onChange={e => setCategory(e.target.value as TransactionCategory)}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-purple transition-colors"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-black transition-colors"
                 >
                   {CATEGORIES.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -269,7 +269,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
                   type="date"
                   value={startDate}
                   onChange={e => setStartDate(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-purple transition-colors"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-black transition-colors"
                   required
                 />
               </div>
@@ -278,7 +278,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-[#4c2d99] text-white text-xs font-bold rounded-xl shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-3.5 bg-black text-white text-xs font-black uppercase tracking-widest rounded-xl hover:scale-[1.01] active:scale-99 transition-transform flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
             >
               Criar Agendamento
             </button>

@@ -21,7 +21,7 @@
 
 @layer base {
   html, body, #root {
-    @apply h-full w-full overflow-hidden bg-[#eaecf0] text-[#18181b] font-sans select-none antialiased;
+    @apply h-full w-full overflow-hidden bg-[#f5f6fa] text-[#18181b] font-sans select-none antialiased;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
     transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);

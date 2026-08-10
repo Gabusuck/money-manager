@@ -391,7 +391,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowCategorySelector(!showCategorySelector)}
-                    className="w-full bg-white rounded-2xl border border-brand-purple p-4 flex items-center justify-between shadow-premium transition-custom relative overflow-hidden text-left"
+                    className="w-full bg-white rounded-2xl border border-black p-4 flex items-center justify-between shadow-premium transition-custom relative overflow-hidden text-left"
                   >
                     <div 
                       className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 rounded-r-lg"
@@ -421,7 +421,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                             setShowCategorySelector(false);
                           }}
                           className={`w-full bg-white rounded-2xl border p-3.5 flex items-center justify-between shadow-premium transition-custom relative overflow-hidden text-left ${
-                            isSelected ? 'border-brand-purple bg-purple-50/5' : 'border-slate-100 hover:translate-y-[-1px]'
+                            isSelected ? 'border-black bg-slate-50' : 'border-slate-100 hover:translate-y-[-1px]'
                           }`}
                         >
                           <div 
@@ -481,7 +481,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           {/* Botão de Gravar Pill-Shape */}
           <button
             type="submit"
-            className="w-full py-4 mt-3 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
+            className="w-full py-4 mt-3 bg-black text-white rounded-full text-xs font-black uppercase tracking-widest shadow-md hover:scale-[1.01] active:scale-99 transition-transform cursor-pointer"
           >
             Confirmar Lançamento
           </button>
