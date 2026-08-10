@@ -262,7 +262,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     onMouseLeave={cancelPress}
                     className={`bg-white rounded-2xl border p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 transition-all duration-300 group select-none cursor-pointer ${
                       pressedBankId === bank.id 
-                        ? 'scale-[1.06] border-brand-purple/50 bg-purple-50/5 shadow-purple-glow z-10' 
+                        ? 'scale-[0.94] border-brand-purple/30 bg-slate-100/50 brightness-95' 
                         : 'border-slate-100 hover:translate-y-[-1px]'
                     }`}
                     title="Mantém pressionado para editar/gerir"
