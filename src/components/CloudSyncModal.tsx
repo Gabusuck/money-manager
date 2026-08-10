@@ -83,15 +83,17 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
     const jsonStr = JSON.stringify(payload);
     const base64url = encodeBase64Url(jsonStr);
 
+    // Dividir em pedaços de 200 caracteres (IIS segment limit bypass)
+    const chunkSize = 200;
+    const chunks: string[] = [];
+    for (let i = 0; i < base64url.length; i += chunkSize) {
+      chunks.push(base64url.substring(i, i + chunkSize));
+    }
+
     try {
-      if (syncCode && syncCode.length === 8) {
-        // Atualizar backup existente no keyvalue.immanuel.co
-        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${syncCode}/backupData/${base64url}`, {
-          method: 'POST'
-        });
-        if (!response.ok) throw new Error('Falha ao atualizar backup.');
-        setStatusText('Sincronizado com sucesso!');
-      } else {
+      let activeCode = syncCode;
+      
+      if (!activeCode || activeCode.length !== 8) {
         // Obter nova AppKey do keyvalue.immanuel.co
         const keyResponse = await fetch('https://keyvalue.immanuel.co/api/KeyVal/GetAppKey');
         if (!keyResponse.ok) throw new Error('Falha ao contactar servidor de chaves.');
@@ -99,17 +101,29 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
         const newAppKey = rawKey.replace(/"/g, '').trim();
 
         if (!newAppKey) throw new Error('Nenhuma chave recebida do servidor.');
-
-        // Criar novo backup
-        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${newAppKey}/backupData/${base64url}`, {
-          method: 'POST'
-        });
-        if (!response.ok) throw new Error('Falha ao criar backup.');
-        
-        localStorage.setItem('allmymoney_sync_code', newAppKey);
-        setSyncCode(newAppKey);
-        setStatusText('Código de sincronização gerado com sucesso!');
+        activeCode = newAppKey;
       }
+
+      // Guardar a contagem de pedaços
+      const countResponse = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${activeCode}/backup_chunks/${chunks.length}`, {
+        method: 'POST'
+      });
+      if (!countResponse.ok) throw new Error('Falha ao registar dados de segmentação.');
+
+      // Guardar cada pedaço em paralelo
+      const promises = chunks.map((chunk, index) => {
+        return fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${activeCode}/backup_${index}/${chunk}`, {
+          method: 'POST'
+        }).then(res => {
+          if (!res.ok) throw new Error(`Falha ao gravar segmento ${index}`);
+        });
+      });
+
+      await Promise.all(promises);
+      
+      localStorage.setItem('allmymoney_sync_code', activeCode);
+      setSyncCode(activeCode);
+      setStatusText('Sincronizado com sucesso!');
     } catch (err: any) {
       console.error(err);
       alert('Erro ao guardar na nuvem: ' + err.message);
@@ -134,18 +148,52 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
       let payload;
       
       if (code.length === 8) {
-        // keyvalue.immanuel.co (nosso novo padrão de 8 dígitos)
-        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${code}/backupData`);
-        if (!response.ok) throw new Error('Código inválido ou dados não encontrados.');
-        const rawResult = await response.text();
-        const cleanResult = rawResult.replace(/^"|"$/g, '').trim();
+        // keyvalue.immanuel.co (novo padrão de 8 dígitos segmentado)
         
-        if (!cleanResult || cleanResult === 'null') {
-          throw new Error('Nenhuma cópia de segurança encontrada com este código.');
+        // 1. Ler contagem de pedaços
+        const countResponse = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${code}/backup_chunks`);
+        if (!countResponse.ok) throw new Error('Erro ao ler índice de backup na nuvem.');
+        const rawCount = await countResponse.text();
+        const cleanCountText = rawCount.replace(/"/g, '').trim();
+        const count = parseInt(cleanCountText, 10);
+        
+        if (isNaN(count) || count <= 0) {
+          // Se não houver backup_chunks, pode ser uma cópia não segmentada antiga
+          const oldResponse = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${code}/backupData`);
+          if (!oldResponse.ok) throw new Error('Código inválido ou sem dados na nuvem.');
+          const rawResult = await oldResponse.text();
+          const cleanResult = rawResult.replace(/^"|"$/g, '').trim();
+          
+          if (!cleanResult || cleanResult === 'null') {
+            throw new Error('Nenhuma cópia de segurança encontrada com este código.');
+          }
+          
+          const decoded = decodeBase64Url(cleanResult);
+          payload = JSON.parse(decoded);
+        } else {
+          // Descarregar pedaços em paralelo
+          const promises: Promise<string>[] = [];
+          for (let i = 0; i < count; i++) {
+            promises.push(
+              fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${code}/backup_${i}`)
+                .then(res => {
+                  if (!res.ok) throw new Error(`Falha ao descarregar segmento ${i}`);
+                  return res.text();
+                })
+                .then(txt => txt.replace(/"/g, '').trim())
+            );
+          }
+          
+          const retrievedChunks = await Promise.all(promises);
+          const assembledBase64Url = retrievedChunks.join('');
+          
+          if (!assembledBase64Url) {
+            throw new Error('Erro ao reagrupar dados de sincronização.');
+          }
+          
+          const decoded = decodeBase64Url(assembledBase64Url);
+          payload = JSON.parse(decoded);
         }
-        
-        const decoded = decodeBase64Url(cleanResult);
-        payload = JSON.parse(decoded);
       } else if (code.length >= 24) {
         // Fallback api.restful-api.dev (caso tenham algum código de 32 caracteres)
         const response = await fetch(`https://api.restful-api.dev/objects/${code}`);
