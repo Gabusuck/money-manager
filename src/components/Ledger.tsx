@@ -227,7 +227,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                         
                         <button
                           onClick={() => onDeleteTransaction(tx.id)}
-                          className="w-8 h-8 rounded-full bg-red-50 text-cat-red opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center justify-center hover:bg-red-100 active:scale-95 transition-custom"
+                          className="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-cat-red flex items-center justify-center active:scale-95 transition-custom shrink-0"
                           title="Eliminar"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
