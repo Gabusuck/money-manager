@@ -40,6 +40,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onOpenPrefilledTxModal
 }) => {
   const [longPressTimeout, setLongPressTimeout] = useState<any>(null);
+  const [pressedBankId, setPressedBankId] = useState<string | null>(null);
   const [activeContextMenuBank, setActiveContextMenuBank] = useState<Bank | null>(null);
   const [editingBank, setEditingBank] = useState<Bank | null>(null);
   const [editName, setEditName] = useState('');
@@ -141,13 +142,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Funções de Toque Longo (Long-Press) para editar bancos
   const startPress = (bank: Bank) => {
+    setPressedBankId(bank.id);
     const timer = setTimeout(() => {
       handleEditBankPrompt(bank);
+      setPressedBankId(null);
     }, 600); // 600ms de press
     setLongPressTimeout(timer);
   };
 
   const cancelPress = () => {
+    setPressedBankId(null);
     if (longPressTimeout) {
       clearTimeout(longPressTimeout);
       setLongPressTimeout(null);
@@ -256,8 +260,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     onMouseDown={() => startPress(bank)}
                     onMouseUp={cancelPress}
                     onMouseLeave={cancelPress}
-                    className="bg-white rounded-2xl border border-slate-100 p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 hover:translate-y-[-1px] transition-custom group select-none active:scale-[0.98] cursor-pointer"
-                    title="Mantém pressionado para editar"
+                    className={`bg-white rounded-2xl border p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 transition-all duration-300 group select-none cursor-pointer ${
+                      pressedBankId === bank.id 
+                        ? 'scale-[1.06] border-brand-purple/50 bg-purple-50/5 shadow-purple-glow z-10' 
+                        : 'border-slate-100 hover:translate-y-[-1px]'
+                    }`}
+                    title="Mantém pressionado para editar/gerir"
                   >
                     {/* Botão de Apagar discreto se houver mais que 1 conta */}
                     {banks.length > 1 && (
