@@ -228,9 +228,16 @@ function App() {
     }
   };
 
-  // Handler para eliminar transação
+  // Handler para eliminar transação com confirmação de segurança
   const handleDeleteTransaction = async (id: string) => {
     const txToDelete = transactions.find(t => t.id === id);
+    if (!txToDelete) return;
+
+    const formattedAmount = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(txToDelete.amount);
+    if (!window.confirm(`Tens a certeza que queres eliminar o movimento "${txToDelete.description}" (${formattedAmount})?`)) {
+      return;
+    }
+
     const updatedTxs = transactions.filter(tx => tx.id !== id);
     setTransactions(updatedTxs);
     await saveTransactions(updatedTxs);
