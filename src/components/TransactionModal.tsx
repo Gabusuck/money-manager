@@ -18,6 +18,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [type, setType] = useState<TransactionType>('expense');
   const [category, setCategory] = useState<TransactionCategory | null>(null);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   // Resetar a categoria selecionada quando o tipo muda (deixa vazio/null)
@@ -51,6 +52,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       type,
       category,
       date,
+      isRecurring,
     });
 
     // Reset Form
@@ -59,6 +61,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     setType('expense');
     setCategory(null);
     setShowCategorySelector(false);
+    setIsRecurring(false);
     setDate(new Date().toISOString().split('T')[0]);
     onClose();
   };
@@ -268,6 +271,27 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               onChange={(e) => setDate(e.target.value)}
               className="w-full p-3.5 text-xs bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark shadow-premium"
             />
+          </div>
+
+          {/* Interruptor Recorrente (Sliding Toggle Switch) */}
+          <div className="bg-white rounded-[24px] border border-slate-100 p-4 flex items-center justify-between shadow-premium">
+            <div className="space-y-0.5">
+              <span className="text-xs font-bold text-brand-dark block">Lançamento Recorrente</span>
+              <span className="text-[10px] text-slate-400 font-semibold block">Repetir automaticamente todos os meses</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsRecurring(!isRecurring)}
+              className={`w-11 h-6 rounded-full p-1 transition-custom duration-300 focus:outline-none shrink-0 ${
+                isRecurring ? 'bg-brand-purple' : 'bg-slate-200'
+              }`}
+            >
+              <div
+                className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-custom duration-300 ${
+                  isRecurring ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
           </div>
 
           {/* Botão de Gravar Pill-Shape */}

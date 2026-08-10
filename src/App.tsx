@@ -36,6 +36,83 @@ import { Ledger } from './components/Ledger';
 // Modals
 import { TransactionModal } from './components/TransactionModal';
 
+// Função utilitária para verificar e duplicar transações recorrentes para meses em falta
+const checkAndGenerateRecurring = (txs: Transaction[]): { updated: boolean; transactions: Transaction[] } => {
+  let changed = false;
+  const updatedTxs = [...txs];
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
+  // Encontrar todas as transações marcadas como recorrentes
+  const recurringTemplates = txs.filter(tx => tx.isRecurring);
+
+  recurringTemplates.forEach(template => {
+    const startDate = new Date(template.date);
+    const startYear = startDate.getFullYear();
+    const startMonth = startDate.getMonth();
+    const startDay = startDate.getDate();
+
+    // Calcular quantos meses passaram desde a data inicial até ao mês atual
+    let year = startYear;
+    let month = startMonth;
+
+    while (year < currentYear || (year === currentYear && month <= currentMonth)) {
+      // Ignorar o próprio mês de início (já tem a transação original)
+      if (year === startYear && month === startMonth) {
+        month++;
+        if (month > 11) {
+          month = 0;
+          year++;
+        }
+        continue;
+      }
+
+      // Formatando o mês-alvo YYYY-MM
+      const targetMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+
+      // Verificar se já existe uma transação idêntica neste mês
+      const alreadyExists = updatedTxs.some(tx => 
+        tx.date.startsWith(targetMonthStr) && 
+        tx.description === template.description &&
+        tx.amount === template.amount &&
+        tx.category === template.category
+      );
+
+      if (!alreadyExists) {
+        // Gerar a data ajustada (ex: último dia se o dia exceder o tamanho do mês)
+        const targetDate = new Date(year, month, startDay);
+        if (targetDate.getMonth() !== month) {
+          targetDate.setDate(0); 
+        }
+
+        const dateString = targetDate.toISOString().split('T')[0];
+
+        const newTx: Transaction = {
+          id: Math.random().toString(36).substring(2, 9),
+          description: template.description,
+          amount: template.amount,
+          type: template.type,
+          category: template.category,
+          date: dateString,
+          isRecurring: true
+        };
+
+        updatedTxs.push(newTx);
+        changed = true;
+      }
+
+      month++;
+      if (month > 11) {
+        month = 0;
+        year++;
+      }
+    }
+  });
+
+  return { updated: changed, transactions: updatedTxs };
+};
+
 function App() {
   const [currentTab, setCurrentTab] = useState<'home' | 'evolution' | 'goals' | 'ledger'>('home');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -60,13 +137,18 @@ function App() {
         setBudget(MOCK_BUDGET);
       }
 
-      // 2. Carregar Transações
+      // 2. Carregar Transações e Executar Recorrências
       const localTxs = await getTransactions();
       if (localTxs && localTxs.length > 0) {
-        setTransactions(localTxs);
+        const { updated, transactions: verifiedTxs } = checkAndGenerateRecurring(localTxs);
+        setTransactions(verifiedTxs);
+        if (updated) {
+          await saveTransactions(verifiedTxs);
+        }
       } else {
-        await saveTransactions(MOCK_TRANSACTIONS);
-        setTransactions(MOCK_TRANSACTIONS);
+        const { transactions: verifiedTxs } = checkAndGenerateRecurring(MOCK_TRANSACTIONS);
+        await saveTransactions(verifiedTxs);
+        setTransactions(verifiedTxs);
       }
 
       // 3. Carregar Metas

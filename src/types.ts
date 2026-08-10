@@ -16,6 +16,7 @@ export interface Transaction {
   type: TransactionType;
   category: TransactionCategory;
   date: string; // ISO format: YYYY-MM-DD
+  isRecurring?: boolean;
 }
 
 export interface BudgetAllocation {
