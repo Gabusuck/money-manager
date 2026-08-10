@@ -535,7 +535,7 @@ function App() {
       </header>
 
       {/* Conteúdo Principal (Scrollable) */}
-      <main className="flex-1 overflow-y-auto no-scrollbar w-full min-h-0">
+      <main className="flex-1 overflow-y-auto no-scrollbar w-full min-h-0 overscroll-none">
         {renderActiveView()}
       </main>
 

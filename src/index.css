@@ -23,6 +23,7 @@
   html, body, #root {
     @apply h-full w-full overflow-hidden bg-slate-50 text-brand-dark font-sans select-none antialiased;
     -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
   }
 }
 
