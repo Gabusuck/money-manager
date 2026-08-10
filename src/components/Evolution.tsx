@@ -11,17 +11,94 @@ import {
   Legend 
 } from 'recharts';
 import { TrendingUp, BarChart2 } from 'lucide-react';
-import { MOCK_HISTORY } from '../mockData';
+import type { Transaction } from '../types';
 
-export const Evolution: React.FC = () => {
+interface EvolutionProps {
+  transactions: Transaction[];
+}
+
+export const Evolution: React.FC<EvolutionProps> = ({ transactions }) => {
   const formatEuro = (value: number) => {
     return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
   };
 
-  // Calcular estatísticas com base no mock de histórico
-  const latestMonth = MOCK_HISTORY[MOCK_HISTORY.length - 1];
-  const firstMonth = MOCK_HISTORY[0];
+  // Gerar os últimos 6 meses de forma dinâmica
+  const getLast6Months = () => {
+    const months = [];
+    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      // Ajustar mês
+      d.setMonth(d.getMonth() - i);
+      months.push({
+        year: d.getFullYear(),
+        monthIndex: d.getMonth(),
+        name: monthNames[d.getMonth()]
+      });
+    }
+    return months;
+  };
+
+  const last6Months = getLast6Months();
+
+  // Calcular o histórico acumulado antes do período exibido
+  const getSavingsBefore = (limitDate: Date) => {
+    return transactions
+      .filter(tx => {
+        const txDate = new Date(tx.date);
+        return (tx.category === 'Poupança' || tx.category === 'Investimento') && txDate < limitDate;
+      })
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  };
+
+  const firstMonthDate = new Date(last6Months[0].year, last6Months[0].monthIndex, 1);
+  let accumulatedSavings = getSavingsBefore(firstMonthDate);
+
+  const historyData = last6Months.map(m => {
+    // Filtrar transações pertencentes a este ano e mês
+    const txsInMonth = transactions.filter(tx => {
+      const txDate = new Date(tx.date);
+      return txDate.getFullYear() === m.year && txDate.getMonth() === m.monthIndex;
+    });
+
+    const fixos = txsInMonth.filter(tx => tx.category === 'Fixos').reduce((sum, tx) => sum + tx.amount, 0);
+    const plafond = txsInMonth.filter(tx => ['Transportes', 'Lazer', 'Outros'].includes(tx.category)).reduce((sum, tx) => sum + tx.amount, 0);
+    const poupanca = txsInMonth.filter(tx => ['Poupança', 'Investimento'].includes(tx.category)).reduce((sum, tx) => sum + tx.amount, 0);
+    
+    accumulatedSavings += poupanca;
+
+    return {
+      name: m.name,
+      fixos,
+      plafond,
+      poupanca,
+      poupancaAcumulada: accumulatedSavings
+    };
+  });
+
+  const latestMonth = historyData[historyData.length - 1];
+  const firstMonth = historyData[0];
   const totalGrowth = latestMonth.poupancaAcumulada - firstMonth.poupancaAcumulada;
+
+  // Só mostra gráficos se houver pelo menos uma transação no sistema
+  const hasData = transactions.length > 0;
+
+  if (!hasData) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-brand-gray border border-brand-border flex items-center justify-center text-gray-400">
+          <TrendingUp className="w-8 h-8" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-sm font-bold text-brand-dark">Sem Histórico de Evolução</h3>
+          <p className="text-xs text-gray-400 max-w-xs mx-auto">
+            Regista transações no teu extrato ou reforça as tuas metas para começar a ver gráficos de evolução patrimonial.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-24 space-y-6">
@@ -47,7 +124,7 @@ export const Evolution: React.FC = () => {
         {/* Gráfico de Área: Poupança Acumulada */}
         <div className="h-44 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={MOCK_HISTORY} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+            <AreaChart data={historyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorAcumulada" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#a855f7" stopOpacity={0.15}/>
@@ -92,7 +169,7 @@ export const Evolution: React.FC = () => {
         {/* Gráfico de Barras */}
         <div className="h-48 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={MOCK_HISTORY} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+            <BarChart data={historyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
               <XAxis 
                 dataKey="name" 
                 axisLine={false} 
@@ -129,9 +206,8 @@ export const Evolution: React.FC = () => {
           <BarChart2 className="w-4 h-4 text-brand-dark" /> Observações do Mês
         </h4>
         <ul className="text-xxs text-gray-500 space-y-2 list-disc pl-4">
-          <li>As tuas despesas fixas mantiveram-se estáveis nos 400€. Bom trabalho a negociar as faturas.</li>
-          <li>A tua taxa de poupança atual é de **28%**, o que está acima da recomendação tradicional de 20%.</li>
-          <li>Se mantiveres o ritmo atual do Plafond Real, vais completar a meta da "Smart TV" no próximo mês!</li>
+          <li>As dicas e observações serão atualizadas à medida que registares dados de despesas e poupanças.</li>
+          <li>Podes definir os limites de orçamentos ideais clicando no botão de referência no ecrã de início.</li>
         </ul>
       </div>
 

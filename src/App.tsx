@@ -204,6 +204,16 @@ function App() {
     await saveBudget(newBudget);
   };
 
+  // Handler para limpar todos os dados e recomeçar do zero
+  const handleClearAllData = async () => {
+    if (window.confirm('Tens a certeza que queres apagar todos os dados e começar do zero? Esta ação é irreversível.')) {
+      const { clear } = await import('idb-keyval');
+      await clear();
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
+
   // Render da view selecionada na dock
   const renderActiveView = () => {
     switch (currentTab) {
@@ -216,7 +226,7 @@ function App() {
           />
         );
       case 'evolution':
-        return <Evolution />;
+        return <Evolution transactions={transactions} />;
       case 'goals':
         return (
           <Goals 
@@ -329,6 +339,7 @@ function App() {
         onClose={() => setIsBudgetOpen(false)} 
         budget={budget} 
         onSaveBudget={handleSaveBudget} 
+        onClearAllData={handleClearAllData}
       />
 
     </div>

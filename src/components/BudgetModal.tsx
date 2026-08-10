@@ -7,6 +7,7 @@ interface BudgetModalProps {
   onClose: () => void;
   budget: BudgetAllocation;
   onSaveBudget: (budget: BudgetAllocation) => void;
+  onClearAllData: () => void;
 }
 
 export const BudgetModal: React.FC<BudgetModalProps> = ({
@@ -14,6 +15,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
   onClose,
   budget,
   onSaveBudget,
+  onClearAllData,
 }) => {
   const [salary, setSalary] = useState(budget.salary);
   const [fixos, setFixos] = useState(budget.fixos);
@@ -184,6 +186,15 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
             className="w-full py-3 bg-brand-dark text-white rounded-xl text-xs font-bold hover:bg-slate-800 active:scale-98 transition-custom"
           >
             Guardar Configuração
+          </button>
+
+          {/* Resetar Dados */}
+          <button
+            type="button"
+            onClick={onClearAllData}
+            className="w-full py-2.5 text-xxs font-bold text-cat-red hover:bg-red-50 border border-red-200 rounded-xl transition-custom"
+          >
+            Limpar Todos os Dados e Recomeçar do Zero
           </button>
         </form>
       </div>
