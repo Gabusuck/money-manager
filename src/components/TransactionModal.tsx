@@ -84,13 +84,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-xs overflow-hidden select-none">
-      <div 
-        className="w-full max-w-md bg-slate-50 rounded-t-[32px] border-t border-slate-100 p-6 space-y-6 max-h-[92vh] overflow-y-auto overflow-x-hidden no-scrollbar safe-pb shadow-2xl animate-in slide-in-from-bottom duration-300"
+      <form 
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-slate-50 rounded-t-[32px] border-t border-slate-100 p-6 flex flex-col max-h-[92vh] shadow-2xl animate-in slide-in-from-bottom duration-300"
       >
-        {/* Header Modal */}
-        <div className="flex justify-between items-center">
+        {/* Header Modal (Fixo no Topo) */}
+        <div className="flex justify-between items-center shrink-0 pb-4">
           <h3 className="text-sm font-black text-brand-dark uppercase tracking-widest">Novo Lançamento</h3>
           <button 
+            type="button"
             onClick={onClose} 
             className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-slate-100 text-slate-400 hover:text-brand-dark transition-custom shadow-sm"
           >
@@ -98,45 +100,46 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           </button>
         </div>
 
-        {/* Segmented Control para selecionar o Tipo de Movimento */}
-        <div className="bg-slate-100 p-1 rounded-2xl flex w-full border border-slate-200/50">
-          <button
-            type="button"
-            onClick={() => setType('expense')}
-            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
-              type === 'expense' 
-                ? 'bg-white text-brand-dark shadow-sm' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            Despesa
-          </button>
-          <button
-            type="button"
-            onClick={() => setType('transfer')}
-            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
-              type === 'transfer' 
-                ? 'bg-white text-brand-dark shadow-sm' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            Transferência
-          </button>
-          <button
-            type="button"
-            onClick={() => setType('income')}
-            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
-              type === 'income' 
-                ? 'bg-white text-brand-dark shadow-sm' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            Renda
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Corpo do Formulário (Scrollable) */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar space-y-5 pb-4">
           
+          {/* Segmented Control para selecionar o Tipo de Movimento */}
+          <div className="bg-slate-100 p-1 rounded-2xl flex w-full border border-slate-200/50">
+            <button
+              type="button"
+              onClick={() => setType('expense')}
+              className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
+                type === 'expense' 
+                  ? 'bg-white text-brand-dark shadow-sm' 
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              Despesa
+            </button>
+            <button
+              type="button"
+              onClick={() => setType('transfer')}
+              className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
+                type === 'transfer' 
+                  ? 'bg-white text-brand-dark shadow-sm' 
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              Transferência
+            </button>
+            <button
+              type="button"
+              onClick={() => setType('income')}
+              className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
+                type === 'income' 
+                  ? 'bg-white text-brand-dark shadow-sm' 
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              Renda
+            </button>
+          </div>
+
           {/* Campo Valor Grande */}
           <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-premium relative text-center py-5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Valor do Lançamento</span>
@@ -236,15 +239,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             />
           </div>
 
-          {/* Botão de Gravar Pill-Shape */}
+        </div>
+
+        {/* Rodapé Fixo com o Botão de Confirmar Lançamento (Sempre visível) */}
+        <div className="shrink-0 pt-3 border-t border-slate-100/50 bg-slate-50 safe-pb">
           <button
             type="submit"
-            className="w-full py-4 mt-3 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
+            className="w-full py-4 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-full text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
           >
             Confirmar Lançamento
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };
