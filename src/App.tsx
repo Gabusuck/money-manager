@@ -539,63 +539,63 @@ function App() {
         {renderActiveView()}
       </main>
 
-      {/* Barra de Navegação Inferior (Dock Flutuante Premium) */}
-      <nav className="fixed bottom-2.5 left-4 right-4 z-40 bg-white/80 backdrop-blur-md border border-slate-100 px-5 py-2.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
+      {/* Barra de Navegação Inferior (Dock Flutuante Premium Compacta) */}
+      <nav className="fixed bottom-2.5 left-6 right-6 max-w-xs mx-auto z-40 bg-white/80 backdrop-blur-md border border-slate-100 px-6 py-3.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
         
         {/* Aba Início */}
         <button
           onClick={() => setCurrentTab('home')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 transition-custom ${
-            currentTab === 'home' ? 'text-brand-purple font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
+          className={`flex items-center justify-center p-1.5 transition-custom ${
+            currentTab === 'home' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
           }`}
+          title="Início"
         >
-          <Home className="w-4 h-4 shrink-0" />
-          <span className="text-[8px] font-bold uppercase tracking-wider">Início</span>
+          <Home className="w-[22px] h-[22px] shrink-0" />
         </button>
 
         {/* Aba Evolução */}
         <button
           onClick={() => setCurrentTab('evolution')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 transition-custom ${
-            currentTab === 'evolution' ? 'text-brand-purple font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
+          className={`flex items-center justify-center p-1.5 transition-custom ${
+            currentTab === 'evolution' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
           }`}
+          title="Evolução"
         >
-          <TrendingUp className="w-4 h-4 shrink-0" />
-          <span className="text-[8px] font-bold uppercase tracking-wider">Evolução</span>
-        </button>
-
-        {/* Botão de Ação Central Roxo Glow [ ➕ ] */}
-        <button
-          onClick={() => setIsTxOpen(true)}
-          className="w-12 h-12 rounded-full bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white flex items-center justify-center shadow-purple-glow -translate-y-4 border-4 border-white hover:scale-105 active:scale-95 transition-transform"
-          title="Registar Despesa"
-        >
-          <Plus className="w-5 h-5" />
+          <TrendingUp className="w-[22px] h-[22px] shrink-0" />
         </button>
 
         {/* Aba Metas */}
         <button
           onClick={() => setCurrentTab('goals')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 transition-custom ${
-            currentTab === 'goals' ? 'text-brand-purple font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
+          className={`flex items-center justify-center p-1.5 transition-custom ${
+            currentTab === 'goals' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
           }`}
+          title="Metas"
         >
-          <Target className="w-4 h-4 shrink-0" />
-          <span className="text-[8px] font-bold uppercase tracking-wider">Metas</span>
+          <Target className="w-[22px] h-[22px] shrink-0" />
         </button>
 
         {/* Aba Extrato */}
         <button
           onClick={() => setCurrentTab('ledger')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 transition-custom ${
-            currentTab === 'ledger' ? 'text-brand-purple font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
+          className={`flex items-center justify-center p-1.5 transition-custom ${
+            currentTab === 'ledger' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
           }`}
+          title="Extrato"
         >
-          <FileText className="w-4 h-4 shrink-0" />
-          <span className="text-[8px] font-bold uppercase tracking-wider">Extrato</span>
+          <FileText className="w-[22px] h-[22px] shrink-0" />
         </button>
 
       </nav>
+
+      {/* Botão de Ação Flutuante Lateral [ ➕ ] */}
+      <button
+        onClick={() => setIsTxOpen(true)}
+        className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white flex items-center justify-center shadow-purple-glow hover:scale-105 active:scale-95 transition-transform cursor-pointer border border-brand-purple/10 safe-mb"
+        title="Novo Lançamento"
+      >
+        <Plus className="w-5 h-5" />
+      </button>
 
       {/* Modals da Aplicação */}
       <TransactionModal 
