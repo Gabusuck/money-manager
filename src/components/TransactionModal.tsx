@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Calendar, Edit3, Tag, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign, ChevronDown } from 'lucide-react';
 import type { TransactionCategory, Transaction, TransactionType, Bank } from '../types';
 
@@ -27,6 +27,41 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [selectedBankId, setSelectedBankId] = useState<string>('');
   const [targetBankId, setTargetBankId] = useState<string>('');
   const [transferType, setTransferType] = useState<'goal' | 'bank'>('goal');
+
+  // Gestão de Gesto Pull-Down to Close (Estilo iOS)
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [currentTranslateY, setCurrentTranslateY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Só permitir puxar se o modal estiver no topo do scroll interno
+    if (containerRef.current && containerRef.current.scrollTop > 0) return;
+    setTouchStartY(e.touches[0].clientY);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const currentY = e.touches[0].clientY;
+    const diffY = currentY - touchStartY;
+    
+    // Apenas permitir puxar para baixo
+    if (diffY > 0) {
+      setCurrentTranslateY(diffY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    
+    // Se puxar mais de 100px para baixo, fecha o modal
+    if (currentTranslateY > 100) {
+      onClose();
+    }
+    setCurrentTranslateY(0);
+  };
 
   // Inicializar bancos selecionados ao abrir
   useEffect(() => {
@@ -133,8 +168,20 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      {/* Container do Modal com Slide up no Mobile */}
-      <div className="bg-slate-50 w-full sm:max-w-md rounded-t-[32px] sm:rounded-[32px] p-5 shadow-premium max-h-[92dvh] overflow-y-auto overflow-x-hidden no-scrollbar animate-in slide-in-from-bottom duration-300 relative border border-slate-100 pb-10">
+      {/* Container do Modal com Slide up no Mobile e gesto Pull-to-Close */}
+      <div 
+        ref={containerRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          transform: `translateY(${currentTranslateY}px)`,
+          transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+        className="bg-slate-50 w-full sm:max-w-md rounded-t-[32px] sm:rounded-[32px] p-5 shadow-premium max-h-[92dvh] overflow-y-auto overflow-x-hidden no-scrollbar animate-in slide-in-from-bottom duration-300 relative border border-slate-100 pb-10"
+      >
+        {/* Puxador Visual iOS */}
+        <div className="w-12 h-1 bg-slate-350 rounded-full mx-auto mb-3 shrink-0 block sm:hidden pointer-events-none" />
         
         {/* Cabeçalho */}
         <div className="flex justify-between items-center mb-4">
