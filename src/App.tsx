@@ -6,7 +6,8 @@ import {
   FileText, 
   Plus, 
   WifiOff,
-  Cloud
+  Cloud,
+  Repeat
 } from 'lucide-react';
 import { CloudSyncModal } from './components/CloudSyncModal';
 import { 
@@ -42,6 +43,7 @@ import { Dashboard } from './components/Dashboard';
 import { Evolution } from './components/Evolution';
 import { Goals } from './components/Goals';
 import { Ledger } from './components/Ledger';
+import { SubscriptionsView } from './components/SubscriptionsView';
 
 // Modals
 import { TransactionModal } from './components/TransactionModal';
@@ -245,7 +247,7 @@ const generateRecurringTransactions = (
 };
 
 function App() {
-  const [currentTab, setCurrentTab] = useState<'home' | 'evolution' | 'goals' | 'ledger'>('home');
+  const [currentTab, setCurrentTab] = useState<'home' | 'evolution' | 'goals' | 'ledger' | 'recurring'>('home');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budget, setBudget] = useState<BudgetAllocation>(MOCK_BUDGET);
   const [goals, setGoals] = useState<SavingGoal[]>([]);
@@ -687,6 +689,15 @@ function App() {
             banks={banks}
           />
         );
+      case 'recurring':
+        return (
+          <SubscriptionsView
+            recurringTxs={recurringTransactions}
+            banks={banks}
+            onAddRecurring={handleAddRecurringTransaction}
+            onDeleteRecurring={handleDeleteRecurringTransaction}
+          />
+        );
     }
   };
 
@@ -761,6 +772,17 @@ function App() {
           title="Metas"
         >
           <Target className="w-[22px] h-[22px] shrink-0" />
+        </button>
+
+        {/* Aba Assinaturas */}
+        <button
+          onClick={() => setCurrentTab('recurring')}
+          className={`flex items-center justify-center p-1.5 transition-custom ${
+            currentTab === 'recurring' ? 'text-brand-purple scale-110' : 'text-slate-400 hover:text-slate-650'
+          }`}
+          title="Assinaturas"
+        >
+          <Repeat className="w-[22px] h-[22px] shrink-0" />
         </button>
 
         {/* Aba Extrato */}
