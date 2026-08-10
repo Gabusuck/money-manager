@@ -176,283 +176,311 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="px-4 pb-6 space-y-5">
+    <div className="w-full flex flex-col space-y-4">
       
       {/* 1. Onboarding inicial caso o salário efetivo seja 0 */}
       {effectiveSalary === 0 ? (
-        <div className="glass-panel rounded-3xl p-6 mt-2 text-center space-y-4 shadow-premium animate-in fade-in zoom-in-95 duration-200">
-          <div className="w-14 h-14 rounded-full bg-purple-950/40 border border-purple-900/50 text-brand-purple flex items-center justify-center mx-auto shadow-sm">
-            <DollarSign className="w-6 h-6" />
+        <div className="px-4 pt-2">
+          <div className="bg-[#e5e6eb] rounded-3xl p-6 text-black space-y-4 shadow-premium text-center">
+            <div className="w-14 h-14 rounded-full bg-[#1c1d22]/5 flex items-center justify-center mx-auto text-black">
+              <DollarSign className="w-6 h-6" />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="text-sm font-black">Bem-vindo ao All My Money</h3>
+              <p className="text-xs text-slate-500 max-w-[280px] mx-auto leading-relaxed">
+                Vamos começar a organizar o teu dinheiro. Regista uma **Renda** (ex: o teu salário) ou define o teu salário de referência base.
+              </p>
+            </div>
+            <button
+              onClick={onEditBudget}
+              className="w-full py-3.5 bg-[#1c1d22] hover:bg-[#282a30] text-white text-xs font-black rounded-full shadow-premium transition-transform active:scale-95 cursor-pointer"
+            >
+              Definir Salário de Referência
+            </button>
           </div>
-          <div className="space-y-1.5">
-            <h3 className="text-sm font-bold text-white">Bem-vindo ao All My Money</h3>
-            <p className="text-xs text-slate-400 max-w-[280px] mx-auto leading-relaxed">
-              Vamos começar a organizar o teu dinheiro. Registar uma **Renda** (ex: o teu salário) ou define o teu salário de referência base.
-            </p>
-          </div>
-          <button
-            onClick={onEditBudget}
-            className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white text-xs font-bold rounded-full shadow-purple-glow hover:scale-[1.02] active:scale-98 transition-transform"
-          >
-            Definir Salário de Referência
-          </button>
         </div>
       ) : (
-        <>
-          {/* 2. Topo Premium "Património Total" em Cartões Reestruturados */}
-          <div className="space-y-3 mt-2 animate-in fade-in duration-300">
-            {/* Cartão do Património Total */}
-            <div className="glass-panel rounded-3xl p-5 relative overflow-hidden shadow-premium border border-white/5">
-              {/* Brilho neon de fundo */}
-              <div className="absolute right-[-20px] top-[-20px] w-28 h-28 rounded-full bg-brand-purple/10 blur-xl pointer-events-none" />
-              <div className="absolute left-[-20px] bottom-[-20px] w-28 h-28 rounded-full bg-[#0494b7]/10 blur-xl pointer-events-none" />
-              
-              <div className="relative flex justify-between items-center">
+        <div className="flex flex-col space-y-5">
+          {/* Top Wallet Card Section */}
+          <div className="px-4 pt-2">
+            <div className="bg-[#e5e6eb] text-[#0c0d0e] rounded-[32px] p-5 relative overflow-visible shadow-premium">
+              <div className="flex justify-between items-start">
                 <div>
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block mb-1">Património Total</span>
-                  <p className="text-3xl font-black text-white tracking-tight leading-none">
-                    {formatEuro(patrimonioTotal)}
-                  </p>
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 block">Olá Gabin! Bem-vindo</span>
+                  <span className="text-[10px] font-bold text-slate-400 block mt-0.5">à tua carteira</span>
                 </div>
-                {/* Ícone de Carteira elegante */}
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-purple to-brand-purple-dark flex items-center justify-center text-white shadow-purple-glow shrink-0">
-                  <Wallet className="w-5 h-5" />
-                </div>
-              </div>
-            </div>
-
-            {/* Grid de Entradas / Saídas */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* Entradas */}
-              <div className="glass-panel rounded-2xl p-4 relative overflow-hidden shadow-premium border border-white/5 flex flex-col justify-between h-20">
-                <div className="absolute right-[-10px] top-[-10px] w-14 h-14 rounded-full bg-cat-green/5 blur-md pointer-events-none" />
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Entradas do Mês (In)</span>
-                <div className="flex items-center gap-1.5 mt-2">
-                  <div className="w-6 h-6 rounded-full bg-cat-green/10 flex items-center justify-center text-cat-green shrink-0">
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                <div className="flex gap-2">
+                  {/* Button 1: Configurar Salário */}
+                  <button
+                    onClick={onEditBudget}
+                    className="w-8 h-8 rounded-full bg-[#1c1d22]/5 hover:bg-[#1c1d22]/10 text-black flex items-center justify-center transition-custom cursor-pointer"
+                    title="Configurar Salário Base"
+                  >
+                    <DollarSign className="w-4 h-4" />
+                  </button>
+                  {/* Button 2: Ícone Carteira */}
+                  <div className="w-8 h-8 rounded-full bg-[#1c1d22]/5 text-black flex items-center justify-center select-none">
+                    <Wallet className="w-4 h-4" />
                   </div>
-                  <span className="text-base font-black text-cat-green tracking-tight">{formatEuro(effectiveSalary)}</span>
                 </div>
               </div>
 
-              {/* Saídas */}
-              <div className="glass-panel rounded-2xl p-4 relative overflow-hidden shadow-premium border border-white/5 flex flex-col justify-between h-20">
-                <div className="absolute right-[-10px] top-[-10px] w-14 h-14 rounded-full bg-cat-red/5 blur-md pointer-events-none" />
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Saídas do Mês (Out)</span>
-                <div className="flex items-center gap-1.5 mt-2">
-                  <div className="w-6 h-6 rounded-full bg-cat-red/10 flex items-center justify-center text-cat-red shrink-0">
-                    <ArrowDownRight className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-base font-black text-cat-red tracking-tight">-{formatEuro(totalSpent)}</span>
-                </div>
+              <div className="mt-5">
+                <span className="inline-block bg-black text-white text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  € EUR
+                </span>
+                <p className="text-4xl font-black tracking-tight text-black mt-1 leading-none">
+                  {formatEuro(patrimonioTotal)}
+                </p>
               </div>
+
+              {/* Dynamic growth badge sticking out of the bottom center */}
+              {(() => {
+                const growthPct = effectiveSalary > 0 ? ((effectiveSalary - totalSpent) / effectiveSalary) * 100 : 0;
+                return (
+                  <div className="absolute bottom-[-14px] left-1/2 -translate-x-1/2 bg-[#142d1f] text-[#55d095] border border-[#234d35] rounded-full px-3.5 py-1 text-[10px] font-black flex items-center gap-1 shadow-sm shrink-0">
+                    <TrendingUp className="w-3 h-3 text-[#55d095]" />
+                    <span>{growthPct >= 0 ? '+' : ''}{growthPct.toFixed(1)}%</span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
-          {/* 3. Secção "As Minhas Contas" horizontal */}
-          <div className="space-y-2.5">
-            <div className="flex justify-between items-center px-1">
-              <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">As Minhas Contas</h3>
-              <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Saldos Atuais</span>
-            </div>
-            
-            <div className="flex gap-3 overflow-x-auto no-scrollbar py-0.5">
-              {banks.map(bank => {
-                const balance = getBankBalance(bank.id);
-                return (
-                  <div 
-                    key={bank.id} 
-                    onTouchStart={() => startPress(bank)}
-                    onTouchMove={cancelPress}
-                    onTouchEnd={cancelPress}
-                    onMouseDown={() => startPress(bank)}
-                    onMouseUp={cancelPress}
-                    onMouseLeave={cancelPress}
-                    className={`glass-panel rounded-2xl p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 transition-all duration-350 group select-none cursor-pointer ${
-                      pressedBankId === bank.id 
-                        ? 'scale-[0.94] border-brand-purple/50 bg-slate-950/80 brightness-95' 
-                        : 'border-white/5 hover:border-brand-purple/30'
-                    }`}
-                    title="Mantém pressionado para editar/gerir"
-                  >
-                    {/* Botão de Apagar discreto se houver mais que 1 conta */}
-                    {banks.length > 1 && (
-                      <button
-                        onClick={() => onDeleteBank(bank.id)}
-                        className="absolute right-1.5 top-1.5 text-slate-400 hover:text-cat-red opacity-0 group-hover:opacity-100 transition-opacity w-4.5 h-4.5 flex items-center justify-center rounded-full bg-slate-900 border border-slate-800"
-                        title="Apagar Conta"
-                      >
-                        <X className="w-2.5 h-2.5" />
-                      </button>
-                    )}
-                    
-                    <span className="text-[10px] font-bold text-slate-300 truncate pr-4">{bank.name}</span>
-                    <span className={`text-xs font-black tracking-tight ${balance < 0 ? 'text-cat-red' : 'text-cat-green'}`}>
-                      {formatEuro(balance)}
-                    </span>
-                  </div>
-                );
-              })}
-
-              {/* Botão dashed de Nova Conta */}
-              <button
-                onClick={handleAddBankClick}
-                className="bg-slate-900/30 rounded-2xl border border-dashed border-slate-800 p-3.5 w-32 shrink-0 flex flex-col items-center justify-center h-20 text-slate-500 hover:border-brand-purple hover:text-brand-purple transition-custom cursor-pointer"
+          {/* Actions button row (Send / Request matching screenshot) */}
+          <div className="px-4 pt-1">
+            <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={() => onOpenPrefilledTxModal('expense', '')} 
+                className="flex items-center justify-center gap-2 py-4 bg-[#1c1d22] hover:bg-[#282a30] text-white text-xs font-black rounded-2xl shadow-sm transition-colors cursor-pointer"
               >
-                <Plus className="w-4 h-4 mb-1" />
-                <span className="text-[9px] font-bold uppercase tracking-wider">Novo Banco</span>
+                <span>Nova Despesa</span>
+                <ArrowDownRight className="w-4 h-4 text-cat-red" />
+              </button>
+
+              <button 
+                onClick={() => onOpenPrefilledTxModal('income', '')} 
+                className="flex items-center justify-center gap-2 py-4 bg-[#1c1d22] hover:bg-[#282a30] text-white text-xs font-black rounded-2xl shadow-sm transition-colors cursor-pointer"
+              >
+                <span>Nova Renda</span>
+                <ArrowUpRight className="w-4 h-4 text-cat-green" />
               </button>
             </div>
           </div>
-        </>
-      )}
 
-      {/* 4. Secção Gráfico Circular "Divisão do Plafond" */}
-      {budget.salary > 0 && (
-        <div className="glass-panel rounded-3xl p-5 space-y-4 shadow-premium">
-          <div>
-            <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Divisão do Plafond</h3>
-            <p className="text-xxs text-slate-400 mt-0.5">Foco apenas em despesas variáveis</p>
-          </div>
+          {/* Bottom Panel Drawer in Light Grey */}
+          <div className="bg-[#e5e6eb] rounded-t-[36px] px-4 pt-6 pb-2 space-y-6 flex-1 text-black">
+            {/* Drawer handlebar decor */}
+            <div className="w-12 h-1 bg-slate-350/80 rounded-full mx-auto mb-4" />
 
-          {/* Gráfico Donut (Estático, Não Clicável/Hoverable) */}
-          <div className="relative h-44 flex items-center justify-center pointer-events-none select-none">
-            {activeDonutData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={donutData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={52}
-                    outerRadius={70}
-                    paddingAngle={5}
-                    dataKey="value"
-                    isAnimationActive={false}
-                  >
-                    {donutData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center p-4">
-                <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mb-2">
-                  <Info className="w-4 h-4 text-slate-400" />
-                </div>
-                <p className="text-xxs text-slate-400 max-w-[200px]">Sem despesas do Plafond este mês.</p>
+            {/* As Minhas Contas section */}
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center px-1">
+                <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest">As Minhas Contas</h3>
+                <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Saldos Atuais</span>
               </div>
-            )}
-
-            {activeDonutData.length > 0 && (
-              <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400">Plafond Rest.</span>
-                <span className={`text-sm font-black ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-white'}`}>{formatEuro(remainingPlafondReal)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Legenda Detalhada */}
-          <div className="grid grid-cols-1 gap-2 pt-2 border-t border-white/5">
-            {donutData.map((item, idx) => {
-              const IconComponent = item.icon;
-              const percentage = totalDonutSpent > 0 ? (item.value / totalDonutSpent) * 100 : 0;
-              return (
-                <div 
-                  key={idx}
-                  className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-900/40 transition-custom"
-                >
-                  <div className="flex items-center gap-3">
+              
+              <div className="flex gap-3 overflow-x-auto no-scrollbar py-0.5">
+                {banks.map(bank => {
+                  const balance = getBankBalance(bank.id);
+                  return (
                     <div 
-                      className="w-8 h-8 rounded-full flex items-center justify-center border"
-                      style={{ borderColor: `${item.color}22`, backgroundColor: `${item.color}08` }}
+                      key={bank.id} 
+                      onTouchStart={() => startPress(bank)}
+                      onTouchMove={cancelPress}
+                      onTouchEnd={cancelPress}
+                      onMouseDown={() => startPress(bank)}
+                      onMouseUp={cancelPress}
+                      onMouseLeave={cancelPress}
+                      className={`bg-white rounded-2xl p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 transition-all duration-350 group select-none cursor-pointer border border-slate-200/50 ${
+                        pressedBankId === bank.id 
+                          ? 'scale-[0.94] bg-slate-50 brightness-95' 
+                          : 'hover:translate-y-[-1px]'
+                      }`}
+                      title="Mantém pressionado para editar/gerir"
                     >
-                      <IconComponent className="w-4 h-4" style={{ color: item.color }} />
+                      {/* Botão de Apagar discreto se houver mais que 1 conta */}
+                      {banks.length > 1 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteBank(bank.id);
+                          }}
+                          className="absolute right-1.5 top-1.5 text-slate-300 hover:text-cat-red opacity-0 group-hover:opacity-100 transition-opacity w-4.5 h-4.5 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200"
+                          title="Apagar Conta"
+                        >
+                          <X className="w-2.5 h-2.5" />
+                        </button>
+                      )}
+                      
+                      <span className="text-[10px] font-bold text-slate-500 truncate pr-4">{bank.name}</span>
+                      <span className={`text-xs font-black tracking-tight ${balance < 0 ? 'text-cat-red' : 'text-cat-green'}`}>
+                        {formatEuro(balance)}
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-white">{item.name}</p>
-                      <p className="text-[10px] text-slate-400">{percentage.toFixed(0)}% do Plafond</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-black text-white">{formatEuro(item.value)}</p>
-                  </div>
+                  );
+                })}
+
+                {/* Botão dashed de Nova Conta */}
+                <button
+                  onClick={handleAddBankClick}
+                  className="bg-white/60 rounded-2xl border border-dashed border-slate-300 p-3.5 w-32 shrink-0 flex flex-col items-center justify-center h-20 text-slate-500 hover:bg-white transition-custom cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 mb-1" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider">Novo Banco</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Divisão do Plafond section */}
+            {budget.salary > 0 && (
+              <div className="bg-white rounded-3xl p-5 space-y-4 shadow-premium border border-slate-200/40 text-black">
+                <div>
+                  <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest">Divisão do Plafond</h3>
+                  <p className="text-xxs text-slate-400 mt-0.5">Foco apenas em despesas variáveis</p>
                 </div>
-              );
-            })}
+
+                {/* Gráfico Donut */}
+                <div className="relative h-44 flex items-center justify-center pointer-events-none select-none">
+                  {activeDonutData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={donutData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={52}
+                          outerRadius={70}
+                          paddingAngle={5}
+                          dataKey="value"
+                          isAnimationActive={false}
+                        >
+                          {donutData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-center p-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mb-2">
+                        <Info className="w-4 h-4 text-slate-400" />
+                      </div>
+                      <p className="text-xxs text-slate-450 max-w-[200px]">Sem despesas do Plafond este mês.</p>
+                    </div>
+                  )}
+
+                  {activeDonutData.length > 0 && (
+                    <div className="absolute flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400">Plafond Rest.</span>
+                      <span className={`text-sm font-black ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-slate-900'}`}>{formatEuro(remainingPlafondReal)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Legenda Detalhada */}
+                <div className="grid grid-cols-1 gap-2 pt-2 border-t border-slate-100">
+                  {donutData.map((item, idx) => {
+                    const IconComponent = item.icon;
+                    const percentage = totalDonutSpent > 0 ? (item.value / totalDonutSpent) * 100 : 0;
+                    return (
+                      <div 
+                        key={idx}
+                        className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-custom"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-8 h-8 rounded-full flex items-center justify-center border"
+                            style={{ borderColor: `${item.color}22`, backgroundColor: `${item.color}08` }}
+                          >
+                            <IconComponent className="w-4 h-4" style={{ color: item.color }} />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900">{item.name}</p>
+                            <p className="text-[10px] text-slate-400">{percentage.toFixed(0)}% do Plafond</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-black text-slate-900">{formatEuro(item.value)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Últimos Movimentos section */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center px-1">
+                <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest">Últimos Movimentos</h3>
+                <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Histórico Recente</span>
+              </div>
+
+              <div className="space-y-2.5">
+                {currentMonthTransactions.length === 0 ? (
+                  <div className="bg-white rounded-3xl border border-slate-200/40 p-8 text-center shadow-premium">
+                    <p className="text-xxs text-slate-400">Nenhuma transação registada.</p>
+                  </div>
+                ) : (
+                  currentMonthTransactions.slice(0, 3).map((tx) => {
+                    const catDetails = getCategoryIcon(tx.category);
+                    const Icon = catDetails.icon;
+
+                    return (
+                      <div 
+                        key={tx.id} 
+                        className="bg-white rounded-[24px] p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden border border-slate-200/40 text-black"
+                      >
+                        {/* Barra Vertical de Categoria à esquerda */}
+                        <div 
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 rounded-r-lg" 
+                          style={{ backgroundColor: catDetails.color }}
+                        />
+
+                        <div className="flex items-center gap-3 pl-1.5">
+                          {/* Círculo com Ícone */}
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center border ${catDetails.border} ${catDetails.bg} shadow-sm shrink-0`}>
+                            <Icon className="w-4 h-4" style={{ color: catDetails.color }} />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900 leading-tight">{tx.description}</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                              <span>{tx.category}</span>
+                              <span>•</span>
+                              <span>{tx.date}</span>
+                              {/* Badge do Banco */}
+                              {tx.fromBankId && tx.toBankId ? (
+                                <span className="bg-purple-50 text-brand-purple border border-purple-100/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                                  {banks.find(b => b.id === tx.fromBankId)?.name} ➔ {banks.find(b => b.id === tx.toBankId)?.name}
+                                </span>
+                              ) : tx.bankId ? (
+                                <span className="bg-slate-105 text-slate-500 border border-slate-200/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                                  {banks.find(b => b.id === tx.bankId)?.name}
+                                </span>
+                              ) : null}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right pr-1 font-black text-xs">
+                          {tx.type === 'income' ? (
+                            <span className="text-cat-green">+{formatEuro(tx.amount)}</span>
+                          ) : tx.type === 'transfer' ? (
+                            <span className="text-brand-purple">-{formatEuro(tx.amount)}</span>
+                          ) : (
+                            <span className="text-cat-red">-{formatEuro(tx.amount)}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
-
-      {/* 5. Acesso rápido às transações recentes (Cartões Flutuantes como na imagem) */}
-      <div className="space-y-3">
-        <div className="flex justify-between items-center px-1">
-          <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Últimos Movimentos</h3>
-          <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Histórico Recente</span>
-        </div>
-
-        <div className="space-y-2.5">
-          {currentMonthTransactions.length === 0 ? (
-            <div className="glass-panel rounded-3xl border border-white/5 p-8 text-center shadow-premium">
-              <p className="text-xxs text-slate-400">Nenhuma transação registada.</p>
-            </div>
-          ) : (
-            currentMonthTransactions.slice(0, 3).map((tx) => {
-              const catDetails = getCategoryIcon(tx.category);
-              const Icon = catDetails.icon;
-
-              return (
-                <div 
-                  key={tx.id} 
-                  className="glass-panel rounded-[24px] p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden border border-white/5"
-                >
-                  {/* Barra Vertical de Categoria à esquerda */}
-                  <div 
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 rounded-r-lg" 
-                    style={{ backgroundColor: catDetails.color }}
-                  />
-
-                  <div className="flex items-center gap-3 pl-1.5">
-                    {/* Círculo com Ícone */}
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center border ${catDetails.border} ${catDetails.bg} shadow-sm shrink-0`}>
-                      <Icon className="w-4 h-4" style={{ color: catDetails.color }} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-white leading-tight">{tx.description}</p>
-                      <p className="text-[9px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                        <span>{tx.category}</span>
-                        <span>•</span>
-                        <span>{tx.date}</span>
-                        {/* Badge do Banco */}
-                        {tx.fromBankId && tx.toBankId ? (
-                          <span className="bg-purple-950/40 text-brand-purple border border-purple-900/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
-                            {banks.find(b => b.id === tx.fromBankId)?.name} ➔ {banks.find(b => b.id === tx.toBankId)?.name}
-                          </span>
-                        ) : tx.bankId ? (
-                          <span className="bg-slate-900 text-slate-400 border border-slate-800 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
-                            {banks.find(b => b.id === tx.bankId)?.name}
-                          </span>
-                        ) : null}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right pr-1 font-black text-xs">
-                    {tx.type === 'income' ? (
-                      <span className="text-cat-green">+{formatEuro(tx.amount)}</span>
-                    ) : tx.type === 'transfer' ? (
-                      <span className="text-[#a855f7]">-{formatEuro(tx.amount)}</span>
-                    ) : (
-                      <span className="text-cat-red">-{formatEuro(tx.amount)}</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
 
       {/* iOS Context Menu Backdrop */}
       {activeContextMenuBank && (
