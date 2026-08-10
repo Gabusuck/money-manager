@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PiggyBank, TrendingUp, Plus, Trash2, Calendar, Target, PlusCircle } from 'lucide-react';
+import { PiggyBank, TrendingUp, Plus, Trash2, Target } from 'lucide-react';
 import type { SavingGoal } from '../types';
 
 interface GoalsProps {
@@ -68,11 +68,11 @@ export const Goals: React.FC<GoalsProps> = ({
       <div className="flex justify-between items-center mt-2">
         <div>
           <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Metas & Objetivos</h2>
-          <p className="text-xxs text-slate-500 mt-0.5">Define e acompanha as tuas poupanças</p>
+          <p className="text-xxs text-slate-500 mt-0.5 font-semibold">Define e acompanha as tuas poupanças</p>
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#1c1d22] hover:bg-[#282a30] rounded-full hover:scale-102 active:scale-98 transition-transform shadow-premium cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-black text-white bg-black rounded-full hover:scale-102 active:scale-98 transition-transform shadow-md cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           Nova Meta
@@ -83,16 +83,16 @@ export const Goals: React.FC<GoalsProps> = ({
       {isAdding && (
         <form 
           onSubmit={handleCreateGoal}
-          className="bg-[#e5e6eb] rounded-3xl p-5 space-y-4 shadow-premium animate-in fade-in slide-in-from-top-4 duration-200 text-black border border-slate-200"
+          className="glass-panel rounded-3xl p-5 space-y-4 shadow-premium animate-in fade-in slide-in-from-top-4 duration-200 border border-slate-200/50"
         >
           <div className="flex justify-between items-center">
-            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1.5">
-              <Target className="w-4 h-4 text-slate-800" /> Criar Novo Objetivo
+            <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5">
+              <Target className="w-4 h-4 text-brand-purple" /> Criar Novo Objetivo
             </h3>
             <button 
               type="button" 
               onClick={() => setIsAdding(false)} 
-              className="text-xs font-bold text-slate-500 hover:text-black cursor-pointer"
+              className="text-xs font-bold text-slate-400 hover:text-slate-700 cursor-pointer"
             >
               Cancelar
             </button>
@@ -100,56 +100,56 @@ export const Goals: React.FC<GoalsProps> = ({
 
           <div className="space-y-3.5">
             <div>
-              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Título do Objetivo</label>
+              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Título do Objetivo</label>
               <input
                 type="text"
                 placeholder="Ex: Novo Portátil, Férias de Verão..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-3 text-xs bg-white border border-slate-200 rounded-2xl focus:outline-none focus:border-black text-black shadow-inner-soft"
+                className="w-full p-3 text-xs glass-input rounded-2xl focus:outline-none placeholder-slate-400 shadow-inner-soft"
                 required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Valor Alvo (€)</label>
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Valor Alvo (€)</label>
                 <input
                   type="number"
                   placeholder="Ex: 800"
                   value={target}
                   onChange={(e) => setTarget(e.target.value)}
-                  className="w-full p-3 text-xs bg-white border border-slate-200 rounded-2xl focus:outline-none focus:border-black text-black shadow-inner-soft"
+                  className="w-full p-3 text-xs glass-input rounded-2xl focus:outline-none placeholder-slate-400 shadow-inner-soft"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Categoria</label>
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Categoria</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as any)}
-                  className="w-full p-3 text-xs bg-white border border-slate-200 rounded-2xl focus:outline-none focus:border-black text-black shadow-inner-soft"
+                  className="w-full p-3 text-xs glass-input rounded-2xl focus:outline-none placeholder-slate-400 shadow-inner-soft"
                 >
-                  <option value="Poupança" className="bg-white text-black">Poupança (TV/Câmara)</option>
-                  <option value="Investimento" className="bg-white text-black">Investimento (T212)</option>
+                  <option value="Poupança">Poupança (TV/Câmara)</option>
+                  <option value="Investimento">Investimento (T212)</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Data Limite (Opcional)</label>
+              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Data Limite (Opcional)</label>
               <input
                 type="date"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full p-3 text-xs bg-white border border-slate-200 rounded-2xl focus:outline-none focus:border-black text-black shadow-inner-soft"
+                className="w-full p-3 text-xs glass-input rounded-2xl focus:outline-none placeholder-slate-400 shadow-inner-soft"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3.5 bg-[#1c1d22] hover:bg-[#282a30] text-white rounded-full text-xs font-black uppercase tracking-widest shadow-premium hover:scale-[1.01] active:scale-99 transition-transform cursor-pointer"
+              className="w-full py-3 bg-black text-white rounded-full text-xs font-black uppercase tracking-widest shadow-md hover:scale-[1.01] active:scale-99 transition-transform cursor-pointer"
             >
               Criar Meta
             </button>
@@ -160,9 +160,9 @@ export const Goals: React.FC<GoalsProps> = ({
       {/* Lista de Metas em Cartões Flutuantes com cantos rounded-3xl */}
       <div className="space-y-4">
         {goals.length === 0 ? (
-          <div className="bg-[#e5e6eb] rounded-3xl p-8 text-center shadow-premium text-slate-600">
-            <PiggyBank className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-            <p className="text-xxs font-bold">Ainda não definiste metas de poupança.</p>
+          <div className="glass-panel rounded-3xl border border-slate-200/50 p-8 text-center shadow-premium">
+            <PiggyBank className="w-8 h-8 text-slate-350 mx-auto mb-2" />
+            <p className="text-xxs text-slate-400 font-bold">Ainda não definiste metas de poupança.</p>
           </div>
         ) : (
           goals.map((goal) => {
@@ -173,7 +173,7 @@ export const Goals: React.FC<GoalsProps> = ({
             return (
               <div 
                 key={goal.id} 
-                className="bg-[#e5e6eb] rounded-[28px] p-5 space-y-4 shadow-premium hover:border-slate-300 transition-custom relative overflow-hidden text-black border border-slate-200"
+                className="glass-panel rounded-[28px] border border-slate-200/55 p-5 space-y-4 shadow-premium hover:border-black/10 transition-custom relative overflow-hidden"
               >
                 {/* Indicador de Categoria Lateral */}
                 <div 
@@ -194,7 +194,7 @@ export const Goals: React.FC<GoalsProps> = ({
                         </span>
                         {goal.deadline && (
                           <span className="text-[9px] text-slate-500 flex items-center gap-1 font-semibold">
-                            <Calendar className="w-3 h-3 text-slate-400" /> Até {goal.deadline}
+                            Até {goal.deadline}
                           </span>
                         )}
                       </div>
@@ -203,7 +203,7 @@ export const Goals: React.FC<GoalsProps> = ({
 
                   <button
                     onClick={() => onDeleteGoal(goal.id)}
-                    className="w-7 h-7 text-slate-450 hover:text-cat-red hover:bg-red-50 rounded-lg flex items-center justify-center transition-custom cursor-pointer"
+                    className="w-7 h-7 text-slate-400 hover:text-cat-red hover:bg-red-50 rounded-lg flex items-center justify-center transition-custom cursor-pointer"
                     title="Eliminar meta"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -212,11 +212,11 @@ export const Goals: React.FC<GoalsProps> = ({
 
                 {/* Progresso Visual */}
                 <div className="space-y-1.5 pl-1">
-                  <div className="flex justify-between text-xxs font-semibold text-slate-500">
+                  <div className="flex justify-between text-xxs font-bold text-slate-500">
                     <span>{formatEuro(goal.current)} de {formatEuro(goal.target)}</span>
-                    <span className="font-extrabold text-slate-900">{pct.toFixed(0)}%</span>
+                    <span className="font-extrabold text-slate-800">{pct.toFixed(0)}%</span>
                   </div>
-                  <div className="h-2 w-full bg-white border border-slate-200/50 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-slate-100 border border-slate-200/50 rounded-full overflow-hidden">
                     <div 
                       className={`h-full rounded-full transition-all duration-500 ${isPoupanca ? 'bg-cat-purple' : 'bg-cat-green'}`} 
                       style={{ width: `${pct}%` }} 
@@ -225,7 +225,7 @@ export const Goals: React.FC<GoalsProps> = ({
                 </div>
 
                 {/* Ações da Meta (Contributo rápido) */}
-                <div className="flex justify-between items-center pt-2 border-t border-slate-200 pl-1">
+                <div className="flex justify-between items-center pt-2 border-t border-slate-100 pl-1">
                   {isFinished ? (
                     <span className="text-[10px] font-black text-cat-green uppercase tracking-widest">🎯 Objetivo Alcançado!</span>
                   ) : contributingId === goal.id ? (
@@ -238,20 +238,20 @@ export const Goals: React.FC<GoalsProps> = ({
                         placeholder="Valor (€)"
                         value={contributionAmount}
                         onChange={(e) => setContributionAmount(e.target.value)}
-                        className="flex-1 p-2 text-xxs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-black text-black shadow-inner-soft"
+                        className="flex-1 p-2 text-xxs glass-input rounded-xl focus:outline-none placeholder-slate-400 shadow-inner-soft"
                         required
                         autoFocus
                       />
                       <button
                         type="submit"
-                        className="px-3 py-2 bg-[#1c1d22] text-white text-xxs font-bold rounded-xl hover:bg-[#27292f] shadow-sm transition-custom cursor-pointer"
+                        className="px-3 py-2 bg-black text-white text-xxs font-black rounded-xl hover:bg-slate-900 shadow-sm transition-custom cursor-pointer"
                       >
                         Reforçar
                       </button>
                       <button
                         type="button"
                         onClick={() => setContributingId(null)}
-                        className="px-2 py-2 text-xxs font-bold text-slate-500 hover:text-black transition-custom cursor-pointer"
+                        className="px-2 py-2 text-xxs font-bold text-slate-400 hover:text-slate-800 transition-custom cursor-pointer"
                       >
                         Cancelar
                       </button>
@@ -259,9 +259,9 @@ export const Goals: React.FC<GoalsProps> = ({
                   ) : (
                     <button
                       onClick={() => setContributingId(goal.id)}
-                      className="flex items-center gap-1 text-xxs font-extrabold text-slate-800 hover:underline transition-custom cursor-pointer"
+                      className="flex items-center gap-1 text-xxs font-extrabold text-black hover:underline transition-custom cursor-pointer"
                     >
-                      <PlusCircle className="w-3.5 h-3.5" /> Adicionar Reforço
+                      <Plus className="w-3.5 h-3.5" /> Adicionar Reforço
                     </button>
                   )}
                 </div>

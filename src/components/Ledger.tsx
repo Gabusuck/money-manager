@@ -83,7 +83,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
     <div className="px-4 pb-6 space-y-5">
       
       {/* Barra de Pesquisa e Filtros de Categoria */}
-      <div className="bg-[#e5e6eb] text-[#0c0d0e] rounded-3xl p-4 mt-2 space-y-3.5 shadow-premium">
+      <div className="glass-panel rounded-3xl p-4 mt-2 space-y-3.5 shadow-premium">
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -91,7 +91,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
             placeholder="Pesquisar movimentos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-xs bg-white border border-slate-200 rounded-2xl focus:outline-none focus:border-black text-black placeholder-slate-400 shadow-inner-soft"
+            className="w-full pl-10 pr-4 py-2.5 text-xs glass-input rounded-2xl focus:outline-none placeholder-slate-400 shadow-inner-soft"
           />
         </div>
 
@@ -105,8 +105,8 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                 onClick={() => setSelectedCategory(cat as any)}
                 className={`px-3.5 py-1.5 text-[10px] font-bold rounded-full border transition-custom whitespace-nowrap cursor-pointer ${
                   isSelected
-                    ? 'bg-black border-black text-white'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-55'
+                    ? 'bg-black border-black text-white shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
                 }`}
               >
                 {cat}
@@ -116,7 +116,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
         </div>
       </div>
 
-      {/* Seletor de Datas Horizontal */}
+      {/* Seletor de Datas Horizontal (Estilo iOS da Imagem) */}
       <div className="space-y-2">
         <h4 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest px-1">Selecione o Dia</h4>
         
@@ -124,10 +124,10 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
           {/* Card 'Todos' */}
           <button
             onClick={() => setSelectedDateFilter('Todas')}
-            className={`flex flex-col items-center justify-center px-4.5 py-3 rounded-2xl min-w-14 h-16 transition-custom shadow-premium cursor-pointer ${
+            className={`flex flex-col items-center justify-center px-4.5 py-3 rounded-2xl border min-w-14 h-16 transition-custom shadow-premium cursor-pointer ${
               selectedDateFilter === 'Todas'
-                ? 'bg-[#e5e6eb] text-black'
-                : 'bg-[#1c1d22] text-slate-400 hover:text-white border-none'
+                ? 'bg-black border-black text-white shadow-sm'
+                : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
             }`}
           >
             <span className="text-[10px] font-black uppercase tracking-wider">Todos</span>
@@ -140,10 +140,10 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
               <button
                 key={day.dateString}
                 onClick={() => setSelectedDateFilter(day.dateString)}
-                className={`flex flex-col items-center justify-center p-3 rounded-2xl w-14 h-16 transition-custom shadow-premium cursor-pointer ${
+                className={`flex flex-col items-center justify-center p-3 rounded-2xl border w-14 h-16 transition-custom shadow-premium cursor-pointer ${
                   isSelected
-                    ? 'bg-[#e5e6eb] text-black'
-                    : 'bg-[#1c1d22] text-slate-400 hover:text-white border-none'
+                    ? 'bg-black border-black text-white shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
                 }`}
               >
                 <span className="text-base font-black leading-none">{day.dayNum}</span>
@@ -157,19 +157,19 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
       {/* Lista de Transações Agrupadas */}
       <div className="space-y-5">
         {sortedDates.length === 0 ? (
-          <div className="bg-[#e5e6eb] rounded-3xl p-8 text-center shadow-premium text-slate-600">
-            <p className="text-xxs font-bold">Nenhum movimento encontrado.</p>
+          <div className="glass-panel rounded-3xl border border-slate-200/50 p-8 text-center shadow-premium">
+            <p className="text-xxs text-slate-400 font-bold">Nenhum movimento encontrado.</p>
           </div>
         ) : (
           sortedDates.map((dateStr) => (
-            <div key={dateStr} className="space-y-2">
+            <div key={dateStr} className="space-y-2.5">
               {/* Título do Grupo de Data */}
               <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest px-1">
                 {formatDateTitle(dateStr)}
               </h3>
 
-              {/* Lista do Dia em Cartões Brancos dentro de Contentor Cinza */}
-              <div className="bg-[#e5e6eb] rounded-[28px] p-3 space-y-2 shadow-premium">
+              {/* Lista do Dia em Cartões Flutuantes Individuais */}
+              <div className="space-y-2.5">
                 {groupedTransactions[dateStr].map((tx) => {
                   const catDetails = getCategoryDetails(tx.category);
                   const Icon = catDetails.icon;
@@ -177,7 +177,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                   return (
                     <div
                       key={tx.id}
-                      className="bg-white rounded-[20px] p-3 flex items-center justify-between transition-custom hover:translate-y-[-1px] relative overflow-hidden text-black border border-slate-100"
+                      className="glass-panel rounded-[24px] p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden group border border-slate-100/50"
                     >
                       {/* Barra Vertical de Categoria à esquerda */}
                       <div 
@@ -187,12 +187,12 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
 
                       <div className="flex items-center gap-3 pl-1.5">
                         {/* Círculo com Ícone */}
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center border ${catDetails.border} ${catDetails.bg} shadow-sm shrink-0`}>
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center border border-slate-100 bg-slate-50 shadow-sm shrink-0">
                           <Icon className="w-4 h-4" style={{ color: catDetails.color }} />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-900 leading-tight">{tx.description}</p>
-                          <span className="text-[9px] text-slate-450 font-semibold mt-0.5 flex items-center gap-1.5 flex-wrap">
+                          <p className="text-xs font-bold text-slate-800 leading-tight">{tx.description}</p>
+                          <span className="text-[9px] text-slate-400 font-semibold mt-0.5 flex items-center gap-1.5 flex-wrap">
                             <span>{tx.category}</span>
                             {/* Badges de Banco */}
                             {tx.fromBankId && tx.toBankId ? (
@@ -219,7 +219,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                           {tx.type === 'income' ? (
                             <span className="text-cat-green">+{formatEuro(tx.amount)}</span>
                           ) : tx.type === 'transfer' ? (
-                            <span className="text-brand-purple">-{formatEuro(tx.amount)}</span>
+                            <span className="text-[#a855f7]">-{formatEuro(tx.amount)}</span>
                           ) : (
                             <span className="text-cat-red">-{formatEuro(tx.amount)}</span>
                           )}
@@ -227,7 +227,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                         
                         <button
                           onClick={() => onDeleteTransaction(tx.id)}
-                          className="w-8 h-8 rounded-full bg-slate-50 border border-slate-150 text-slate-400 hover:bg-red-50 hover:text-cat-red hover:border-red-150 flex items-center justify-center active:scale-95 transition-custom shrink-0 cursor-pointer"
+                          className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-red-950/40 hover:text-cat-red hover:border-red-900/50 flex items-center justify-center active:scale-95 transition-custom shrink-0 cursor-pointer"
                           title="Eliminar"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

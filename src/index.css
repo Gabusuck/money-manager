@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-dark: #000000;
-  --color-brand-gray: #e5e6eb;
-  --color-brand-border: #d2d4da;
+  --color-brand-dark: #f8fafc;
+  --color-brand-gray: #0b0f19;
+  --color-brand-border: #1e293b;
   
-  /* Roxo / Violeta */
-  --color-brand-purple: #1e1f24;
-  --color-brand-purple-dark: #0f1012;
+  /* Roxo / Violeta do Design de Referência */
+  --color-brand-purple: #8b5cf6;
+  --color-brand-purple-dark: #633bbf;
   
   /* Cores das Categorias */
   --color-cat-orange: #f97316;
   --color-cat-yellow: #f59e0b;
-  --color-cat-gray: #64748b;
-  --color-cat-purple: #8b5cf6;
+  --color-cat-gray: #94a3b8;
+  --color-cat-purple: #a855f7;
   --color-cat-green: #10b981;
   --color-cat-red: #ef4444;
   --color-cat-blue: #06b6d4;
@@ -21,9 +21,10 @@
 
 @layer base {
   html, body, #root {
-    @apply h-full w-full overflow-hidden bg-[#f4f5f8] text-slate-800 font-sans select-none antialiased;
+    @apply h-full w-full overflow-hidden bg-[#eaecf0] text-[#18181b] font-sans select-none antialiased;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
@@ -52,77 +53,66 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Sombra Premium do Design */
+/* Sombra Premium Suave (Estilo Clean Minimalista) */
 .shadow-premium {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shadow-premium:hover {
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+  transform: translateY(-0.5px);
 }
 
 /* Sombra Interna Suave para Inputs */
 .shadow-inner-soft {
-  box-shadow: inset 0 1px 4px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1.5px 4px 0 rgba(0, 0, 0, 0.03);
+}
+
+/* Sombra Brilhante Neutra */
+.shadow-purple-glow {
+  box-shadow: 0 6px 18px -2px rgba(0, 0, 0, 0.1);
 }
 
 /* Animação de Mudança de View Premium */
 @keyframes view-change {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.995);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 .animate-view-change {
-  animation: view-change 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: view-change 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Estilização dos gráficos Recharts */
 .recharts-default-tooltip {
   background-color: #ffffff !important;
-  border: 1px solid #e5e6eb !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
   border-radius: 16px !important;
-  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.05) !important;
-  color: #0c0d0e !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+  color: #18181b !important;
   font-family: inherit !important;
 }
 
-/* Novas Classes do Visual Light on Dark */
-.wallet-panel {
-  background-color: #e5e6eb;
-  color: #0c0d0e;
-  border-radius: 28px;
-}
-
-.wallet-subcard {
-  background-color: #ffffff;
-  color: #0c0d0e;
-  border-radius: 20px;
-}
-
-.wallet-dark-btn {
-  background-color: #1c1d22;
-  color: #ffffff;
-}
-
-.wallet-dark-btn:hover {
-  background-color: #27292f;
-}
-
+/* Painéis e inputs adaptados para estilo claro minimalista */
 .glass-panel {
-  background-color: #e5e6eb;
-  color: #0c0d0e;
-  border: 1px solid #d2d4da;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .glass-input {
-  background-color: #ffffff;
-  border: 1px solid #d2d4da;
-  color: #0c0d0e;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #18181b;
 }
 
 .glass-input:focus {
-  border-color: #1c1d22;
-  box-shadow: 0 0 0 2px rgba(28, 29, 34, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.04);
 }

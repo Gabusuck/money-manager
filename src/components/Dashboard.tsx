@@ -16,7 +16,8 @@ import {
   Trash2,
   Edit3,
   Repeat,
-  Wallet
+  Bell,
+  LayoutGrid
 } from 'lucide-react';
 import type { Transaction, BudgetAllocation, Bank, TransactionType } from '../types';
 
@@ -176,104 +177,116 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col space-y-4">
-      
+    <div className="px-4 pb-6 space-y-5">
       {/* 1. Onboarding inicial caso o salário efetivo seja 0 */}
       {effectiveSalary === 0 ? (
-        <div className="px-4 pt-2">
-          <div className="bg-[#e5e6eb] rounded-3xl p-6 text-black space-y-4 shadow-premium text-center">
-            <div className="w-14 h-14 rounded-full bg-[#1c1d22]/5 flex items-center justify-center mx-auto text-black">
-              <DollarSign className="w-6 h-6" />
-            </div>
-            <div className="space-y-1.5">
-              <h3 className="text-sm font-black">Bem-vindo ao All My Money</h3>
-              <p className="text-xs text-slate-500 max-w-[280px] mx-auto leading-relaxed">
-                Vamos começar a organizar o teu dinheiro. Regista uma **Renda** (ex: o teu salário) ou define o teu salário de referência base.
-              </p>
-            </div>
-            <button
-              onClick={onEditBudget}
-              className="w-full py-3.5 bg-[#1c1d22] hover:bg-[#282a30] text-white text-xs font-black rounded-full shadow-premium transition-transform active:scale-95 cursor-pointer"
-            >
-              Definir Salário de Referência
-            </button>
+        <div className="bg-[#eaecf2] rounded-3xl p-6 mt-2 text-center space-y-4 shadow-premium animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
+          <div className="w-14 h-14 rounded-full bg-slate-200 text-black flex items-center justify-center mx-auto shadow-sm">
+            <DollarSign className="w-6 h-6" />
           </div>
+          <div className="space-y-1.5">
+            <h3 className="text-sm font-bold text-slate-800">Bem-vindo ao All My Money</h3>
+            <p className="text-xs text-slate-500 max-w-[280px] mx-auto leading-relaxed font-semibold">
+              Vamos começar a organizar o teu dinheiro. Regista uma **Renda** (ex: o teu salário) ou define o teu salário de referência base.
+            </p>
+          </div>
+          <button
+            onClick={onEditBudget}
+            className="w-full py-3.5 bg-black text-white text-xs font-black rounded-full shadow-md hover:scale-[1.02] active:scale-98 transition-transform cursor-pointer"
+          >
+            Definir Salário de Referência
+          </button>
         </div>
       ) : (
-        <div className="flex flex-col space-y-5">
-          {/* Top Wallet Card Section */}
-          <div className="px-4 pt-2">
-            <div className="bg-[#e5e6eb] text-[#0c0d0e] rounded-[32px] p-5 relative overflow-visible shadow-premium">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 block">Olá Gabin! Bem-vindo</span>
-                  <span className="text-[10px] font-bold text-slate-400 block mt-0.5">à tua carteira</span>
-                </div>
-                <div className="flex gap-2">
-                  {/* Button 1: Configurar Salário */}
-                  <button
-                    onClick={onEditBudget}
-                    className="w-8 h-8 rounded-full bg-[#1c1d22]/5 hover:bg-[#1c1d22]/10 text-black flex items-center justify-center transition-custom cursor-pointer"
-                    title="Configurar Salário Base"
-                  >
-                    <DollarSign className="w-4 h-4" />
-                  </button>
-                  {/* Button 2: Ícone Carteira */}
-                  <div className="w-8 h-8 rounded-full bg-[#1c1d22]/5 text-black flex items-center justify-center select-none">
-                    <Wallet className="w-4 h-4" />
-                  </div>
-                </div>
+        <>
+          {/* 2. Topo Premium "Património Total" (Estilo Ben's Wallet) */}
+          <div className="bg-[#eaecf2] rounded-[32px] p-5 mt-2 shadow-premium border border-slate-200/50 animate-in fade-in duration-300">
+            {/* Boas-vindas e Configurações */}
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-[14px] font-black text-black leading-tight">Olá! Bem-vindo</h2>
+                <p className="text-[11px] text-slate-500 font-bold mt-0.5">à tua carteira digital</p>
               </div>
-
-              <div className="mt-5">
-                <span className="inline-block bg-black text-white text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-                  € EUR
-                </span>
-                <p className="text-4xl font-black tracking-tight text-black mt-1 leading-none">
-                  {formatEuro(patrimonioTotal)}
-                </p>
+              <div className="flex gap-2">
+                <button className="w-8.5 h-8.5 rounded-full bg-white/70 border border-black/5 flex items-center justify-center text-slate-800 active:scale-95 transition-all cursor-pointer">
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                </button>
+                <button className="w-8.5 h-8.5 rounded-full bg-white/70 border border-black/5 flex items-center justify-center text-slate-800 active:scale-95 transition-all cursor-pointer">
+                  <Bell className="w-3.5 h-3.5" />
+                </button>
               </div>
+            </div>
 
-              {/* Dynamic growth badge sticking out of the bottom center */}
-              {(() => {
-                const growthPct = effectiveSalary > 0 ? ((effectiveSalary - totalSpent) / effectiveSalary) * 100 : 0;
-                return (
-                  <div className="absolute bottom-[-14px] left-1/2 -translate-x-1/2 bg-[#142d1f] text-[#55d095] border border-[#234d35] rounded-full px-3.5 py-1 text-[10px] font-black flex items-center gap-1 shadow-sm shrink-0">
-                    <TrendingUp className="w-3 h-3 text-[#55d095]" />
-                    <span>{growthPct >= 0 ? '+' : ''}{growthPct.toFixed(1)}%</span>
-                  </div>
-                );
-              })()}
+            {/* EUR Currency Badge */}
+            <div className="inline-flex items-center gap-1 bg-black px-2.5 py-0.5 rounded-md text-[8px] font-black uppercase text-white tracking-widest mt-4">
+              <span className="text-white">€</span>
+              <span className="text-slate-400">EUR</span>
+            </div>
+
+            {/* Balanço / Património com decimais pequenas */}
+            <div className="mt-4 flex items-baseline">
+              <span className="text-[34px] font-black text-black tracking-tight leading-none">
+                {patrimonioTotal < 0 ? '-' : ''}€{(() => {
+                  const val = Math.abs(patrimonioTotal);
+                  const formatted = val.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  return formatted.split(',')[0];
+                })()}
+              </span>
+              <span className="text-xl font-bold text-slate-500">
+                ,{(() => {
+                  const val = Math.abs(patrimonioTotal);
+                  const formatted = val.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  return formatted.split(',')[1];
+                })()}
+              </span>
+            </div>
+
+            {/* Taxa de Poupança / Progresso como Badge inferior */}
+            <div className="flex justify-center -mb-8 mt-5">
+              <span className="bg-[#16a34a] text-white text-[10px] font-black px-4 py-1.5 rounded-full flex items-center gap-1 shadow-md">
+                <TrendingUp className="w-3.5 h-3.5" /> 
+                {(() => {
+                  const rate = effectiveSalary > 0 ? ((effectiveSalary - totalSpent) / effectiveSalary) * 100 : 0;
+                  return rate >= 0 ? `+${rate.toFixed(1)}%` : `${rate.toFixed(1)}%`;
+                })()}
+              </span>
             </div>
           </div>
 
-          {/* Actions button row (Send / Request matching screenshot) */}
-          <div className="px-4 pt-1">
-            <div className="grid grid-cols-2 gap-3">
-              <button 
-                onClick={() => onOpenPrefilledTxModal('expense', '')} 
-                className="flex items-center justify-center gap-2 py-4 bg-[#1c1d22] hover:bg-[#282a30] text-white text-xs font-black rounded-2xl shadow-sm transition-colors cursor-pointer"
-              >
-                <span>Nova Despesa</span>
-                <ArrowDownRight className="w-4 h-4 text-cat-red" />
-              </button>
+          {/* 3. The Black Gap (Middle Actions Bar) */}
+          <div className="flex gap-2.5 py-3.5 justify-between items-center bg-black -mx-4 px-4 relative z-10">
+            {/* Botão Despesa (Send) */}
+            <button 
+              onClick={() => onOpenPrefilledTxModal('expense', banks[0]?.id || '')}
+              className="flex-1 bg-zinc-900 hover:bg-zinc-800 border border-white/5 text-white rounded-2xl py-3 px-4 flex items-center justify-center gap-2 font-bold text-xs active:scale-95 transition-all cursor-pointer shadow-md"
+            >
+              <span>Despesa</span>
+              <ArrowDownRight className="w-4 h-4 text-cat-red" />
+            </button>
 
-              <button 
-                onClick={() => onOpenPrefilledTxModal('income', '')} 
-                className="flex items-center justify-center gap-2 py-4 bg-[#1c1d22] hover:bg-[#282a30] text-white text-xs font-black rounded-2xl shadow-sm transition-colors cursor-pointer"
-              >
-                <span>Nova Renda</span>
-                <ArrowUpRight className="w-4 h-4 text-cat-green" />
-              </button>
-            </div>
+            {/* Botão Central (Transferência/Menu) */}
+            <button
+              onClick={() => onOpenPrefilledTxModal('transfer', banks[0]?.id || '')}
+              className="w-11 h-11 bg-[#e2e4ec] hover:bg-white text-black rounded-2xl flex items-center justify-center active:scale-95 transition-all cursor-pointer shrink-0 shadow-md"
+              title="Transferir entre Contas"
+            >
+              <Repeat className="w-4.5 h-4.5 text-black" />
+            </button>
+
+            {/* Botão Receita (Request) */}
+            <button 
+              onClick={() => onOpenPrefilledTxModal('income', banks[0]?.id || '')}
+              className="flex-1 bg-zinc-900 hover:bg-zinc-800 border border-white/5 text-white rounded-2xl py-3 px-4 flex items-center justify-center gap-2 font-bold text-xs active:scale-95 transition-all cursor-pointer shadow-md"
+            >
+              <span>Receita</span>
+              <ArrowUpRight className="w-4 h-4 text-cat-green" />
+            </button>
           </div>
 
-          {/* Bottom Panel Drawer in Light Grey */}
-          <div className="bg-[#e5e6eb] rounded-t-[36px] px-4 pt-6 pb-2 space-y-6 flex-1 text-black">
-            {/* Drawer handlebar decor */}
-            <div className="w-12 h-1 bg-slate-350/80 rounded-full mx-auto mb-4" />
-
-            {/* As Minhas Contas section */}
+          {/* 4. Bottom Sheet (Fundo Claro com elementos brancos) */}
+          <div className="bg-[#eaecf2] rounded-t-[36px] p-5 pt-7 space-y-6 -mx-4 pb-12 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] relative z-10">
+            
+            {/* Secção As Minhas Contas (Estilo Send Again) */}
             <div className="space-y-2.5">
               <div className="flex justify-between items-center px-1">
                 <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest">As Minhas Contas</h3>
@@ -292,9 +305,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       onMouseDown={() => startPress(bank)}
                       onMouseUp={cancelPress}
                       onMouseLeave={cancelPress}
-                      className={`bg-white rounded-2xl p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 transition-all duration-350 group select-none cursor-pointer border border-slate-200/50 ${
+                      className={`bg-white rounded-2xl p-3.5 shadow-premium w-32 shrink-0 relative overflow-hidden flex flex-col justify-between h-20 transition-all duration-300 group select-none cursor-pointer border border-slate-100/50 ${
                         pressedBankId === bank.id 
-                          ? 'scale-[0.94] bg-slate-50 brightness-95' 
+                          ? 'scale-[0.94] bg-slate-50 border-slate-200' 
                           : 'hover:translate-y-[-1px]'
                       }`}
                       title="Mantém pressionado para editar/gerir"
@@ -302,11 +315,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       {/* Botão de Apagar discreto se houver mais que 1 conta */}
                       {banks.length > 1 && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteBank(bank.id);
-                          }}
-                          className="absolute right-1.5 top-1.5 text-slate-300 hover:text-cat-red opacity-0 group-hover:opacity-100 transition-opacity w-4.5 h-4.5 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200"
+                          onClick={(e) => { e.stopPropagation(); onDeleteBank(bank.id); }}
+                          className="absolute right-1.5 top-1.5 text-slate-300 hover:text-cat-red opacity-0 group-hover:opacity-100 transition-opacity w-4.5 h-4.5 flex items-center justify-center rounded-full bg-slate-50 border border-slate-150"
                           title="Apagar Conta"
                         >
                           <X className="w-2.5 h-2.5" />
@@ -314,7 +324,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       )}
                       
                       <span className="text-[10px] font-bold text-slate-500 truncate pr-4">{bank.name}</span>
-                      <span className={`text-xs font-black tracking-tight ${balance < 0 ? 'text-cat-red' : 'text-cat-green'}`}>
+                      <span className={`text-xs font-black tracking-tight ${balance < 0 ? 'text-cat-red' : 'text-slate-800'}`}>
                         {formatEuro(balance)}
                       </span>
                     </div>
@@ -324,7 +334,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {/* Botão dashed de Nova Conta */}
                 <button
                   onClick={handleAddBankClick}
-                  className="bg-white/60 rounded-2xl border border-dashed border-slate-300 p-3.5 w-32 shrink-0 flex flex-col items-center justify-center h-20 text-slate-500 hover:bg-white transition-custom cursor-pointer"
+                  className="bg-white/70 rounded-2xl border border-dashed border-slate-300 p-3.5 w-32 shrink-0 flex flex-col items-center justify-center h-20 text-slate-400 hover:border-black hover:text-black transition-custom cursor-pointer"
                 >
                   <Plus className="w-4 h-4 mb-1" />
                   <span className="text-[9px] font-bold uppercase tracking-wider">Novo Banco</span>
@@ -332,15 +342,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
 
-            {/* Divisão do Plafond section */}
+            {/* Secção Gráfico Circular "Divisão do Plafond" (Estilo Your Income) */}
             {budget.salary > 0 && (
-              <div className="bg-white rounded-3xl p-5 space-y-4 shadow-premium border border-slate-200/40 text-black">
+              <div className="bg-white rounded-3xl p-5 space-y-4 shadow-premium border border-slate-100/50">
                 <div>
                   <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest">Divisão do Plafond</h3>
-                  <p className="text-xxs text-slate-400 mt-0.5">Foco apenas em despesas variáveis</p>
+                  <p className="text-xxs text-slate-400 mt-0.5">Foco em despesas variáveis</p>
                 </div>
 
-                {/* Gráfico Donut */}
+                {/* Gráfico Donut (Estático, Não Clicável/Hoverable) */}
                 <div className="relative h-44 flex items-center justify-center pointer-events-none select-none">
                   {activeDonutData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
@@ -366,14 +376,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mb-2">
                         <Info className="w-4 h-4 text-slate-400" />
                       </div>
-                      <p className="text-xxs text-slate-450 max-w-[200px]">Sem despesas do Plafond este mês.</p>
+                      <p className="text-xxs text-slate-400 max-w-[200px]">Sem despesas do Plafond este mês.</p>
                     </div>
                   )}
 
                   {activeDonutData.length > 0 && (
                     <div className="absolute flex flex-col items-center justify-center pointer-events-none">
                       <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400">Plafond Rest.</span>
-                      <span className={`text-sm font-black ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-slate-900'}`}>{formatEuro(remainingPlafondReal)}</span>
+                      <span className={`text-sm font-black ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-slate-800'}`}>{formatEuro(remainingPlafondReal)}</span>
                     </div>
                   )}
                 </div>
@@ -396,12 +406,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <IconComponent className="w-4 h-4" style={{ color: item.color }} />
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-slate-900">{item.name}</p>
+                            <p className="text-xs font-bold text-slate-800">{item.name}</p>
                             <p className="text-[10px] text-slate-400">{percentage.toFixed(0)}% do Plafond</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs font-black text-slate-900">{formatEuro(item.value)}</p>
+                          <p className="text-xs font-black text-slate-800">{formatEuro(item.value)}</p>
                         </div>
                       </div>
                     );
@@ -410,7 +420,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             )}
 
-            {/* Últimos Movimentos section */}
+            {/* Acesso rápido às transações recentes (Estilo Recent Activity) */}
             <div className="space-y-3">
               <div className="flex justify-between items-center px-1">
                 <h3 className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest">Últimos Movimentos</h3>
@@ -419,7 +429,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               <div className="space-y-2.5">
                 {currentMonthTransactions.length === 0 ? (
-                  <div className="bg-white rounded-3xl border border-slate-200/40 p-8 text-center shadow-premium">
+                  <div className="bg-white rounded-3xl border border-slate-100 p-8 text-center shadow-premium">
                     <p className="text-xxs text-slate-400">Nenhuma transação registada.</p>
                   </div>
                 ) : (
@@ -430,7 +440,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     return (
                       <div 
                         key={tx.id} 
-                        className="bg-white rounded-[24px] p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden border border-slate-200/40 text-black"
+                        className="bg-white rounded-[24px] border border-slate-100/50 p-3.5 shadow-premium flex items-center justify-between transition-custom hover:translate-y-[-2px] relative overflow-hidden"
                       >
                         {/* Barra Vertical de Categoria à esquerda */}
                         <div 
@@ -440,11 +450,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                         <div className="flex items-center gap-3 pl-1.5">
                           {/* Círculo com Ícone */}
-                          <div className={`w-9 h-9 rounded-full flex items-center justify-center border ${catDetails.border} ${catDetails.bg} shadow-sm shrink-0`}>
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center border border-slate-100 bg-slate-50 shadow-sm shrink-0">
                             <Icon className="w-4 h-4" style={{ color: catDetails.color }} />
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-slate-900 leading-tight">{tx.description}</p>
+                            <p className="text-xs font-bold text-slate-800 leading-tight">{tx.description}</p>
                             <p className="text-[9px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
                               <span>{tx.category}</span>
                               <span>•</span>
@@ -455,7 +465,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                   {banks.find(b => b.id === tx.fromBankId)?.name} ➔ {banks.find(b => b.id === tx.toBankId)?.name}
                                 </span>
                               ) : tx.bankId ? (
-                                <span className="bg-slate-105 text-slate-500 border border-slate-200/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                                <span className="bg-slate-100 text-slate-500 border border-slate-200/50 text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
                                   {banks.find(b => b.id === tx.bankId)?.name}
                                 </span>
                               ) : null}
@@ -467,7 +477,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           {tx.type === 'income' ? (
                             <span className="text-cat-green">+{formatEuro(tx.amount)}</span>
                           ) : tx.type === 'transfer' ? (
-                            <span className="text-brand-purple">-{formatEuro(tx.amount)}</span>
+                            <span className="text-[#a855f7]">-{formatEuro(tx.amount)}</span>
                           ) : (
                             <span className="text-cat-red">-{formatEuro(tx.amount)}</span>
                           )}
@@ -478,8 +488,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 )}
               </div>
             </div>
+
           </div>
-        </div>
+        </>
       )}
 
       {/* iOS Context Menu Backdrop */}

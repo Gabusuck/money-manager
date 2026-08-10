@@ -710,8 +710,7 @@ function App() {
             banks={banks}
           />
         );
-      case 'recurring':
-        return (
+      return (
           <SubscriptionsView
             recurringTxs={recurringTransactions}
             banks={banks}
@@ -722,34 +721,37 @@ function App() {
     }
   };
 
-  return (
-    <div className="h-[100dvh] w-full bg-[#f4f5f8] flex flex-col relative overflow-hidden font-sans antialiased selection:bg-slate-200 select-none">
-      
-      {/* Decoração minimalista de fundo */}
-      <div className="absolute top-[-10%] left-[-20%] w-[80vw] h-[80vw] rounded-full bg-slate-200/40 blur-[130px] pointer-events-none z-0" />
+  const isHome = currentTab === 'home';
 
-      {/* Cabeçalho da App */}
+  return (
+    <div className={`h-[100dvh] w-full flex flex-col relative overflow-hidden font-sans antialiased selection:bg-purple-900/50 select-none transition-colors duration-300 ${
+      isHome ? 'bg-black text-white' : 'bg-[#eaecf0] text-[#18181b]'
+    }`}>
+      
+      {/* Cabeçalho da App (Flutuante) */}
       <header className="relative z-10 px-5 pt-6 pb-3 flex justify-between items-center bg-transparent shrink-0 safe-pt">
         <div className="flex items-center gap-2.5">
-          <img src="/icons/icon-192.png" className="w-8 h-8 rounded-xl shadow-sm border border-slate-200 object-cover" alt="Logo" />
+          <img src="/icons/icon-192.png" className="w-8 h-8 rounded-xl shadow-sm border border-black/5 object-cover" alt="Logo" />
           <div>
-            <h1 className="text-base font-black text-slate-900 tracking-tight leading-none">All My Money</h1>
-            <p className="text-[9px] text-slate-500 font-bold tracking-wider uppercase mt-1">Finanças Privadas</p>
+            <h1 className={`text-base font-black tracking-tight leading-none transition-colors ${isHome ? 'text-white' : 'text-slate-900'}`}>All My Money</h1>
+            <p className={`text-[9px] font-bold tracking-wider uppercase mt-1 transition-colors ${isHome ? 'text-brand-purple' : 'text-slate-500'}`}>Finanças Privadas</p>
           </div>
         </div>
         
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsCloudOpen(true)}
-            className="text-[9px] font-bold text-slate-500 hover:text-slate-950 uppercase tracking-wider transition-custom flex items-center gap-1 cursor-pointer"
+            className={`text-[9px] font-bold uppercase tracking-wider transition-custom flex items-center gap-1 cursor-pointer ${
+              isHome ? 'text-slate-400 hover:text-brand-purple' : 'text-slate-550 hover:text-black'
+            }`}
             title="Sincronização na nuvem"
           >
-            <Cloud className="w-3.5 h-3.5 text-slate-500 hover:text-slate-950 transition-colors" />
+            <Cloud className="w-3.5 h-3.5" />
             Nuvem
           </button>
 
           {!isOnline && (
-            <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-50 border border-red-200 px-2.5 py-1 rounded-full">
+            <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-950/40 border border-red-900/50 px-2.5 py-1 rounded-full">
               <WifiOff className="w-2.5 h-2.5" /> Offline
             </span>
           )}
@@ -764,14 +766,20 @@ function App() {
         <div className="h-36 w-full block pointer-events-none shrink-0" />
       </main>
 
-      {/* Barra de Navegação Inferior (Dock Flutuante de Alto Contraste Claro) */}
-      <nav className="fixed bottom-2.5 left-6 right-6 max-w-xs mx-auto z-40 bg-white/85 border border-slate-200/60 backdrop-blur-xl px-6 py-3.5 rounded-full shadow-premium flex justify-between items-center safe-mb">
+      {/* Barra de Navegação Inferior (Dock Flutuante Premium Compacta Glassmorphic) */}
+      <nav className={`fixed bottom-2.5 left-6 right-6 max-w-xs mx-auto z-40 px-6 py-3.5 rounded-full shadow-premium flex justify-between items-center safe-mb transition-all duration-300 backdrop-blur-xl ${
+        isHome 
+          ? 'bg-slate-950/70 border border-white/5' 
+          : 'bg-white/80 border border-black/5'
+      }`}>
         
         {/* Aba Evolução */}
         <button
           onClick={() => setCurrentTab('evolution')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'evolution' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
+            currentTab === 'evolution' 
+              ? (isHome ? 'text-brand-purple scale-110' : 'text-black font-black scale-110') 
+              : (isHome ? 'text-slate-500 hover:text-slate-350' : 'text-slate-400 hover:text-slate-600')
           }`}
           title="Evolução"
         >
@@ -782,7 +790,9 @@ function App() {
         <button
           onClick={() => setCurrentTab('goals')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'goals' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
+            currentTab === 'goals' 
+              ? (isHome ? 'text-brand-purple scale-110' : 'text-black font-black scale-110') 
+              : (isHome ? 'text-slate-500 hover:text-slate-350' : 'text-slate-400 hover:text-slate-600')
           }`}
           title="Metas"
         >
@@ -793,7 +803,9 @@ function App() {
         <button
           onClick={() => setCurrentTab('home')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'home' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
+            currentTab === 'home' 
+              ? (isHome ? 'text-brand-purple scale-110' : 'text-black font-black scale-110') 
+              : (isHome ? 'text-slate-500 hover:text-slate-350' : 'text-slate-400 hover:text-slate-600')
           }`}
           title="Início"
         >
@@ -804,7 +816,9 @@ function App() {
         <button
           onClick={() => setCurrentTab('recurring')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'recurring' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
+            currentTab === 'recurring' 
+              ? (isHome ? 'text-brand-purple scale-110' : 'text-black font-black scale-110') 
+              : (isHome ? 'text-slate-500 hover:text-slate-350' : 'text-slate-400 hover:text-slate-600')
           }`}
           title="Assinaturas"
         >
@@ -815,7 +829,9 @@ function App() {
         <button
           onClick={() => setCurrentTab('ledger')}
           className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'ledger' ? 'text-black scale-110 drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]' : 'text-slate-400 hover:text-slate-655'
+            currentTab === 'ledger' 
+              ? (isHome ? 'text-brand-purple scale-110' : 'text-black font-black scale-110') 
+              : (isHome ? 'text-slate-500 hover:text-slate-350' : 'text-slate-400 hover:text-slate-600')
           }`}
           title="Extrato"
         >
@@ -824,14 +840,16 @@ function App() {
 
       </nav>
 
-      {/* Botão de Ação Flutuante Lateral [ ➕ ] */}
-      <button
-        onClick={() => setIsTxOpen(true)}
-        className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-[#1c1d22] text-white flex items-center justify-center shadow-premium hover:scale-105 active:scale-95 transition-transform cursor-pointer border-none safe-mb"
-        title="Novo Lançamento"
-      >
-        <Plus className="w-5 h-5" />
-      </button>
+      {/* Botão de Ação Flutuante Lateral [ ➕ ] (Apenas fora da Home/Dashboard) */}
+      {!isHome && (
+        <button
+          onClick={() => setIsTxOpen(true)}
+          className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-black text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform cursor-pointer border border-black/10 safe-mb"
+          title="Novo Lançamento"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+      )}
 
       {/* Modals da Aplicação */}
       <TransactionModal 
