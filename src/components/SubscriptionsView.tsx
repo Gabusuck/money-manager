@@ -96,7 +96,7 @@ export const SubscriptionsView: React.FC<SubscriptionsViewProps> = ({
     }, 0);
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 pt-2 pb-24 space-y-5">
+    <div className="w-full max-w-md mx-auto px-4 pt-2 pb-6 space-y-5">
       {/* Top Banner "Resumo Financeiro de Recorrências" */}
       <div className="bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white rounded-[28px] p-5 shadow-premium space-y-4">
         <div className="flex justify-between items-center">

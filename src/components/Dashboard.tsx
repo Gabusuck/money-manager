@@ -175,7 +175,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="px-4 pb-28 space-y-5">
+    <div className="px-4 pb-6 space-y-5">
       
       {/* 1. Onboarding inicial caso o salário efetivo seja 0 */}
       {effectiveSalary === 0 ? (

@@ -80,7 +80,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
   };
 
   return (
-    <div className="px-4 pb-28 space-y-5">
+    <div className="px-4 pb-6 space-y-5">
       
       {/* Barra de Pesquisa e Filtros de Categoria */}
       <div className="bg-white rounded-3xl border border-slate-100 p-4 mt-2 space-y-3.5 shadow-premium">

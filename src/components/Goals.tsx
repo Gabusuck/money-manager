@@ -63,7 +63,7 @@ export const Goals: React.FC<GoalsProps> = ({
   };
 
   return (
-    <div className="px-4 pb-28 space-y-5">
+    <div className="px-4 pb-6 space-y-5">
       {/* Cabeçalho */}
       <div className="flex justify-between items-center mt-2">
         <div>

@@ -234,7 +234,7 @@ export const Evolution: React.FC<EvolutionProps> = ({
   }
 
   return (
-    <div className="px-4 pb-28 space-y-6">
+    <div className="px-4 pb-6 space-y-6">
       
       {/* 3. Barras de Progresso Horizontais da Distribuição Mensal (Movidas para aqui!) */}
       <div className="bg-white rounded-3xl border border-slate-100 p-5 mt-2 space-y-4 shadow-premium">
