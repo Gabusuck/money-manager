@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Home, 
   TrendingUp, 
@@ -253,6 +253,15 @@ function App() {
   const [goals, setGoals] = useState<SavingGoal[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
+  
+  const mainRef = useRef<HTMLDivElement>(null);
+
+  // Fazer scroll para o topo sempre que se muda de página/aba
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+  }, [currentTab]);
   
   // Modals
   const [isTxOpen, setIsTxOpen] = useState(false);
@@ -734,7 +743,7 @@ function App() {
       </header>
 
       {/* Conteúdo Principal (Scrollable) */}
-      <main className="flex-1 overflow-y-auto no-scrollbar w-full min-h-0 overscroll-none">
+      <main ref={mainRef} className="flex-1 overflow-y-auto no-scrollbar w-full min-h-0 overscroll-none">
         {renderActiveView()}
         {/* Espaçador físico no fim do scroll para empurrar o conteúdo acima da navbar no iOS Safari */}
         <div className="h-36 w-full block pointer-events-none shrink-0" />
