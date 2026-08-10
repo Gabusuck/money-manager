@@ -28,35 +28,43 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const currentMonthTransactions = transactions; 
 
-  // Soma de gastos por categoria
-  const getSumByCategory = (category: string) => {
+  // Soma de gastos por categoria e tipo
+  const getSumByCategoryAndType = (category: string, type: 'expense' | 'transfer' | 'income') => {
     return currentMonthTransactions
-      .filter(tx => tx.category === category && tx.type === 'expense')
+      .filter(tx => tx.category === category && tx.type === type)
       .reduce((sum, tx) => sum + tx.amount, 0);
   };
 
-  const spentFixos = getSumByCategory('Fixos');
-  const savedPoupanca = getSumByCategory('Poupança');
-  const investedInvestimento = getSumByCategory('Investimento');
+  const spentFixos = getSumByCategoryAndType('Fixos', 'expense');
+  const savedPoupanca = getSumByCategoryAndType('Poupança', 'transfer');
+  const investedInvestimento = getSumByCategoryAndType('Investimento', 'transfer');
   
   // Plafond Real (gastos variáveis)
-  const spentTransportes = getSumByCategory('Transportes');
-  const spentLazer = getSumByCategory('Lazer');
-  const spentOutros = getSumByCategory('Outros');
+  const spentTransportes = getSumByCategoryAndType('Transportes', 'expense');
+  const spentLazer = getSumByCategoryAndType('Lazer', 'expense');
+  const spentOutrosExpense = getSumByCategoryAndType('Outros', 'expense');
   
-  const spentPlafondReal = spentTransportes + spentLazer + spentOutros;
+  const spentPlafondReal = spentTransportes + spentLazer + spentOutrosExpense;
   
-  // Plafond Real Alocado é o salário menos o que foi para Fixos, Poupança e Investimento
-  const allocatedPlafondReal = Math.max(0, budget.salary - spentFixos - savedPoupanca - investedInvestimento);
+  // Total de rendas/salários adicionadas no mês
+  const totalIncome = currentMonthTransactions
+    .filter(tx => tx.type === 'income')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  // Salário Efetivo é a soma do salário base com as rendas adicionadas
+  const effectiveSalary = budget.salary + totalIncome;
+
+  // Plafond Real Alocado é o salário efetivo menos o que foi para Fixos, Poupança e Investimento
+  const allocatedPlafondReal = Math.max(0, effectiveSalary - spentFixos - savedPoupanca - investedInvestimento);
   const remainingPlafondReal = allocatedPlafondReal - spentPlafondReal;
 
-  // Gasto total do mês (Fixos + Poupança + Investimento + Plafond Real)
+  // Gasto/Saída total do mês (Fixos + Poupança + Investimento + Plafond Real)
   const totalSpent = spentFixos + savedPoupanca + investedInvestimento + spentPlafondReal;
 
-  // Percentagens das barras em relação ao salário (Fixas/Poup/Inv) ou em relação ao plafond alocado (Plafond Real)
-  const pctFixos = budget.salary > 0 ? Math.min((spentFixos / budget.salary) * 100, 100) : 0;
-  const pctPoupanca = budget.salary > 0 ? Math.min((savedPoupanca / budget.salary) * 100, 100) : 0;
-  const pctInvestimento = budget.salary > 0 ? Math.min((investedInvestimento / budget.salary) * 100, 100) : 0;
+  // Percentagens das barras em relação ao salário efetivo ou em relação ao plafond alocado
+  const pctFixos = effectiveSalary > 0 ? Math.min((spentFixos / effectiveSalary) * 100, 100) : 0;
+  const pctPoupanca = effectiveSalary > 0 ? Math.min((savedPoupanca / effectiveSalary) * 100, 100) : 0;
+  const pctInvestimento = effectiveSalary > 0 ? Math.min((investedInvestimento / effectiveSalary) * 100, 100) : 0;
   const pctPlafondReal = allocatedPlafondReal > 0 ? Math.min((spentPlafondReal / allocatedPlafondReal) * 100, 100) : 0;
 
   // Formato Monetário
@@ -68,10 +76,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const donutData = [
     { name: 'Transportes / Gasóleo', value: spentTransportes, color: '#f97316', icon: Car },
     { name: 'Lazer', value: spentLazer, color: '#eab308', icon: Smile },
-    { name: 'Outros', value: spentOutros, color: '#64748b', icon: HelpCircle }
+    { name: 'Outros', value: spentOutrosExpense, color: '#64748b', icon: HelpCircle }
   ];
 
-  const totalDonutSpent = spentTransportes + spentLazer + spentOutros;
+  const totalDonutSpent = spentTransportes + spentLazer + spentOutrosExpense;
   const activeDonutData = donutData.filter(item => item.value > 0);
 
   // Icon mapping para as transações recentes
@@ -82,6 +90,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       case 'Fixos': return { icon: Shield, color: '#ef4444', border: 'border-cat-red/20', bg: 'bg-cat-red/10' };
       case 'Poupança': return { icon: PiggyBank, color: '#a855f7', border: 'border-cat-purple/20', bg: 'bg-cat-purple/10' };
       case 'Investimento': return { icon: TrendingUp, color: '#10b981', border: 'border-cat-green/20', bg: 'bg-cat-green/10' };
+      case 'Salário': return { icon: DollarSign, color: '#10b981', border: 'border-cat-green/20', bg: 'bg-cat-green/10' };
       default: return { icon: HelpCircle, color: '#64748b', border: 'border-cat-gray/20', bg: 'bg-cat-gray/10' };
     }
   };
@@ -89,8 +98,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-28 space-y-5">
       
-      {/* 1. Onboarding inicial caso o salário seja 0 */}
-      {budget.salary === 0 ? (
+      {/* 1. Onboarding inicial caso o salário efetivo seja 0 */}
+      {effectiveSalary === 0 ? (
         <div className="bg-white rounded-3xl border border-slate-100 p-6 mt-2 text-center space-y-4 shadow-premium animate-in fade-in zoom-in-95 duration-200">
           <div className="w-14 h-14 rounded-full bg-purple-50 border border-purple-100 text-brand-purple flex items-center justify-center mx-auto shadow-sm">
             <DollarSign className="w-6 h-6" />
@@ -98,14 +107,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="space-y-1.5">
             <h3 className="text-sm font-bold text-brand-dark">Bem-vindo ao GerePoup</h3>
             <p className="text-xs text-gray-400 max-w-[280px] mx-auto leading-relaxed">
-              Vamos começar a organizar o teu dinheiro. Introduz o teu salário líquido mensal de referência para ativar o teu painel.
+              Vamos começar a organizar o teu dinheiro. Registar uma **Renda** (ex: o teu salário) ou define o teu salário de referência base.
             </p>
           </div>
           <button
             onClick={onEditBudget}
             className="w-full py-3.5 bg-gradient-to-tr from-brand-purple to-brand-purple-dark text-white text-xs font-bold rounded-full shadow-purple-glow hover:scale-[1.02] active:scale-98 transition-transform"
           >
-            Definir Salário Inicial
+            Definir Salário de Referência
           </button>
         </div>
       ) : (
@@ -124,7 +133,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   onClick={onEditBudget}
                   className="text-[10px] font-semibold bg-white/15 border border-white/20 hover:bg-white/25 px-3 py-1 rounded-full transition-custom"
                 >
-                  Alterar Salário
+                  Salário Base
                 </button>
               </div>
 
@@ -137,10 +146,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center text-brand-dark">
                 {/* Salário Líquido (Start Income) */}
                 <div className="space-y-0.5">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Salário (In)</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Total Recebido (In)</span>
                   <div className="flex items-center gap-1 text-xs font-extrabold text-cat-green">
                     <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
-                    <span>{formatEuro(budget.salary)}</span>
+                    <span>{formatEuro(effectiveSalary)}</span>
                   </div>
                 </div>
 
@@ -148,7 +157,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                 {/* Despesas Totais (Your Expenses) */}
                 <div className="space-y-0.5 text-right">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Despesas Totais</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Saídas Totais (Out)</span>
                   <div className="flex items-center justify-end gap-1 text-xs font-extrabold text-cat-red">
                     <ArrowDownRight className="w-3.5 h-3.5 shrink-0" />
                     <span>-{formatEuro(totalSpent)}</span>
@@ -167,7 +176,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-semibold">
                   <span className="text-slate-500">Despesas Fixas</span>
-                  <span className="text-brand-dark">{formatEuro(spentFixos)} / {formatEuro(budget.salary)} ({pctFixos.toFixed(0)}%)</span>
+                  <span className="text-brand-dark">{formatEuro(spentFixos)} / {formatEuro(effectiveSalary)} ({pctFixos.toFixed(0)}%)</span>
                 </div>
                 <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
                   <div 
@@ -181,7 +190,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-semibold">
                   <span className="text-slate-500">Poupança (TV/Câmara)</span>
-                  <span className="text-brand-dark">{formatEuro(savedPoupanca)} / {formatEuro(budget.salary)} ({pctPoupanca.toFixed(0)}%)</span>
+                  <span className="text-brand-dark">{formatEuro(savedPoupanca)} / {formatEuro(effectiveSalary)} ({pctPoupanca.toFixed(0)}%)</span>
                 </div>
                 <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
                   <div 
@@ -195,7 +204,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-semibold">
                   <span className="text-slate-500">Investimento (Trading 212)</span>
-                  <span className="text-brand-dark">{formatEuro(investedInvestimento)} / {formatEuro(budget.salary)} ({pctInvestimento.toFixed(0)}%)</span>
+                  <span className="text-brand-dark">{formatEuro(investedInvestimento)} / {formatEuro(effectiveSalary)} ({pctInvestimento.toFixed(0)}%)</span>
                 </div>
                 <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
                   <div 
@@ -352,10 +361,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                   </div>
                   
-                  <div className="text-right pr-1">
-                    <span className="text-xs font-black text-cat-red">
-                      -{formatEuro(tx.amount)}
-                    </span>
+                  <div className="text-right pr-1 font-black text-xs">
+                    {tx.type === 'income' ? (
+                      <span className="text-cat-green">+{formatEuro(tx.amount)}</span>
+                    ) : tx.type === 'transfer' ? (
+                      <span className="text-brand-purple">-{formatEuro(tx.amount)}</span>
+                    ) : (
+                      <span className="text-cat-red">-{formatEuro(tx.amount)}</span>
+                    )}
                   </div>
                 </div>
               );

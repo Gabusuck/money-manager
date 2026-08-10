@@ -198,8 +198,14 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
                       </div>
 
                       <div className="flex items-center gap-3 pr-1">
-                        <span className="text-xs font-black text-brand-dark">
-                          -{formatEuro(tx.amount)}
+                        <span className="text-xs font-black">
+                          {tx.type === 'income' ? (
+                            <span className="text-cat-green">+{formatEuro(tx.amount)}</span>
+                          ) : tx.type === 'transfer' ? (
+                            <span className="text-brand-purple">-{formatEuro(tx.amount)}</span>
+                          ) : (
+                            <span className="text-cat-red">-{formatEuro(tx.amount)}</span>
+                          )}
                         </span>
                         
                         <button

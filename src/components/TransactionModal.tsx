@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { X, Calendar, Edit3, Tag, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp } from 'lucide-react';
-import type { TransactionCategory, Transaction } from '../types';
+import React, { useState, useEffect } from 'react';
+import { X, Calendar, Edit3, Tag, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign } from 'lucide-react';
+import type { TransactionCategory, Transaction, TransactionType } from '../types';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -15,8 +15,20 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 }) => {
   const [amount, setAmount] = useState<string>('');
   const [description, setDescription] = useState<string>('');
+  const [type, setType] = useState<TransactionType>('expense');
   const [category, setCategory] = useState<TransactionCategory>('Outros');
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
+  // Atualizar a categoria padrão quando o tipo muda
+  useEffect(() => {
+    if (type === 'expense') {
+      setCategory('Outros');
+    } else if (type === 'transfer') {
+      setCategory('Poupança');
+    } else if (type === 'income') {
+      setCategory('Salário');
+    }
+  }, [type]);
 
   if (!isOpen) return null;
 
@@ -35,7 +47,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     onAddTransaction({
       description: description.trim(),
       amount: parsedAmount,
-      type: 'expense',
+      type,
       category,
       date,
     });
@@ -43,6 +55,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     // Reset Form
     setAmount('');
     setDescription('');
+    setType('expense');
     setCategory('Outros');
     setDate(new Date().toISOString().split('T')[0]);
     onClose();
@@ -51,25 +64,74 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const categoriesList: { name: TransactionCategory; label: string; color: string; bg: string; border: string; icon: any }[] = [
     { name: 'Transportes', label: 'Transportes / Gasóleo', color: '#f97316', bg: 'bg-cat-orange/10', border: 'border-cat-orange/20', icon: Car },
     { name: 'Lazer', label: 'Lazer / Café', color: '#eab308', bg: 'bg-cat-yellow/10', border: 'border-cat-yellow/20', icon: Smile },
-    { name: 'Outros', label: 'Outros Desejos', color: '#64748b', bg: 'bg-cat-gray/10', border: 'border-cat-gray/20', icon: HelpCircle },
+    { name: 'Outros', label: 'Outros Custos / Rendimentos', color: '#64748b', bg: 'bg-cat-gray/10', border: 'border-cat-gray/20', icon: HelpCircle },
     { name: 'Fixos', label: 'Despesas Fixas', color: '#ef4444', bg: 'bg-cat-red/10', border: 'border-cat-red/20', icon: Shield },
     { name: 'Poupança', label: 'Poupança (TV/Câmara)', color: '#a855f7', bg: 'bg-cat-purple/10', border: 'border-cat-purple/20', icon: PiggyBank },
     { name: 'Investimento', label: 'Investimento (T212)', color: '#10b981', bg: 'bg-cat-green/10', border: 'border-cat-green/20', icon: TrendingUp },
+    { name: 'Salário', label: 'Salário Principal', color: '#10b981', bg: 'bg-cat-green/10', border: 'border-cat-green/20', icon: DollarSign },
   ];
 
+  // Filtrar as categorias exibidas com base no Tipo de Lançamento
+  const filteredCategories = categoriesList.filter(cat => {
+    if (type === 'expense') {
+      return ['Transportes', 'Lazer', 'Outros', 'Fixos'].includes(cat.name);
+    } else if (type === 'transfer') {
+      return ['Poupança', 'Investimento'].includes(cat.name);
+    } else { // income
+      return ['Salário', 'Outros'].includes(cat.name);
+    }
+  });
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-xs transition-opacity duration-300">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-xs overflow-hidden select-none">
       <div 
-        className="w-full max-w-md bg-slate-50 rounded-t-[32px] border-t border-slate-100 p-6 space-y-6 max-h-[92vh] overflow-y-auto no-scrollbar safe-pb shadow-2xl animate-in slide-in-from-bottom duration-300"
+        className="w-full max-w-md bg-slate-50 rounded-t-[32px] border-t border-slate-100 p-6 space-y-6 max-h-[92vh] overflow-y-auto overflow-x-hidden no-scrollbar safe-pb shadow-2xl animate-in slide-in-from-bottom duration-300"
       >
         {/* Header Modal */}
         <div className="flex justify-between items-center">
-          <h3 className="text-sm font-black text-brand-dark uppercase tracking-widest">Nova Transação</h3>
+          <h3 className="text-sm font-black text-brand-dark uppercase tracking-widest">Novo Lançamento</h3>
           <button 
             onClick={onClose} 
             className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-slate-100 text-slate-400 hover:text-brand-dark transition-custom shadow-sm"
           >
             <X className="w-4.5 h-4.5" />
+          </button>
+        </div>
+
+        {/* Segmented Control para selecionar o Tipo de Movimento */}
+        <div className="bg-slate-100 p-1 rounded-2xl flex w-full border border-slate-200/50">
+          <button
+            type="button"
+            onClick={() => setType('expense')}
+            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
+              type === 'expense' 
+                ? 'bg-white text-brand-dark shadow-sm' 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            Despesa
+          </button>
+          <button
+            type="button"
+            onClick={() => setType('transfer')}
+            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
+              type === 'transfer' 
+                ? 'bg-white text-brand-dark shadow-sm' 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            Transferência
+          </button>
+          <button
+            type="button"
+            onClick={() => setType('income')}
+            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
+              type === 'income' 
+                ? 'bg-white text-brand-dark shadow-sm' 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            Renda
           </button>
         </div>
 
@@ -86,7 +148,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 placeholder="0,00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full text-center text-4xl font-black focus:outline-none placeholder-slate-200 text-brand-dark pr-3 pl-8"
+                className="w-full text-center text-4xl font-black focus:outline-none placeholder-slate-200 text-brand-dark pr-3 pl-8 bg-transparent"
                 autoFocus
               />
             </div>
@@ -99,21 +161,25 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </label>
             <input
               type="text"
-              placeholder="Donativo, Pingo Doce, Jantar..."
+              placeholder={
+                type === 'expense' ? 'Donativo, Pingo Doce, Jantar...' :
+                type === 'transfer' ? 'Reforço poupança, Enviar para a T212...' :
+                'Salário de referência, Freelance, Reembolso...'
+              }
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full p-3.5 text-xs bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark placeholder-slate-300 shadow-premium"
             />
           </div>
 
-          {/* Seleção de Categoria em Lista de Cartões (Estilo do Ecrã Direito da Imagem) */}
+          {/* Seleção de Categoria Dinâmica */}
           <div className="space-y-2">
             <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 px-1">
               <Tag className="w-3.5 h-3.5" /> Categoria
             </label>
             
-            <div className="space-y-2 max-h-60 overflow-y-auto no-scrollbar pr-0.5 py-0.5">
-              {categoriesList.map((cat) => {
+            <div className="space-y-2 max-h-60 overflow-y-auto overflow-x-hidden no-scrollbar pr-0.5 py-0.5">
+              {filteredCategories.map((cat) => {
                 const Icon = cat.icon;
                 const isSelected = category === cat.name;
                 return (

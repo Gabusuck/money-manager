@@ -4,9 +4,10 @@ export type TransactionCategory =
   | 'Investimento'
   | 'Transportes'
   | 'Lazer'
-  | 'Outros';
+  | 'Outros'
+  | 'Salário';
 
-export type TransactionType = 'income' | 'expense';
+export type TransactionType = 'income' | 'expense' | 'transfer';
 
 export interface Transaction {
   id: string;
