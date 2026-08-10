@@ -723,34 +723,35 @@ function App() {
   };
 
   return (
-    <div className="h-[100dvh] w-full flex flex-col relative overflow-hidden font-sans antialiased selection:bg-slate-250 select-none bg-[#f5f6fa] text-[#0f172a]">
+    <div className="h-[100dvh] w-full flex flex-col relative overflow-hidden font-sans antialiased select-none" style={{background:'#EFF1FB',color:'#111827'}}>
       
       {/* Cabeçalho da App */}
-      <header className="relative z-10 px-5 pt-6 pb-3 flex justify-between items-center bg-transparent shrink-0 safe-pt">
-        <div className="flex items-center gap-2.5">
-          <img src="/icons/icon-192.png" className="w-8 h-8 rounded-xl shadow-sm border border-slate-200 object-cover" alt="Logo" />
+      <header className="relative z-10 px-5 pt-5 pb-3 flex justify-between items-center shrink-0 safe-pt">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-2xl flex items-center justify-center shadow-md" style={{background:'linear-gradient(135deg,#4F6EF7,#7C5CFC)'}}>
+            <img src="/icons/icon-192.png" className="w-full h-full rounded-2xl object-cover" alt="Logo" />
+          </div>
           <div>
-            <h1 className="text-base font-black tracking-tight leading-none text-slate-900">All My Money</h1>
-            <p className="text-[9px] font-bold tracking-wider uppercase mt-1 text-slate-500">Finanças Privadas</p>
+            <h1 className="text-[15px] font-black tracking-tight leading-none" style={{color:'#111827'}}>All My Money</h1>
+            <p className="text-[9px] font-bold tracking-widest uppercase mt-0.5" style={{color:'#9CA3AF'}}>Finanças Pessoais</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsCloudOpen(true)}
-            className="text-[9px] font-bold uppercase tracking-wider transition-custom flex items-center gap-1 cursor-pointer text-slate-500 hover:text-black"
-            title="Sincronização na nuvem"
-          >
-            <Cloud className="w-3.5 h-3.5" />
-            Nuvem
-          </button>
-
+        <div className="flex items-center gap-2.5">
           {!isOnline && (
-            <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-50 border border-red-200 px-2.5 py-1 rounded-full">
+            <span className="flex items-center gap-1 text-[9px] font-bold px-2.5 py-1 rounded-full" style={{color:'#EF4444',background:'#FEF2F2',border:'1px solid #FECACA'}}>
               <WifiOff className="w-2.5 h-2.5" /> Offline
             </span>
           )}
-          <span className="w-2.5 h-2.5 rounded-full bg-cat-green animate-pulse" />
+          <button
+            onClick={() => setIsCloudOpen(true)}
+            className="w-8 h-8 rounded-xl flex items-center justify-center transition-custom cursor-pointer"
+            style={{background:'#FFFFFF',border:'1px solid #E5E8F8',color:'#4F6EF7'}}
+            title="Sincronização na nuvem"
+          >
+            <Cloud className="w-3.5 h-3.5" />
+          </button>
+          <span className="w-2 h-2 rounded-full animate-pulse" style={{background:'#16C784'}} />
         </div>
       </header>
 
@@ -761,70 +762,44 @@ function App() {
         <div className="h-36 w-full block pointer-events-none shrink-0" />
       </main>
 
-      {/* Barra de Navegação Inferior (Dock Flutuante Premium Compacta Branca) */}
-      <nav className="fixed bottom-2.5 left-6 right-6 max-w-xs mx-auto z-40 px-6 py-3.5 rounded-full shadow-premium flex justify-between items-center safe-mb bg-white/90 border border-slate-200/50 backdrop-blur-xl">
-        
-        {/* Aba Evolução */}
-        <button
-          onClick={() => setCurrentTab('evolution')}
-          className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'evolution' ? 'text-black font-black scale-110' : 'text-slate-400 hover:text-slate-650'
-          }`}
-          title="Evolução"
-        >
-          <TrendingUp className="w-[22px] h-[22px] shrink-0" />
-        </button>
-
-        {/* Aba Metas */}
-        <button
-          onClick={() => setCurrentTab('goals')}
-          className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'goals' ? 'text-black font-black scale-110' : 'text-slate-400 hover:text-slate-650'
-          }`}
-          title="Metas"
-        >
-          <Target className="w-[22px] h-[22px] shrink-0" />
-        </button>
-
-        {/* Aba Início */}
-        <button
-          onClick={() => setCurrentTab('home')}
-          className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'home' ? 'text-black font-black scale-110' : 'text-slate-400 hover:text-slate-650'
-          }`}
-          title="Início"
-        >
-          <Home className="w-[22px] h-[22px] shrink-0" />
-        </button>
-
-        {/* Aba Assinaturas */}
-        <button
-          onClick={() => setCurrentTab('recurring')}
-          className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'recurring' ? 'text-black font-black scale-110' : 'text-slate-400 hover:text-slate-650'
-          }`}
-          title="Assinaturas"
-        >
-          <Repeat className="w-[22px] h-[22px] shrink-0" />
-        </button>
-
-        {/* Aba Extrato */}
-        <button
-          onClick={() => setCurrentTab('ledger')}
-          className={`flex items-center justify-center p-1.5 transition-custom cursor-pointer ${
-            currentTab === 'ledger' ? 'text-black font-black scale-110' : 'text-slate-400 hover:text-slate-650'
-          }`}
-          title="Extrato"
-        >
-          <FileText className="w-[22px] h-[22px] shrink-0" />
-        </button>
-
+      {/* Barra de Navegação Inferior */}
+      <nav
+        className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 px-4 py-2.5 safe-mb"
+        style={{background:'rgba(255,255,255,0.92)',backdropFilter:'blur(20px)',borderRadius:'9999px',border:'1px solid #E5E8F8',boxShadow:'0 4px 24px rgba(79,110,247,0.12)'}}
+      >
+        {([
+          { tab: 'evolution', icon: TrendingUp, label: 'Evolução' },
+          { tab: 'goals',     icon: Target,    label: 'Metas' },
+          { tab: 'home',      icon: Home,      label: 'Início' },
+          { tab: 'recurring', icon: Repeat,    label: 'Assinat.' },
+          { tab: 'ledger',    icon: FileText,  label: 'Extrato' },
+        ] as const).map(({ tab, icon: Icon, label }) => {
+          const active = currentTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setCurrentTab(tab)}
+              title={label}
+              className="relative flex flex-col items-center justify-center w-12 h-11 rounded-full transition-custom cursor-pointer"
+              style={active ? {color:'#4F6EF7'} : {color:'#9CA3AF'}}
+            >
+              <Icon className="w-5 h-5 shrink-0" strokeWidth={active ? 2.5 : 1.8} />
+              {active && (
+                <span
+                  className="absolute bottom-1 w-1 h-1 rounded-full"
+                  style={{background:'#4F6EF7'}}
+                />
+              )}
+            </button>
+          );
+        })}
       </nav>
 
-      {/* Botão de Ação Flutuante Lateral [ ➕ ] (Visível em todas as abas) */}
+      {/* FAB — Novo Lançamento */}
       <button
         onClick={() => setIsTxOpen(true)}
-        className="fixed bottom-[84px] right-6 z-40 w-11 h-11 rounded-full bg-black text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform cursor-pointer border border-black/10 safe-mb"
+        className="fixed z-40 flex items-center justify-center cursor-pointer transition-transform hover:scale-105 active:scale-95 safe-mb"
+        style={{bottom:'82px',right:'20px',width:'46px',height:'46px',borderRadius:'14px',background:'linear-gradient(135deg,#4F6EF7,#7C5CFC)',boxShadow:'0 6px 20px rgba(79,110,247,0.40)',color:'#fff'}}
         title="Novo Lançamento"
       >
         <Plus className="w-5 h-5" />

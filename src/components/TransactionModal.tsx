@@ -176,8 +176,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const selectedCatDetails = categoriesList.find((cat) => cat.name === category);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      {/* Container do Modal com Slide up no Mobile e gesto Pull-to-Close */}
+    <div style={{position:'fixed',inset:0,background:'rgba(15,23,42,0.50)',backdropFilter:'blur(8px)',zIndex:50,display:'flex',alignItems:'flex-end',justifyContent:'center'}}>
+      {/* Container */}
       <div 
         ref={containerRef}
         onTouchStart={handleTouchStart}
@@ -185,95 +185,100 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         onTouchEnd={handleTouchEnd}
         style={{
           transform: `translateY(${currentTranslateY}px)`,
-          transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+          transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.16,1,0.3,1)',
+          background: '#FFFFFF',
+          width: '100%',
+          maxWidth: 480,
+          borderRadius: '28px 28px 0 0',
+          padding: '20px 20px 32px',
+          boxShadow: '0 -8px 40px rgba(79,110,247,0.15)',
+          maxHeight: '92dvh',
+          overflowY: 'auto',
+          overflowX: 'hidden',
         }}
-        className="bg-slate-50 w-full sm:max-w-md rounded-t-[32px] sm:rounded-[32px] p-5 shadow-premium max-h-[92dvh] overflow-y-auto overflow-x-hidden no-scrollbar animate-in slide-in-from-bottom duration-300 relative border border-slate-100 pb-10"
+        className="no-scrollbar"
       >
-        {/* Puxador Visual iOS */}
-        <div className="w-12 h-1 bg-slate-350 rounded-full mx-auto mb-3 shrink-0 block sm:hidden pointer-events-none" />
-        
+        {/* Pull handle */}
+        <div style={{width:40,height:4,borderRadius:999,background:'#E5E8F8',margin:'0 auto 18px'}} />
+
         {/* Cabeçalho */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-sm font-black text-brand-dark uppercase tracking-widest">Novo Lançamento</h2>
-          <button 
-            onClick={onClose} 
-            className="w-8 h-8 rounded-full bg-white border border-slate-150 flex items-center justify-center hover:bg-slate-50 transition-custom active:scale-95 shadow-sm"
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18}}>
+          <h2 style={{fontSize:12,fontWeight:900,color:'#111827',textTransform:'uppercase',letterSpacing:'0.1em'}}>Novo Lançamento</h2>
+          <button
+            onClick={onClose}
+            style={{width:32,height:32,borderRadius:10,background:'#EEF1FE',border:'none',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}
           >
-            <X className="w-4 h-4 text-slate-400" />
+            <X style={{width:14,height:14,color:'#4F6EF7'}} />
           </button>
         </div>
 
-        {/* Tabs de Seleção de Tipo Segmentado (Inspirado no Segmented Control da Apple) */}
-        <div className="flex bg-slate-200/60 border border-slate-100 p-1 rounded-2xl gap-1 mb-5">
-          <button
-            type="button"
-            onClick={() => setType('expense')}
-            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
-              type === 'expense' 
-                ? 'bg-white text-brand-dark shadow-sm' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            Despesa
-          </button>
-          <button
-            type="button"
-            onClick={() => setType('transfer')}
-            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
-              type === 'transfer' 
-                ? 'bg-white text-brand-dark shadow-sm' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            Transferência
-          </button>
-          <button
-            type="button"
-            onClick={() => setType('income')}
-            className={`flex-1 py-2 text-center text-[10px] font-extrabold rounded-xl transition-custom ${
-              type === 'income' 
-                ? 'bg-white text-brand-dark shadow-sm' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            Renda
-          </button>
+        {/* Tipo Seletor */}
+        <div style={{display:'flex',background:'#F7F8FF',border:'1px solid #E5E8F8',borderRadius:16,padding:4,gap:4,marginBottom:20}}>
+          {(['expense','transfer','income'] as TransactionType[]).map(t => {
+            const labels: Record<TransactionType,string> = {expense:'Despesa',transfer:'Transferência',income:'Receita'};
+            const activeColors: Record<TransactionType,string> = {expense:'#EF4444',transfer:'#4F6EF7',income:'#16C784'};
+            const active = type === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setType(t)}
+                style={{
+                  flex:1,
+                  padding:'9px 4px',
+                  borderRadius:12,
+                  border:'none',
+                  cursor:'pointer',
+                  fontSize:10,
+                  fontWeight:800,
+                  textTransform:'uppercase' as const,
+                  letterSpacing:'0.05em',
+                  transition:'all 0.2s',
+                  background: active ? '#FFFFFF' : 'transparent',
+                  color: active ? activeColors[t] : '#9CA3AF',
+                  boxShadow: active ? '0 1px 6px rgba(0,0,0,0.08)' : 'none',
+                }}
+              >
+                {labels[t]}
+              </button>
+            );
+          })}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          
-          {/* Campo Valor Grande */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-premium relative text-center py-5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Valor do Lançamento</span>
-            <div className="relative inline-block w-full max-w-[200px]">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-300">€</span>
+        <form onSubmit={handleSubmit} style={{display:'flex',flexDirection:'column',gap:16}}>
+
+          {/* Campo Valor */}
+          <div style={{background:'#F7F8FF',borderRadius:20,padding:'18px 16px',textAlign:'center',border:'1.5px solid #E5E8F8'}}>
+            <span style={{fontSize:10,fontWeight:800,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:'0.1em',display:'block',marginBottom:8}}>Valor do Lançamento</span>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
+              <span style={{fontSize:24,fontWeight:900,color:'#C7D2FE'}}>€</span>
               <input
                 type="text"
                 inputMode="decimal"
                 placeholder="0,00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full text-center text-4xl font-black focus:outline-none placeholder-slate-200 text-brand-dark pr-3 pl-8 bg-transparent"
+                style={{fontSize:36,fontWeight:900,border:'none',background:'transparent',outline:'none',textAlign:'center',color:'#111827',width:'100%',maxWidth:200}}
                 autoFocus
               />
             </div>
           </div>
 
           {/* Campo Descrição */}
-          <div className="space-y-1.5">
-            <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 px-1">
-              <Edit3 className="w-3.5 h-3.5" /> Descrição
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            <label style={{fontSize:10,fontWeight:800,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:'0.08em',display:'flex',alignItems:'center',gap:5}}>
+              <Edit3 style={{width:12,height:12}} /> Descrição
             </label>
             <input
               type="text"
               placeholder={
-                type === 'expense' ? 'Donativo, Pingo Doce, Jantar...' :
-                type === 'transfer' ? 'Reforço poupança, Enviar para a T212...' :
-                'Salário de referência, Freelance, Reembolso...'
+                type === 'expense' ? 'Donativo, Pingo Doce, Jantar…' :
+                type === 'transfer' ? 'Reforço poupança, T212…' :
+                'Salário, Freelance, Reembolso…'
               }
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3.5 text-xs bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-brand-purple text-brand-dark placeholder-slate-300 shadow-premium"
+              style={{width:'100%',padding:'13px 14px',fontSize:13,borderRadius:14,border:'1.5px solid #E5E8F8',background:'#FFFFFF',color:'#111827',outline:'none',fontWeight:600}}
             />
           </div>
 
@@ -478,10 +483,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </button>
           </div>
 
-          {/* Botão de Gravar Pill-Shape */}
+          {/* Botão Submit */}
           <button
             type="submit"
-            className="w-full py-4 mt-3 bg-black text-white rounded-full text-xs font-black uppercase tracking-widest shadow-md hover:scale-[1.01] active:scale-99 transition-transform cursor-pointer"
+            style={{width:'100%',padding:'16px',borderRadius:16,background:'linear-gradient(135deg,#4F6EF7,#7C5CFC)',color:'#fff',fontSize:12,fontWeight:900,letterSpacing:'0.07em',border:'none',cursor:'pointer',boxShadow:'0 6px 20px rgba(79,110,247,0.35)',textTransform:'uppercase' as const,marginTop:4}}
           >
             Confirmar Lançamento
           </button>

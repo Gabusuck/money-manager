@@ -114,8 +114,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300">
-      {/* Background click to close */}
+    <div style={{position:'fixed',inset:0,zIndex:50,display:'flex',alignItems:'flex-end',justifyContent:'center',background:'rgba(15,23,42,0.45)',backdropFilter:'blur(8px)'}}>
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Container */}
@@ -127,39 +126,43 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
         style={{
           transform: `translateY(${currentTranslateY}px)`,
           transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-          maxHeight: '85vh'
+          maxHeight: '85vh',
+          background: '#FFFFFF',
+          borderRadius: '28px 28px 0 0',
+          padding: '20px 20px 32px',
+          boxShadow: '0 -8px 40px rgba(79,110,247,0.15)',
         }}
-        className="relative w-full max-w-md bg-white rounded-t-[32px] p-6 shadow-premium flex flex-col overflow-y-auto no-scrollbar pb-10"
+        className="relative w-full max-w-md flex flex-col overflow-y-auto no-scrollbar"
       >
-        {/* Top iOS indicator drag handle */}
-        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 cursor-grab active:cursor-grabbing" />
+        {/* Pull handle */}
+        <div style={{width:40,height:4,borderRadius:999,background:'#E5E8F8',margin:'0 auto 18px'}} />
 
         {/* Title & Close */}
-        <div className="flex justify-between items-center mb-6">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
           <div>
-            <h3 className="text-sm font-black text-brand-dark flex items-center gap-1.5">
-              <Repeat className="w-4 h-4 text-brand-purple" />
-              Recorrências & Assinaturas
+            <h3 style={{fontSize:14,fontWeight:900,color:'#111827',display:'flex',alignItems:'center',gap:6}}>
+              <Repeat style={{width:16,height:16,color:'#4F6EF7'}} />
+              Recorrências &amp; Assinaturas
             </h3>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mt-0.5">
+            <span style={{fontSize:10,fontWeight:700,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginTop:2}}>
               Conta: {bank.name}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:text-brand-dark transition-colors cursor-pointer"
+            style={{width:32,height:32,borderRadius:10,background:'#EEF1FE',border:'none',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}
           >
-            <X className="w-3.5 h-3.5" />
+            <X style={{width:14,height:14,color:'#4F6EF7'}} />
           </button>
         </div>
 
-        {/* Action Bar (Toggle Form) */}
+        {/* Action Bar */}
         {!showAddForm && (
           <button
             onClick={() => setShowAddForm(true)}
-            className="w-full mb-4 py-3.5 bg-black hover:bg-slate-900 text-white text-xs font-black rounded-2xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            style={{width:'100%',marginBottom:16,padding:'13px',borderRadius:16,background:'linear-gradient(135deg,#4F6EF7,#7C5CFC)',color:'#fff',fontSize:12,fontWeight:800,letterSpacing:'0.05em',border:'none',display:'flex',alignItems:'center',justifyContent:'center',gap:6,cursor:'pointer',boxShadow:'0 4px 16px rgba(79,110,247,0.30)'}}
           >
-            <Plus className="w-4 h-4" />
+            <Plus style={{width:16,height:16}} />
             Adicionar Nova Assinatura
           </button>
         )}
@@ -278,7 +281,7 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3.5 bg-black text-white text-xs font-black uppercase tracking-widest rounded-xl hover:scale-[1.01] active:scale-99 transition-transform flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+              style={{width:'100%',padding:'14px',borderRadius:14,background:'linear-gradient(135deg,#4F6EF7,#7C5CFC)',color:'#fff',fontSize:12,fontWeight:900,letterSpacing:'0.07em',border:'none',cursor:'pointer',boxShadow:'0 6px 20px rgba(79,110,247,0.35)',textTransform:'uppercase' as const}}
             >
               Criar Agendamento
             </button>

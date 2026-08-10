@@ -1,118 +1,169 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-dark: #f8fafc;
-  --color-brand-gray: #0b0f19;
-  --color-brand-border: #1e293b;
-  
-  /* Roxo / Violeta do Design de Referência */
-  --color-brand-purple: #8b5cf6;
-  --color-brand-purple-dark: #633bbf;
-  
-  /* Cores das Categorias */
-  --color-cat-orange: #f97316;
-  --color-cat-yellow: #f59e0b;
-  --color-cat-gray: #94a3b8;
-  --color-cat-purple: #a855f7;
-  --color-cat-green: #10b981;
-  --color-cat-red: #ef4444;
-  --color-cat-blue: #06b6d4;
+  /* ── Palette Principal ── */
+  --color-brand: #4F6EF7;
+  --color-brand-dark: #3A58E0;
+  --color-brand-light: #EEF1FE;
+
+  /* ── Texto ── */
+  --color-ink: #111827;
+  --color-ink-muted: #6B7280;
+  --color-ink-subtle: #9CA3AF;
+
+  /* ── Superfície ── */
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F7F8FF;
+  --color-bg: #EFF1FB;
+  --color-border: #E5E8F8;
+
+  /* ── Semânticas ── */
+  --color-success: #16C784;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-purple-cat: #8B5CF6;
+
+  /* ── Legacy (mantidos para compatibilidade) ── */
+  --color-brand-gray: #F0F4FF;
+  --color-brand-border: #E5E8F8;
+  --color-brand-purple: #8B5CF6;
+  --color-brand-purple-dark: #6D28D9;
+
+  /* ── Categorias ── */
+  --color-cat-orange: #F97316;
+  --color-cat-yellow: #F59E0B;
+  --color-cat-gray: #94A3B8;
+  --color-cat-purple: #8B5CF6;
+  --color-cat-green: #16C784;
+  --color-cat-red: #EF4444;
+  --color-cat-blue: #06B6D4;
 }
 
 @layer base {
   html, body, #root {
-    @apply h-full w-full overflow-hidden bg-[#f5f6fa] text-[#18181b] font-sans select-none antialiased;
+    @apply h-full w-full overflow-hidden font-sans select-none antialiased;
+    background-color: #EFF1FB;
+    color: #111827;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
-    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Ocultar barra de scroll */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* ── Scrollbar oculta ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Safe area ── */
+.safe-pt { padding-top: max(1rem, env(safe-area-inset-top)); }
+.safe-pb { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+.safe-mb { margin-bottom: env(safe-area-inset-bottom); }
+
+/* ── Transição suave universal ── */
+.transition-custom { transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ── Sombra de cartão com tint azul ── */
+.card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid #E5E8F8;
+  box-shadow: 0 2px 16px rgba(79, 110, 247, 0.06), 0 1px 3px rgba(0,0,0,0.03);
+  transition: box-shadow 0.22s ease, transform 0.22s ease;
 }
 
-/* Ajustes de safe area */
-.safe-pt {
-  padding-top: max(1rem, env(safe-area-inset-top));
-}
-.safe-pb {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
-}
-.safe-mb {
-  margin-bottom: env(safe-area-inset-bottom);
+.card:hover {
+  box-shadow: 0 6px 24px rgba(79, 110, 247, 0.10), 0 1px 4px rgba(0,0,0,0.04);
 }
 
-/* Transições suaves */
-.transition-custom {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Sombra Premium Suave (Estilo Clean Minimalista) */
+/* ── Sombra premium neutra (legado) ── */
 .shadow-premium {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 16px rgba(79, 110, 247, 0.07), 0 1px 3px rgba(0,0,0,0.03);
+  transition: box-shadow 0.22s ease, transform 0.22s ease;
 }
 
 .shadow-premium:hover {
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
-  transform: translateY(-0.5px);
+  box-shadow: 0 6px 24px rgba(79, 110, 247, 0.11), 0 1px 4px rgba(0,0,0,0.04);
+  transform: translateY(-1px);
 }
 
-/* Sombra Interna Suave para Inputs */
-.shadow-inner-soft {
-  box-shadow: inset 0 1.5px 4px 0 rgba(0, 0, 0, 0.03);
+/* ── Sombra interna suave ── */
+.shadow-inner-soft { box-shadow: inset 0 1.5px 4px rgba(79,110,247,0.05); }
+
+/* ── Botão primário azul ── */
+.btn-primary {
+  background: #4F6EF7;
+  color: #fff;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 14px 24px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(79,110,247,0.30);
 }
 
-/* Sombra Brilhante Neutra */
-.shadow-purple-glow {
-  box-shadow: 0 6px 18px -2px rgba(0, 0, 0, 0.1);
-}
+.btn-primary:hover { background: #3A58E0; box-shadow: 0 6px 20px rgba(79,110,247,0.38); }
+.btn-primary:active { transform: scale(0.97); }
 
-/* Animação de Mudança de View Premium */
-@keyframes view-change {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-view-change {
-  animation: view-change 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Estilização dos gráficos Recharts */
-.recharts-default-tooltip {
-  background-color: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
-  color: #18181b !important;
-  font-family: inherit !important;
-}
-
-/* Painéis e inputs adaptados para estilo claro minimalista */
-.glass-panel {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-}
-
+/* ── Inputs limpos ── */
 .glass-input {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #18181b;
+  background: #FFFFFF;
+  border: 1.5px solid #E5E8F8;
+  color: #111827;
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .glass-input:focus {
-  border-color: #000000;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.04);
+  border-color: #4F6EF7;
+  box-shadow: 0 0 0 3px rgba(79,110,247,0.12);
+  outline: none;
+}
+
+/* ── Panel genérico ── */
+.glass-panel {
+  background: #FFFFFF;
+  border: 1px solid #E5E8F8;
+}
+
+/* ── Sombra de brilho azul para CTA ── */
+.shadow-blue-glow {
+  box-shadow: 0 6px 20px rgba(79,110,247,0.35);
+}
+
+/* Alias para compatibilidade com código existente */
+.shadow-purple-glow {
+  box-shadow: 0 6px 20px rgba(79,110,247,0.28);
+}
+
+/* ── Animação de entrada de view ── */
+@keyframes view-change {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-view-change {
+  animation: view-change 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Tooltip do Recharts ── */
+.recharts-default-tooltip {
+  background-color: #ffffff !important;
+  border: 1px solid #E5E8F8 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 24px rgba(79,110,247,0.10) !important;
+  color: #111827 !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+}
+
+/* ── Gradiente hero ── */
+.hero-gradient {
+  background: linear-gradient(135deg, #4F6EF7 0%, #7C5CFC 100%);
 }
