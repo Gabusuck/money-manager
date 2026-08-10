@@ -230,7 +230,13 @@ function App() {
           />
         );
       case 'evolution':
-        return <Evolution transactions={transactions} />;
+        return (
+          <Evolution 
+            transactions={transactions} 
+            budget={budget}
+            onEditBudget={handleEditSalary}
+          />
+        );
       case 'goals':
         return (
           <Goals 

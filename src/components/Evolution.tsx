@@ -10,19 +10,60 @@ import {
   Bar, 
   Legend 
 } from 'recharts';
-import { TrendingUp, BarChart2 } from 'lucide-react';
-import type { Transaction } from '../types';
+import { TrendingUp, BarChart2, AlertTriangle } from 'lucide-react';
+import type { Transaction, BudgetAllocation } from '../types';
 
 interface EvolutionProps {
   transactions: Transaction[];
+  budget: BudgetAllocation;
+  onEditBudget: () => void;
 }
 
-export const Evolution: React.FC<EvolutionProps> = ({ transactions }) => {
+export const Evolution: React.FC<EvolutionProps> = ({ 
+  transactions, 
+  budget, 
+  onEditBudget 
+}) => {
   const formatEuro = (value: number) => {
     return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
   };
 
-  // Gerar os últimos 6 meses de forma dinâmica
+  // 1. Filtrar transações para o mês corrente para a Distribuição Mensal
+  const currentMonthTransactions = transactions.filter(tx => {
+    const txDate = new Date(tx.date);
+    const now = new Date();
+    return txDate.getFullYear() === now.getFullYear() && txDate.getMonth() === now.getMonth();
+  });
+
+  const getSumByCategoryAndType = (category: string, type: 'expense' | 'transfer' | 'income') => {
+    return currentMonthTransactions
+      .filter(tx => tx.category === category && tx.type === type)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  };
+
+  const spentFixos = getSumByCategoryAndType('Fixos', 'expense');
+  const savedPoupanca = getSumByCategoryAndType('Poupança', 'transfer');
+  const investedInvestimento = getSumByCategoryAndType('Investimento', 'transfer');
+  const spentTransportes = getSumByCategoryAndType('Transportes', 'expense');
+  const spentLazer = getSumByCategoryAndType('Lazer', 'expense');
+  const spentOutrosExpense = getSumByCategoryAndType('Outros', 'expense');
+  
+  const spentPlafondReal = spentTransportes + spentLazer + spentOutrosExpense;
+
+  const totalIncome = currentMonthTransactions
+    .filter(tx => tx.type === 'income')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const effectiveSalary = budget.salary + totalIncome;
+  const allocatedPlafondReal = Math.max(0, effectiveSalary - spentFixos - savedPoupanca - investedInvestimento);
+  const remainingPlafondReal = allocatedPlafondReal - spentPlafondReal;
+
+  const pctFixos = effectiveSalary > 0 ? Math.min((spentFixos / effectiveSalary) * 100, 100) : 0;
+  const pctPoupanca = effectiveSalary > 0 ? Math.min((savedPoupanca / effectiveSalary) * 100, 100) : 0;
+  const pctInvestimento = effectiveSalary > 0 ? Math.min((investedInvestimento / effectiveSalary) * 100, 100) : 0;
+  const pctPlafondReal = allocatedPlafondReal > 0 ? Math.min((spentPlafondReal / allocatedPlafondReal) * 100, 100) : 0;
+
+  // 2. Gerar os últimos 6 meses de forma dinâmica para os gráficos
   const getLast6Months = () => {
     const months = [];
     const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -41,7 +82,6 @@ export const Evolution: React.FC<EvolutionProps> = ({ transactions }) => {
 
   const last6Months = getLast6Months();
 
-  // Calcular o histórico acumulado antes do período exibido
   const getSavingsBefore = (limitDate: Date) => {
     return transactions
       .filter(tx => {
@@ -90,7 +130,7 @@ export const Evolution: React.FC<EvolutionProps> = ({ transactions }) => {
         <div className="space-y-1.5">
           <h3 className="text-sm font-bold text-brand-dark">Sem Histórico de Evolução</h3>
           <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-            Regista transações no teu extrato ou reforça as tuas metas para começar a ver gráficos de evolução patrimonial.
+            Regista transações no teu extrato ou define o teu salário para veres a distribuição de orçamento e evolução patrimonial.
           </p>
         </div>
       </div>
@@ -100,8 +140,88 @@ export const Evolution: React.FC<EvolutionProps> = ({ transactions }) => {
   return (
     <div className="px-4 pb-28 space-y-6">
       
-      {/* Resumo de Evolução em Cartão Premium */}
+      {/* 3. Barras de Progresso Horizontais da Distribuição Mensal (Movidas para aqui!) */}
       <div className="bg-white rounded-3xl border border-slate-100 p-5 mt-2 space-y-4 shadow-premium">
+        <div className="flex justify-between items-center">
+          <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Distribuição Mensal</h3>
+          <button
+            onClick={onEditBudget}
+            className="text-[9px] font-bold text-brand-purple hover:underline uppercase tracking-wider transition-custom"
+          >
+            Salário Base: {budget.salary}€
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          {/* Barra 1: Fixos */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-slate-500">Despesas Fixas</span>
+              <span className="text-brand-dark">{formatEuro(spentFixos)} / {formatEuro(effectiveSalary)} ({pctFixos.toFixed(0)}%)</span>
+            </div>
+            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+              <div 
+                className="h-full bg-cat-red rounded-full transition-all duration-500" 
+                style={{ width: `${pctFixos}%` }} 
+              />
+            </div>
+          </div>
+
+          {/* Barra 2: Poupança */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-slate-500">Poupança (TV/Câmara)</span>
+              <span className="text-brand-dark">{formatEuro(savedPoupanca)} / {formatEuro(effectiveSalary)} ({pctPoupanca.toFixed(0)}%)</span>
+            </div>
+            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+              <div 
+                className="h-full bg-cat-purple rounded-full transition-all duration-500" 
+                style={{ width: `${pctPoupanca}%` }} 
+              />
+            </div>
+          </div>
+
+          {/* Barra 3: Investimento */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-slate-500">Investimento (Trading 212)</span>
+              <span className="text-brand-dark">{formatEuro(investedInvestimento)} / {formatEuro(effectiveSalary)} ({pctInvestimento.toFixed(0)}%)</span>
+            </div>
+            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+              <div 
+                className="h-full bg-cat-green rounded-full transition-all duration-500" 
+                style={{ width: `${pctInvestimento}%` }} 
+              />
+            </div>
+          </div>
+
+          {/* Barra 4: Plafond Real */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-slate-500">Plafond Real (Gasto Variável)</span>
+              <span className={`font-semibold ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-brand-dark'}`}>
+                {formatEuro(spentPlafondReal)} / {formatEuro(allocatedPlafondReal)} ({pctPlafondReal.toFixed(0)}%)
+              </span>
+            </div>
+            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+              <div 
+                className={`h-full rounded-full transition-all duration-500 ${remainingPlafondReal < 0 ? 'bg-cat-red' : 'bg-brand-purple'}`} 
+                style={{ width: `${pctPlafondReal}%` }} 
+              />
+            </div>
+          </div>
+        </div>
+
+        {remainingPlafondReal < 0 && (
+          <div className="flex items-center gap-2.5 p-3.5 bg-red-50/50 border border-red-100 rounded-2xl text-xxs text-cat-red font-bold">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>Excedeste o Plafond Real planeado!</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Resumo de Evolução em Cartão Premium */}
+      <div className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium">
         <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Evolução do Património</h3>
         
         <div className="flex justify-between items-end">
@@ -205,7 +325,7 @@ export const Evolution: React.FC<EvolutionProps> = ({ transactions }) => {
         </h4>
         <ul className="text-xxs text-slate-500 space-y-2 list-disc pl-4 leading-relaxed font-semibold">
           <li>As dicas e observações serão atualizadas à medida que registares dados de despesas e poupanças.</li>
-          <li>Podes alterar o teu salário líquido de referência a qualquer momento tocando em "Alterar Salário" no topo do ecrã de início.</li>
+          <li>Podes alterar o teu salário líquido de referência a qualquer momento tocando em "Salário Base" no topo da área de Evolução.</li>
         </ul>
       </div>
 

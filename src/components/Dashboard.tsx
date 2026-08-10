@@ -5,7 +5,6 @@ import {
   Car, 
   Smile, 
   HelpCircle, 
-  AlertTriangle,
   Info,
   Shield,
   PiggyBank,
@@ -61,11 +60,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
   // Gasto/Saída total do mês (Fixos + Poupança + Investimento + Plafond Real)
   const totalSpent = spentFixos + savedPoupanca + investedInvestimento + spentPlafondReal;
 
-  // Percentagens das barras em relação ao salário efetivo ou em relação ao plafond alocado
-  const pctFixos = effectiveSalary > 0 ? Math.min((spentFixos / effectiveSalary) * 100, 100) : 0;
-  const pctPoupanca = effectiveSalary > 0 ? Math.min((savedPoupanca / effectiveSalary) * 100, 100) : 0;
-  const pctInvestimento = effectiveSalary > 0 ? Math.min((investedInvestimento / effectiveSalary) * 100, 100) : 0;
-  const pctPlafondReal = allocatedPlafondReal > 0 ? Math.min((spentPlafondReal / allocatedPlafondReal) * 100, 100) : 0;
+  // Património Total (Salário de referência + Rendas - Despesas Fixas e Variáveis)
+  const allTimeIncomes = transactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
+  const allTimeExpenses = transactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
+  const patrimonioTotal = budget.salary + allTimeIncomes - allTimeExpenses;
+
+
 
   // Formato Monetário
   const formatEuro = (value: number) => {
@@ -119,34 +119,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       ) : (
         <>
-          {/* 2. Topo Premium "O Teu Mês num Relance" (Inspirado no ecrã do meio da imagem) */}
+          {/* 2. Topo Premium "Património Total" */}
           <div className="bg-gradient-to-br from-brand-purple-dark to-brand-purple rounded-[32px] p-5 mt-2 relative overflow-hidden shadow-premium">
             {/* Decorações em degradê de fundo */}
             <div className="absolute right-[-10px] top-[-10px] w-24 h-24 rounded-full bg-white/10 blur-xl pointer-events-none" />
             <div className="absolute left-[-20px] bottom-[-20px] w-32 h-32 rounded-full bg-indigo-500/20 blur-xl pointer-events-none" />
             
             <div className="relative space-y-4">
-              {/* Título e Ação de Editar */}
+              {/* Título */}
               <div className="flex justify-between items-center text-white/90">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-purple-200">Saldo Disponível</span>
-                <button 
-                  onClick={onEditBudget}
-                  className="text-[10px] font-semibold bg-white/15 border border-white/20 hover:bg-white/25 px-3 py-1 rounded-full transition-custom"
-                >
-                  Salário Base
-                </button>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-purple-200">Património Total</span>
               </div>
 
-              {/* Saldo Principal */}
+              {/* Património Principal */}
               <p className="text-3xl font-black text-white tracking-tight">
-                {formatEuro(remainingPlafondReal)}
+                {formatEuro(patrimonioTotal)}
               </p>
 
-              {/* Cartão de Overlay Branco (Conforme ecrã do meio da imagem) */}
+              {/* Cartão de Overlay Branco */}
               <div className="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center text-brand-dark">
                 {/* Salário Líquido (Start Income) */}
                 <div className="space-y-0.5">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Total Recebido (In)</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Entradas do Mês (In)</span>
                   <div className="flex items-center gap-1 text-xs font-extrabold text-cat-green">
                     <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
                     <span>{formatEuro(effectiveSalary)}</span>
@@ -155,9 +149,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                 <div className="h-8 w-px bg-slate-100" />
 
-                {/* Despesas Totais (Your Expenses) */}
+                {/* Despesas Totais */}
                 <div className="space-y-0.5 text-right">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Saídas Totais (Out)</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Saídas do Mês (Out)</span>
                   <div className="flex items-center justify-end gap-1 text-xs font-extrabold text-cat-red">
                     <ArrowDownRight className="w-3.5 h-3.5 shrink-0" />
                     <span>-{formatEuro(totalSpent)}</span>
@@ -165,78 +159,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* 3. Barras de Progresso Horizontais em Cartão Flutuante */}
-          <div className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium">
-            <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest">Distribuição Mensal</h3>
-            
-            <div className="space-y-4">
-              {/* Barra 1: Fixos */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-500">Despesas Fixas</span>
-                  <span className="text-brand-dark">{formatEuro(spentFixos)} / {formatEuro(effectiveSalary)} ({pctFixos.toFixed(0)}%)</span>
-                </div>
-                <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
-                  <div 
-                    className="h-full bg-cat-red rounded-full transition-all duration-500" 
-                    style={{ width: `${pctFixos}%` }} 
-                  />
-                </div>
-              </div>
-
-              {/* Barra 2: Poupança */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-500">Poupança (TV/Câmara)</span>
-                  <span className="text-brand-dark">{formatEuro(savedPoupanca)} / {formatEuro(effectiveSalary)} ({pctPoupanca.toFixed(0)}%)</span>
-                </div>
-                <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
-                  <div 
-                    className="h-full bg-cat-purple rounded-full transition-all duration-500" 
-                    style={{ width: `${pctPoupanca}%` }} 
-                  />
-                </div>
-              </div>
-
-              {/* Barra 3: Investimento */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-500">Investimento (Trading 212)</span>
-                  <span className="text-brand-dark">{formatEuro(investedInvestimento)} / {formatEuro(effectiveSalary)} ({pctInvestimento.toFixed(0)}%)</span>
-                </div>
-                <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
-                  <div 
-                    className="h-full bg-cat-green rounded-full transition-all duration-500" 
-                    style={{ width: `${pctInvestimento}%` }} 
-                  />
-                </div>
-              </div>
-
-              {/* Barra 4: Plafond Real */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-500">Plafond Real (Gasto Variável)</span>
-                  <span className={`font-semibold ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-brand-dark'}`}>
-                    {formatEuro(spentPlafondReal)} / {formatEuro(allocatedPlafondReal)} ({pctPlafondReal.toFixed(0)}%)
-                  </span>
-                </div>
-                <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ${remainingPlafondReal < 0 ? 'bg-cat-red' : 'bg-brand-purple'}`} 
-                    style={{ width: `${pctPlafondReal}%` }} 
-                  />
-                </div>
-              </div>
-            </div>
-
-            {remainingPlafondReal < 0 && (
-              <div className="flex items-center gap-2.5 p-3.5 bg-red-50/50 border border-red-100 rounded-2xl text-xxs text-cat-red font-bold">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>Excedeste o Plafond Real planeado!</span>
-              </div>
-            )}
           </div>
         </>
       )}
@@ -284,8 +206,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             {activeDonutData.length > 0 && (
               <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400">Total Gasto</span>
-                <span className="text-base font-black text-brand-dark">{formatEuro(totalDonutSpent)}</span>
+                <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400">Plafond Rest.</span>
+                <span className={`text-sm font-black ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-brand-dark'}`}>{formatEuro(remainingPlafondReal)}</span>
               </div>
             )}
           </div>
