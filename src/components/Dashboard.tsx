@@ -41,13 +41,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const spentOutros = getSumByCategory('Outros');
   
   const spentPlafondReal = spentTransportes + spentLazer + spentOutros;
-  const remainingPlafondReal = budget.plafondReal - spentPlafondReal;
+  
+  // Plafond Real Alocado é o salário menos o que foi para Fixos, Poupança e Investimento
+  const allocatedPlafondReal = Math.max(0, budget.salary - spentFixos - savedPoupanca - investedInvestimento);
+  const remainingPlafondReal = allocatedPlafondReal - spentPlafondReal;
 
-  // Percentagens para as barras com proteção contra divisão por zero
-  const pctFixos = budget.fixos > 0 ? Math.min((spentFixos / budget.fixos) * 100, 100) : 0;
-  const pctPoupanca = budget.poupanca > 0 ? Math.min((savedPoupanca / budget.poupanca) * 100, 100) : 0;
-  const pctInvestimento = budget.investimento > 0 ? Math.min((investedInvestimento / budget.investimento) * 100, 100) : 0;
-  const pctPlafondReal = budget.plafondReal > 0 ? Math.min((spentPlafondReal / budget.plafondReal) * 100, 100) : 0;
+  // Percentagens das barras em relação ao salário (Fixas/Poup/Inv) ou em relação ao plafond alocado (Plafond Real)
+  const pctFixos = budget.salary > 0 ? Math.min((spentFixos / budget.salary) * 100, 100) : 0;
+  const pctPoupanca = budget.salary > 0 ? Math.min((savedPoupanca / budget.salary) * 100, 100) : 0;
+  const pctInvestimento = budget.salary > 0 ? Math.min((investedInvestimento / budget.salary) * 100, 100) : 0;
+  const pctPlafondReal = allocatedPlafondReal > 0 ? Math.min((spentPlafondReal / allocatedPlafondReal) * 100, 100) : 0;
 
   // Formato Monetário
   const formatEuro = (value: number) => {
@@ -78,14 +81,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="space-y-1">
             <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider">Bem-vindo ao GerePoup</h3>
             <p className="text-xxs text-gray-400 max-w-[280px] mx-auto leading-relaxed">
-              Define o teu salário líquido de referência e divide o teu orçamento pelas tuas despesas fixas, poupanças e investimentos.
+              Para começar a gerir as tuas finanças, introduz o teu salário líquido de referência.
             </p>
           </div>
           <button
             onClick={onEditBudget}
             className="w-full py-3 bg-brand-dark text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-custom"
           >
-            Configurar Orçamento do Zero
+            Definir Salário Inicial
           </button>
         </div>
       ) : (
@@ -106,7 +109,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-dark bg-brand-gray rounded-full border border-brand-border hover:bg-gray-100 transition-custom"
             >
               <DollarSign className="w-3 h-3 text-brand-dark" />
-              Ref: {budget.salary}€
+              Salário: {budget.salary}€
             </button>
           </div>
 
@@ -117,7 +120,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-gray-500">Despesas Fixas</span>
-                <span className="text-brand-dark">{formatEuro(spentFixos)} / {formatEuro(budget.fixos)} ({pctFixos.toFixed(0)}%)</span>
+                <span className="text-brand-dark">{formatEuro(spentFixos)} / {formatEuro(budget.salary)} ({pctFixos.toFixed(0)}%)</span>
               </div>
               <div className="h-2 w-full bg-brand-gray rounded-full overflow-hidden">
                 <div 
@@ -131,7 +134,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-gray-500">Poupança (TV/Câmara)</span>
-                <span className="text-brand-dark">{formatEuro(savedPoupanca)} / {formatEuro(budget.poupanca)} ({pctPoupanca.toFixed(0)}%)</span>
+                <span className="text-brand-dark">{formatEuro(savedPoupanca)} / {formatEuro(budget.salary)} ({pctPoupanca.toFixed(0)}%)</span>
               </div>
               <div className="h-2 w-full bg-brand-gray rounded-full overflow-hidden">
                 <div 
@@ -145,7 +148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-gray-500">Investimento (Trading 212)</span>
-                <span className="text-brand-dark">{formatEuro(investedInvestimento)} / {formatEuro(budget.investimento)} ({pctInvestimento.toFixed(0)}%)</span>
+                <span className="text-brand-dark">{formatEuro(investedInvestimento)} / {formatEuro(budget.salary)} ({pctInvestimento.toFixed(0)}%)</span>
               </div>
               <div className="h-2 w-full bg-brand-gray rounded-full overflow-hidden">
                 <div 
@@ -160,7 +163,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-gray-500">Plafond Real (Gasto Variável)</span>
                 <span className={`font-semibold ${remainingPlafondReal < 0 ? 'text-cat-red' : 'text-brand-dark'}`}>
-                  {formatEuro(spentPlafondReal)} / {formatEuro(budget.plafondReal)} ({pctPlafondReal.toFixed(0)}%)
+                  {formatEuro(spentPlafondReal)} / {formatEuro(allocatedPlafondReal)} ({pctPlafondReal.toFixed(0)}%)
                 </span>
               </div>
               <div className="h-2 w-full bg-brand-gray rounded-full overflow-hidden">

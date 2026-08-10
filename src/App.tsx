@@ -35,7 +35,6 @@ import { Ledger } from './components/Ledger';
 
 // Modals
 import { TransactionModal } from './components/TransactionModal';
-import { BudgetModal } from './components/BudgetModal';
 
 function App() {
   const [currentTab, setCurrentTab] = useState<'home' | 'evolution' | 'goals' | 'ledger'>('home');
@@ -45,7 +44,6 @@ function App() {
   
   // Modals
   const [isTxOpen, setIsTxOpen] = useState(false);
-  const [isBudgetOpen, setIsBudgetOpen] = useState(false);
   
   // Estado de rede/offline
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -198,10 +196,16 @@ function App() {
     await saveTransactions(updatedTxs);
   };
 
-  // Handler para atualizar orçamento
-  const handleSaveBudget = async (newBudget: BudgetAllocation) => {
-    setBudget(newBudget);
-    await saveBudget(newBudget);
+  // Handler para atualizar o salário de referência por prompt
+  const handleEditSalary = async () => {
+    const newSalaryStr = prompt('Qual é o teu Salário Líquido de Referência?', budget.salary.toString());
+    if (newSalaryStr === null) return;
+    const newSalary = parseFloat(newSalaryStr);
+    if (!isNaN(newSalary) && newSalary >= 0) {
+      const updatedBudget = { ...budget, salary: newSalary };
+      setBudget(updatedBudget);
+      await saveBudget(updatedBudget);
+    }
   };
 
   // Handler para limpar todos os dados e recomeçar do zero
@@ -222,7 +226,7 @@ function App() {
           <Dashboard 
             transactions={transactions} 
             budget={budget}
-            onEditBudget={() => setIsBudgetOpen(true)}
+            onEditBudget={handleEditSalary}
           />
         );
       case 'evolution':
@@ -256,7 +260,14 @@ function App() {
           <p className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase mt-0.5">Finanças Offline</p>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleClearAllData}
+            className="text-[9px] font-bold text-gray-400 hover:text-cat-red uppercase tracking-wider transition-custom"
+            title="Recomeçar do zero"
+          >
+            Reiniciar
+          </button>
           {!isOnline && (
             <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
               <WifiOff className="w-2.5 h-2.5" /> Offline
@@ -332,14 +343,6 @@ function App() {
         isOpen={isTxOpen} 
         onClose={() => setIsTxOpen(false)} 
         onAddTransaction={handleAddTransaction} 
-      />
-
-      <BudgetModal 
-        isOpen={isBudgetOpen} 
-        onClose={() => setIsBudgetOpen(false)} 
-        budget={budget} 
-        onSaveBudget={handleSaveBudget} 
-        onClearAllData={handleClearAllData}
       />
 
     </div>
