@@ -480,15 +480,6 @@ function App() {
     setGoals(data.goals);
   };
 
-  // Handler para limpar todos os dados e recomeçar do zero
-  const handleClearAllData = async () => {
-    if (window.confirm('Tens a certeza que queres apagar todos os dados e começar do zero? Esta ação é irreversível.')) {
-      const { clear } = await import('idb-keyval');
-      await clear();
-      localStorage.clear();
-      window.location.reload();
-    }
-  };
 
   // Render da view selecionada na dock
   const renderActiveView = () => {
@@ -557,14 +548,7 @@ function App() {
             <Cloud className="w-3.5 h-3.5 text-slate-400 hover:text-brand-purple transition-colors" />
             Nuvem
           </button>
-          <span className="text-slate-200 text-xxs">|</span>
-          <button
-            onClick={handleClearAllData}
-            className="text-[9px] font-bold text-gray-400 hover:text-cat-red uppercase tracking-wider transition-custom cursor-pointer"
-            title="Recomeçar do zero"
-          >
-            Reiniciar
-          </button>
+
           {!isOnline && (
             <span className="flex items-center gap-1 text-[9px] font-bold text-cat-red bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
               <WifiOff className="w-2.5 h-2.5" /> Offline
