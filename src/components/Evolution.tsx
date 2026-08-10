@@ -8,9 +8,11 @@ import {
   Tooltip, 
   BarChart, 
   Bar, 
-  Legend 
+  Legend,
+  Cell,
+  ReferenceLine
 } from 'recharts';
-import { TrendingUp, BarChart2, AlertTriangle } from 'lucide-react';
+import { TrendingUp, BarChart2, AlertTriangle, PiggyBank } from 'lucide-react';
 import type { Transaction, BudgetAllocation, Bank } from '../types';
 
 interface EvolutionProps {
@@ -159,6 +161,59 @@ export const Evolution: React.FC<EvolutionProps> = ({
     }
     return dataPoints;
   };
+
+  // Encontrar contas que não são de investimento
+  const regularBankIds = new Set(
+    banks
+      .filter(bank => {
+        const nameLower = bank.name.toLowerCase();
+        return !(nameLower.includes('trading') || nameLower.includes('invest') || nameLower.includes('ações') || nameLower.includes('acoes') || nameLower.includes('bolsa'));
+      })
+      .map(bank => bank.id)
+  );
+
+  const getMonthlyRegularSavings = () => {
+    return last6Months.map(m => {
+      const txsInMonth = transactions.filter(tx => {
+        const txDate = new Date(tx.date);
+        return txDate.getFullYear() === m.year && txDate.getMonth() === m.monthIndex;
+      });
+
+      let netSavings = 0;
+
+      txsInMonth.forEach(tx => {
+        // 1. Receita (Entrada) nas contas regulares
+        if (tx.type === 'income' && tx.bankId && regularBankIds.has(tx.bankId)) {
+          netSavings += tx.amount;
+        }
+        // 2. Despesa ou Reforço de meta (Saída) das contas regulares
+        if ((tx.type === 'expense' || tx.type === 'transfer') && tx.bankId && regularBankIds.has(tx.bankId)) {
+          netSavings -= tx.amount;
+        }
+        // 3. Transferências entre contas
+        if (tx.fromBankId || tx.toBankId) {
+          const fromReg = tx.fromBankId && regularBankIds.has(tx.fromBankId);
+          const toReg = tx.toBankId && regularBankIds.has(tx.toBankId);
+
+          if (fromReg && !toReg) {
+            // Saiu de regular para investimento: regular perde
+            netSavings -= tx.amount;
+          } else if (!fromReg && toReg) {
+            // Entrou de investimento para regular: regular ganha
+            netSavings += tx.amount;
+          }
+          // Se ambos regulares ou ambos investimentos, o efeito líquido nas contas regulares é zero!
+        }
+      });
+
+      return {
+        name: m.name,
+        "Poupança Líquida": netSavings
+      };
+    });
+  };
+
+  const monthlyRegularSavingsData = getMonthlyRegularSavings();
 
   const hasData = transactions.length > 0;
 
@@ -384,6 +439,50 @@ export const Evolution: React.FC<EvolutionProps> = ({
           </div>
         );
       })}
+      {/* Gráfico: Dinheiro Guardado nas Contas (Sem ser Trading) */}
+      <div className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium animate-in fade-in duration-300">
+        <div>
+          <h3 className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <PiggyBank className="w-3.5 h-3.5 text-brand-purple shrink-0" />
+            Poupança Líquida (Contas Correntes)
+          </h3>
+          <p className="text-xxs text-slate-400 mt-0.5">Dinheiro acumulado/gasto nas contas do dia a dia (excluindo Trading/Ações)</p>
+        </div>
+
+        <div className="h-44 w-full pt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={monthlyRegularSavingsData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 9, fill: '#94A3B8', fontWeight: 600 }}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 9, fill: '#94A3B8', fontWeight: 600 }}
+              />
+              <Tooltip 
+                formatter={(value: any) => [formatEuro(Number(value)), 'Poupança Corrente']}
+                contentStyle={{ borderRadius: '16px', border: '1px solid #f1f5f9', padding: '6px 10px' }}
+              />
+              <ReferenceLine y={0} stroke="#cbd5e1" strokeDasharray="3 3" />
+              <Bar dataKey="Poupança Líquida" radius={6}>
+                {monthlyRegularSavingsData.map((entry, index) => {
+                  const val = entry["Poupança Líquida"];
+                  return (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={val >= 0 ? "#10b981" : "#ef4444"} 
+                    />
+                  );
+                })}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
       {/* Gráfico Comparativo Mensal */}
       <div className="bg-white rounded-3xl border border-slate-100 p-5 space-y-4 shadow-premium">
