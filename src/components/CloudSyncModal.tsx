@@ -245,16 +245,16 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
                 <button
                   onClick={handleBackup}
                   disabled={loading}
-                  className="w-full py-2.5 bg-gradient-to-tr from-[#633bbf] to-[#05bde8] text-white rounded-xl text-xxs font-black uppercase tracking-wider shadow-sm hover:scale-[1.01] active:scale-99 transition-transform"
+                  className="w-full py-2.5 bg-gradient-to-tr from-[#633bbf] to-[#05bde8] text-white rounded-xl text-xxs font-black uppercase tracking-wider shadow-sm hover:scale-[1.01] active:scale-99 transition-transform whitespace-nowrap"
                 >
-                  Guardar na Nuvem
+                  Guardar
                 </button>
                 <button
                   onClick={() => handleRestore(syncCode)}
                   disabled={loading}
-                  className="w-full py-2.5 bg-white border border-slate-150 text-brand-purple hover:bg-slate-55 rounded-xl text-xxs font-black uppercase tracking-wider shadow-sm hover:scale-[1.01] active:scale-99 transition-transform"
+                  className="w-full py-2.5 bg-white border border-slate-150 text-brand-purple hover:bg-slate-55 rounded-xl text-xxs font-black uppercase tracking-wider shadow-sm hover:scale-[1.01] active:scale-99 transition-transform whitespace-nowrap"
                 >
-                  Sincronizar Nuvem
+                  Restaurar
                 </button>
               </div>
             </div>
@@ -276,15 +276,15 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Código de 8 dígitos..."
+                    placeholder="Código..."
                     value={inputCode}
                     onChange={(e) => setInputCode(e.target.value)}
-                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-inner-soft"
+                    className="flex-1 min-w-0 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-inner-soft"
                   />
                   <button
                     onClick={() => handleRestore(inputCode)}
                     disabled={loading}
-                    className="px-4 py-2 bg-slate-200 text-brand-dark font-black rounded-xl text-xxs uppercase tracking-wider hover:bg-slate-300 transition-colors"
+                    className="px-4 py-2 bg-slate-200 text-brand-dark font-black rounded-xl text-[10px] uppercase tracking-wider hover:bg-slate-300 transition-colors whitespace-nowrap shrink-0"
                   >
                     Restaurar
                   </button>
