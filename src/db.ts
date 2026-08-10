@@ -1,9 +1,10 @@
 import { get, set } from 'idb-keyval';
-import type { Transaction, BudgetAllocation, SavingGoal, Bank } from './types';
+import type { Transaction, BudgetAllocation, SavingGoal, Bank, RecurringTransaction } from './types';
 
 const TRANSACTIONS_KEY = 'gp_transactions';
 const BUDGET_KEY = 'gp_budget';
 const GOALS_KEY = 'gp_goals';
+const RECURRING_KEY = 'gp_recurring';
 
 // Fallback do LocalStorage caso o IndexedDB falhe ou não seja suportado
 const isLocalStorageAvailable = () => {
@@ -146,3 +147,36 @@ export async function getBanks(): Promise<Bank[]> {
   }
   return [];
 }
+
+export async function saveRecurringTransactions(templates: RecurringTransaction[]): Promise<void> {
+  try {
+    await set(RECURRING_KEY, templates);
+  } catch (err) {
+    console.warn('Erro ao guardar no IndexedDB, a usar fallback localStorage', err);
+    if (isLocalStorageAvailable()) {
+      localStorage.setItem(RECURRING_KEY, JSON.stringify(templates));
+    }
+  }
+}
+
+export async function getRecurringTransactions(): Promise<RecurringTransaction[]> {
+  try {
+    const data = await get<RecurringTransaction[]>(RECURRING_KEY);
+    if (data) return data;
+  } catch (err) {
+    console.warn('Erro ao ler do IndexedDB, a usar fallback localStorage', err);
+  }
+
+  if (isLocalStorageAvailable()) {
+    const localData = localStorage.getItem(RECURRING_KEY);
+    if (localData) {
+      try {
+        return JSON.parse(localData);
+      } catch {
+        return [];
+      }
+    }
+  }
+  return [];
+}
+

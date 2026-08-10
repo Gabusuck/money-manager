@@ -18,6 +18,7 @@ export interface Transaction {
   category: TransactionCategory;
   date: string; // ISO format: YYYY-MM-DD
   isRecurring?: boolean;
+  recurringId?: string;  // ID do molde da transação recorrente de origem
   bankId?: string;       // Associado a despesa/renda/objetivo
   fromBankId?: string;   // Associado a transferência entre bancos (Origem)
   toBankId?: string;     // Associado a transferência entre bancos (Destino)
@@ -44,3 +45,18 @@ export interface SavingGoal {
   category: 'Poupança' | 'Investimento';
   deadline?: string;
 }
+
+export type RecurringInterval = 'weekly' | 'monthly' | 'yearly';
+
+export interface RecurringTransaction {
+  id: string;
+  description: string;
+  amount: number;
+  type: 'income' | 'expense';
+  category: TransactionCategory;
+  frequency: RecurringInterval;
+  startDate: string; // ISO date: YYYY-MM-DD
+  bankId: string; // Conta bancária associada
+  isActive: boolean;
+}
+

@@ -14,7 +14,8 @@ import {
   X,
   Plus,
   Trash2,
-  Edit3
+  Edit3,
+  Repeat
 } from 'lucide-react';
 import type { Transaction, BudgetAllocation, Bank, TransactionType } from '../types';
 
@@ -27,6 +28,7 @@ interface DashboardProps {
   onDeleteBank: (bankId: string) => void;
   onEditBank: (bankId: string, name: string, balance: number) => void;
   onOpenPrefilledTxModal: (type: TransactionType, bankId: string) => void;
+  onOpenRecurringModal: (bank: Bank) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ 
@@ -37,7 +39,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onAddBank,
   onDeleteBank,
   onEditBank,
-  onOpenPrefilledTxModal
+  onOpenPrefilledTxModal,
+  onOpenRecurringModal
 }) => {
   const [longPressTimeout, setLongPressTimeout] = useState<any>(null);
   const [pressedBankId, setPressedBankId] = useState<string | null>(null);
@@ -480,6 +483,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
               >
                 <span>Nova Renda</span>
                 <ArrowUpRight className="w-4 h-4 text-cat-green" />
+              </button>
+              
+              <button
+                onClick={() => {
+                  onOpenRecurringModal(activeContextMenuBank);
+                  setActiveContextMenuBank(null);
+                }}
+                className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 border-b border-slate-50 transition-custom text-left text-xs font-bold text-brand-dark"
+              >
+                <span>Assinaturas / Recorrências</span>
+                <Repeat className="w-4 h-4 text-brand-purple" />
               </button>
               
               <button

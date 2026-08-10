@@ -17,7 +17,9 @@ import {
   getGoals, 
   saveGoals,
   getBanks,
-  saveBanks
+  saveBanks,
+  getRecurringTransactions,
+  saveRecurringTransactions
 } from './db';
 import { 
   MOCK_BUDGET, 
@@ -30,8 +32,10 @@ import type {
   SavingGoal,
   TransactionCategory,
   Bank,
-  TransactionType
+  TransactionType,
+  RecurringTransaction
 } from './types';
+import { RecurringModal } from './components/RecurringModal';
 
 // Views
 import { Dashboard } from './components/Dashboard';
@@ -119,16 +123,140 @@ const checkAndGenerateRecurring = (txs: Transaction[]): { updated: boolean; tran
   return { updated: changed, transactions: updatedTxs };
 };
 
+// Nova função utilitária para verificar e gerar transações automáticas com base nos moldes de recorrência/assinatura
+const generateRecurringTransactions = (
+  templates: RecurringTransaction[],
+  txs: Transaction[]
+): { updated: boolean; transactions: Transaction[] } => {
+  let changed = false;
+  const updatedTxs = [...txs];
+  const now = new Date();
+
+  templates.forEach(template => {
+    if (!template.isActive) return;
+
+    const startDate = new Date(template.startDate);
+    const startYear = startDate.getFullYear();
+    const startMonth = startDate.getMonth();
+    const startDay = startDate.getDate();
+
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    if (template.frequency === 'monthly') {
+      let year = startYear;
+      let month = startMonth;
+
+      while (year < currentYear || (year === currentYear && month <= currentMonth)) {
+        const targetDate = new Date(year, month, startDay);
+        if (targetDate.getMonth() !== month) {
+          targetDate.setDate(0);
+        }
+        const dateStr = targetDate.toISOString().split('T')[0];
+
+        const targetMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+        const alreadyExists = updatedTxs.some(tx => 
+          tx.recurringId === template.id && 
+          tx.date.startsWith(targetMonthStr)
+        );
+
+        if (!alreadyExists) {
+          const newTx: Transaction = {
+            id: Math.random().toString(36).substring(2, 9),
+            description: template.description,
+            amount: template.amount,
+            type: template.type,
+            category: template.category,
+            date: dateStr,
+            bankId: template.bankId,
+            recurringId: template.id
+          };
+          updatedTxs.push(newTx);
+          changed = true;
+        }
+
+        month++;
+        if (month > 11) {
+          month = 0;
+          year++;
+        }
+      }
+    } else if (template.frequency === 'weekly') {
+      let currentDate = new Date(startDate);
+      while (currentDate <= now) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+
+        const alreadyExists = updatedTxs.some(tx => 
+          tx.recurringId === template.id && 
+          tx.date === dateStr
+        );
+
+        if (!alreadyExists) {
+          const newTx: Transaction = {
+            id: Math.random().toString(36).substring(2, 9),
+            description: template.description,
+            amount: template.amount,
+            type: template.type,
+            category: template.category,
+            date: dateStr,
+            bankId: template.bankId,
+            recurringId: template.id
+          };
+          updatedTxs.push(newTx);
+          changed = true;
+        }
+
+        currentDate.setDate(currentDate.getDate() + 7);
+      }
+    } else if (template.frequency === 'yearly') {
+      let year = startYear;
+      while (year <= currentYear) {
+        const targetDate = new Date(year, startMonth, startDay);
+        if (targetDate.getMonth() !== startMonth) {
+          targetDate.setDate(0);
+        }
+        const dateStr = targetDate.toISOString().split('T')[0];
+
+        const alreadyExists = updatedTxs.some(tx => 
+          tx.recurringId === template.id && 
+          tx.date.startsWith(String(year))
+        );
+
+        if (!alreadyExists) {
+          const newTx: Transaction = {
+            id: Math.random().toString(36).substring(2, 9),
+            description: template.description,
+            amount: template.amount,
+            type: template.type,
+            category: template.category,
+            date: dateStr,
+            bankId: template.bankId,
+            recurringId: template.id
+          };
+          updatedTxs.push(newTx);
+          changed = true;
+        }
+        year++;
+      }
+    }
+  });
+
+  return { updated: changed, transactions: updatedTxs };
+};
+
 function App() {
   const [currentTab, setCurrentTab] = useState<'home' | 'evolution' | 'goals' | 'ledger'>('home');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budget, setBudget] = useState<BudgetAllocation>(MOCK_BUDGET);
   const [goals, setGoals] = useState<SavingGoal[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
+  const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
   
   // Modals
   const [isTxOpen, setIsTxOpen] = useState(false);
   const [isCloudOpen, setIsCloudOpen] = useState(false);
+  const [isRecurringOpen, setIsRecurringOpen] = useState(false);
+  const [activeRecurringBank, setActiveRecurringBank] = useState<Bank | null>(null);
   const [defaultTxType, setDefaultTxType] = useState<TransactionType>('expense');
   const [defaultBankId, setDefaultBankId] = useState<string>('');
   
@@ -147,18 +275,17 @@ function App() {
         setBudget(MOCK_BUDGET);
       }
 
-      // 2. Carregar Transações e Executar Recorrências
-      const localTxs = await getTransactions();
-      if (localTxs && localTxs.length > 0) {
-        const { updated, transactions: verifiedTxs } = checkAndGenerateRecurring(localTxs);
-        setTransactions(verifiedTxs);
-        if (updated) {
-          await saveTransactions(verifiedTxs);
-        }
+      // 2. Carregar Bancos
+      const localBanks = await getBanks();
+      if (localBanks && localBanks.length > 0) {
+        setBanks(localBanks);
       } else {
-        const { transactions: verifiedTxs } = checkAndGenerateRecurring(MOCK_TRANSACTIONS);
-        await saveTransactions(verifiedTxs);
-        setTransactions(verifiedTxs);
+        const defaultBanks = [
+          { id: 'activo', name: 'ActivoBank' },
+          { id: 'revolut', name: 'Revolut' }
+        ];
+        await saveBanks(defaultBanks);
+        setBanks(defaultBanks);
       }
 
       // 3. Carregar Metas
@@ -170,17 +297,23 @@ function App() {
         setGoals(MOCK_GOALS);
       }
 
-      // 4. Carregar Bancos
-      const localBanks = await getBanks();
-      if (localBanks && localBanks.length > 0) {
-        setBanks(localBanks);
-      } else {
-        const defaultBanks = [
-          { id: 'activo', name: 'ActivoBank' },
-          { id: 'revolut', name: 'Revolut' }
-        ];
-        await saveBanks(defaultBanks);
-        setBanks(defaultBanks);
+      // 4. Carregar Moldes de Recorrências
+      const localRecs = await getRecurringTransactions();
+      setRecurringTransactions(localRecs);
+
+      // 5. Carregar Transações e Executar Recorrências
+      const localTxs = await getTransactions();
+      let currentTxs = localTxs.length > 0 ? localTxs : MOCK_TRANSACTIONS;
+
+      // Executar geração de novas recorrências baseadas em moldes
+      const { updated: updatedRecs, transactions: afterRecsTxs } = generateRecurringTransactions(localRecs, currentTxs);
+      
+      // Executar geração de recorrências legadas (isRecurring no objeto de transação)
+      const { updated: updatedLegacy, transactions: finalTxs } = checkAndGenerateRecurring(afterRecsTxs);
+
+      setTransactions(finalTxs);
+      if (updatedRecs || updatedLegacy || localTxs.length === 0) {
+        await saveTransactions(finalTxs);
       }
     }
     
@@ -480,6 +613,36 @@ function App() {
     setGoals(data.goals);
   };
 
+  // Handlers para Assinaturas e Recorrências
+  const handleOpenRecurringModal = (bank: Bank) => {
+    setActiveRecurringBank(bank);
+    setIsRecurringOpen(true);
+  };
+
+  const handleAddRecurringTransaction = async (templateData: Omit<RecurringTransaction, 'id' | 'isActive'>) => {
+    const newTemplate: RecurringTransaction = {
+      ...templateData,
+      id: 'rec-' + Date.now() + '-' + Math.random().toString(36).substring(2, 5),
+      isActive: true
+    };
+    const updatedRecs = [...recurringTransactions, newTemplate];
+    setRecurringTransactions(updatedRecs);
+    await saveRecurringTransactions(updatedRecs);
+
+    // Gerar transações correspondentes retroativas imediatamente
+    const { updated, transactions: finalTxs } = generateRecurringTransactions(updatedRecs, transactions);
+    if (updated) {
+      setTransactions(finalTxs);
+      await saveTransactions(finalTxs);
+    }
+  };
+
+  const handleDeleteRecurringTransaction = async (id: string) => {
+    const updatedRecs = recurringTransactions.filter(r => r.id !== id);
+    setRecurringTransactions(updatedRecs);
+    await saveRecurringTransactions(updatedRecs);
+  };
+
 
   // Render da view selecionada na dock
   const renderActiveView = () => {
@@ -495,6 +658,7 @@ function App() {
             onDeleteBank={handleDeleteBank}
             onEditBank={handleEditBank}
             onOpenPrefilledTxModal={handleOpenPrefilledTxModal}
+            onOpenRecurringModal={handleOpenRecurringModal}
           />
         );
       case 'evolution':
@@ -643,6 +807,18 @@ function App() {
         budget={budget}
         goals={goals}
         onRestoreData={handleRestoreData}
+      />
+
+      <RecurringModal
+        isOpen={isRecurringOpen}
+        onClose={() => {
+          setIsRecurringOpen(false);
+          setActiveRecurringBank(null);
+        }}
+        bank={activeRecurringBank}
+        recurringTxs={recurringTransactions}
+        onAddRecurring={handleAddRecurringTransaction}
+        onDeleteRecurring={handleDeleteRecurringTransaction}
       />
 
     </div>
