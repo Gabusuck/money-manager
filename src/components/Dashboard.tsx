@@ -71,14 +71,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
   };
 
-  // Dados para o Gráfico Circular (Donut)
+  // Dados para o Gráfico Circular (Donut) - Inclui Despesas Variáveis e Reforços de Metas (Poupança/Investimento)
   const donutData = [
     { name: 'Transportes / Gasóleo', value: spentTransportes, color: '#f97316', icon: Car },
     { name: 'Lazer', value: spentLazer, color: '#eab308', icon: Smile },
+    { name: 'Poupança (TV/Câmara)', value: savedPoupanca, color: '#a855f7', icon: PiggyBank },
+    { name: 'Investimento (T212)', value: investedInvestimento, color: '#10b981', icon: TrendingUp },
     { name: 'Outros', value: spentOutrosExpense, color: '#64748b', icon: HelpCircle }
   ];
 
-  const totalDonutSpent = spentTransportes + spentLazer + spentOutrosExpense;
+  const totalDonutSpent = spentTransportes + spentLazer + spentOutrosExpense + savedPoupanca + investedInvestimento;
   const activeDonutData = donutData.filter(item => item.value > 0);
 
   // Icon mapping para as transações recentes
