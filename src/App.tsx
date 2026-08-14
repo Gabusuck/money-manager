@@ -48,19 +48,35 @@ import { SubscriptionsView } from './components/SubscriptionsView';
 // Modals
 import { TransactionModal } from './components/TransactionModal';
 
+// Funções auxiliares para lidar com datas na hora local da máquina de forma segura, evitando bugs de fuso horário UTC
+const parseLocalDate = (dateStr: string): Date => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+const getLocalDateString = (date: Date): string => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
 // Função utilitária para verificar e duplicar transações recorrentes para meses em falta (Legado)
 const checkAndGenerateRecurring = (txs: Transaction[]): { updated: boolean; transactions: Transaction[] } => {
   let changed = false;
   const updatedTxs = [...txs];
+  
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
+  const todayStr = getLocalDateString(now);
+  const todayLocalDate = parseLocalDate(todayStr);
+  const currentYear = todayLocalDate.getFullYear();
+  const currentMonth = todayLocalDate.getMonth();
 
   // Encontrar todas as transações marcadas como recorrentes
   const recurringTemplates = txs.filter(tx => tx.isRecurring);
 
   recurringTemplates.forEach(template => {
-    const startDate = new Date(template.date);
+    const startDate = parseLocalDate(template.date);
     const startYear = startDate.getFullYear();
     const startMonth = startDate.getMonth();
     const startDay = startDate.getDate();
@@ -86,11 +102,11 @@ const checkAndGenerateRecurring = (txs: Transaction[]): { updated: boolean; tran
       }
 
       // Se a data da transação for no futuro, paramos a geração para este molde
-      if (targetDate > now) {
+      if (targetDate > todayLocalDate) {
         break;
       }
 
-      const dateString = targetDate.toISOString().split('T')[0];
+      const dateString = getLocalDateString(targetDate);
       const targetMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
 
       // Verificar se já existe uma transação idêntica neste mês
@@ -134,18 +150,20 @@ const generateRecurringTransactions = (
 ): { updated: boolean; transactions: Transaction[] } => {
   let changed = false;
   const updatedTxs = [...txs];
+  
   const now = new Date();
+  const todayStr = getLocalDateString(now);
+  const todayLocalDate = parseLocalDate(todayStr);
+  const currentYear = todayLocalDate.getFullYear();
+  const currentMonth = todayLocalDate.getMonth();
 
   templates.forEach(template => {
     if (!template.isActive) return;
 
-    const startDate = new Date(template.startDate);
+    const startDate = parseLocalDate(template.startDate);
     const startYear = startDate.getFullYear();
     const startMonth = startDate.getMonth();
     const startDay = startDate.getDate();
-
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
 
     if (template.frequency === 'monthly') {
       let year = startYear;
@@ -158,11 +176,11 @@ const generateRecurringTransactions = (
         }
 
         // Se a data simulada for no futuro, paramos a geração para este molde
-        if (targetDate > now) {
+        if (targetDate > todayLocalDate) {
           break;
         }
 
-        const dateStr = targetDate.toISOString().split('T')[0];
+        const dateStr = getLocalDateString(targetDate);
         const targetMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
         const alreadyExists = updatedTxs.some(tx => 
           tx.recurringId === template.id && 
@@ -192,8 +210,8 @@ const generateRecurringTransactions = (
       }
     } else if (template.frequency === 'weekly') {
       let currentDate = new Date(startDate);
-      while (currentDate <= now) {
-        const dateStr = currentDate.toISOString().split('T')[0];
+      while (currentDate <= todayLocalDate) {
+        const dateStr = getLocalDateString(currentDate);
 
         const alreadyExists = updatedTxs.some(tx => 
           tx.recurringId === template.id && 
@@ -226,11 +244,11 @@ const generateRecurringTransactions = (
         }
 
         // Se a data do ano corrente for no futuro, paramos a geração
-        if (targetDate > now) {
+        if (targetDate > todayLocalDate) {
           break;
         }
 
-        const dateStr = targetDate.toISOString().split('T')[0];
+        const dateStr = getLocalDateString(targetDate);
         const alreadyExists = updatedTxs.some(tx => 
           tx.recurringId === template.id && 
           tx.date.startsWith(String(year))
