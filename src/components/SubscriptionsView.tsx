@@ -277,6 +277,68 @@ export const SubscriptionsView: React.FC<SubscriptionsViewProps> = ({
   );
 };
 
+// Funções auxiliares para datas na hora local
+const parseLocalDate = (dateStr: string): Date => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+const getLocalDateString = (date: Date): string => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+const getNextPaymentDate = (startDateStr: string, frequency: RecurringInterval): Date => {
+  const now = new Date();
+  const todayStr = getLocalDateString(now);
+  const today = parseLocalDate(todayStr);
+  const start = parseLocalDate(startDateStr);
+  
+  if (start >= today) {
+    return start;
+  }
+
+  const next = new Date(start);
+  if (frequency === 'weekly') {
+    while (next < today) {
+      next.setDate(next.getDate() + 7);
+    }
+  } else if (frequency === 'monthly') {
+    const startDay = start.getDate();
+    let year = start.getFullYear();
+    let month = start.getMonth();
+    while (next < today) {
+      month++;
+      if (month > 11) {
+        month = 0;
+        year++;
+      }
+      next.setFullYear(year);
+      next.setMonth(month);
+      next.setDate(startDay);
+      if (next.getMonth() !== month) {
+        next.setDate(0);
+      }
+    }
+  } else if (frequency === 'yearly') {
+    const startDay = start.getDate();
+    const startMonth = start.getMonth();
+    let year = start.getFullYear();
+    while (next < today) {
+      year++;
+      next.setFullYear(year);
+      next.setMonth(startMonth);
+      next.setDate(startDay);
+      if (next.getMonth() !== startMonth) {
+        next.setDate(0);
+      }
+    }
+  }
+  return next;
+};
+
 // Card individual de assinatura
 function SubscriptionCard({ item, banks, formatEuro, translateFrequency, onDelete }: {
   item: RecurringTransaction;
@@ -291,6 +353,23 @@ function SubscriptionCard({ item, banks, formatEuro, translateFrequency, onDelet
   const isExpense = item.type === 'expense';
 
   const P2 = { brand:'#4F6EF7', brandLight:'#EEF1FE', ink:'#111827', inkSubtle:'#9CA3AF', border:'#E5E8F8', surface:'#FFFFFF' };
+
+  // Calcular dias em falta
+  const nextDate = getNextPaymentDate(item.startDate, item.frequency);
+  const todayLocalDate = parseLocalDate(getLocalDateString(new Date()));
+  const diffTime = nextDate.getTime() - todayLocalDate.getTime();
+  const daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  let timeString = '';
+  if (daysUntil === 0) {
+    timeString = 'Hoje';
+  } else if (daysUntil === 1) {
+    timeString = 'Amanhã';
+  } else {
+    timeString = `Em ${daysUntil} dias`;
+  }
+
+  const isUrgent = daysUntil <= 3 && isExpense;
 
   return (
     <div style={{background:P2.surface,borderRadius:18,border:`1px solid ${P2.border}`,padding:'13px 14px',display:'flex',alignItems:'center',justifyContent:'space-between',boxShadow:'0 1px 8px rgba(79,110,247,0.04)',position:'relative',overflow:'hidden'}}>
@@ -315,7 +394,19 @@ function SubscriptionCard({ item, banks, formatEuro, translateFrequency, onDelet
           <p style={{fontSize:13,fontWeight:900,color: isExpense ? '#EF4444' : '#16C784'}}>
             {isExpense ? '-' : '+'}{formatEuro(item.amount)}
           </p>
-          <span style={{fontSize:9,color:P2.inkSubtle}}>desde {item.startDate}</span>
+          <span style={{
+            fontSize:9,
+            color: isUrgent ? '#EF4444' : P2.inkSubtle,
+            fontWeight: isUrgent ? 800 : 600,
+            background: isUrgent ? '#FEF2F2' : 'transparent',
+            padding: isUrgent ? '2px 6px' : '0',
+            borderRadius: isUrgent ? '6px' : '0',
+            border: isUrgent ? '1px solid #FECACA' : 'none',
+            display: 'inline-block',
+            marginTop: 2
+          }}>
+            {timeString}
+          </span>
         </div>
         <button
           onClick={() => { if (window.confirm(`Cancelar "${item.description}"?`)) onDelete(item.id); }}
@@ -328,3 +419,4 @@ function SubscriptionCard({ item, banks, formatEuro, translateFrequency, onDelet
     </div>
   );
 }
+
