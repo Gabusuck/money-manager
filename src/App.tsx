@@ -835,6 +835,7 @@ function App() {
         banks={banks}
         defaultType={defaultTxType}
         defaultBankId={defaultBankId}
+        transactions={transactions}
       />
 
       <CloudSyncModal 

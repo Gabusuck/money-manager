@@ -1,12 +1,4 @@
-export type TransactionCategory =
-  | 'Fixos'
-  | 'Poupança'
-  | 'Investimento'
-  | 'Transportes'
-  | 'Lazer'
-  | 'Outros'
-  | 'Salário'
-  | 'Transferência Interna';
+export type TransactionCategory = string;
 
 export type TransactionType = 'income' | 'expense' | 'transfer';
 

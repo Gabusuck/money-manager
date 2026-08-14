@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, Edit3, Tag, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign, ChevronDown } from 'lucide-react';
+import { X, Calendar, Edit3, Tag, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign, ChevronDown, Plus } from 'lucide-react';
 import type { TransactionCategory, Transaction, TransactionType, Bank } from '../types';
 
 interface TransactionModalProps {
@@ -9,6 +9,7 @@ interface TransactionModalProps {
   banks: Bank[];
   defaultType?: TransactionType;
   defaultBankId?: string;
+  transactions: Transaction[];
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({
@@ -17,7 +18,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   onAddTransaction,
   banks,
   defaultType,
-  defaultBankId
+  defaultBankId,
+  transactions
 }) => {
   const [amount, setAmount] = useState<string>('');
   const [description, setDescription] = useState<string>('');
@@ -26,6 +28,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
+  // Nova categoria personalizada
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [sessionCustomCategories, setSessionCustomCategories] = useState<string[]>([]);
 
   // Estados dos Bancos
   const [selectedBankId, setSelectedBankId] = useState<string>('');
@@ -146,10 +153,34 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     setShowCategorySelector(false);
     setIsRecurring(false);
     setDate(new Date().toISOString().split('T')[0]);
+    setShowNewCategoryInput(false);
+    setNewCategoryName('');
     onClose();
   };
 
-  const categoriesList: { name: TransactionCategory; label: string; color: string; bg: string; border: string; icon: any }[] = [
+  const handleAddNewCategory = () => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
+      alert('Escreve um nome para a categoria.');
+      return;
+    }
+    // Evitar duplicados
+    const lowerName = trimmed.toLowerCase();
+    const exists = categoriesList.some(c => c.name.toLowerCase() === lowerName);
+    if (exists) {
+      alert('Esta categoria já existe!');
+      return;
+    }
+
+    setSessionCustomCategories(prev => [...prev, trimmed]);
+    setCategory(trimmed);
+    setNewCategoryName('');
+    setShowNewCategoryInput(false);
+    setShowCategorySelector(false);
+  };
+
+  // Categorias padrão
+  const defaultCategories = [
     { name: 'Transportes', label: 'Transportes / Gasóleo', color: '#f97316', bg: 'bg-cat-orange/10', border: 'border-cat-orange/20', icon: Car },
     { name: 'Lazer', label: 'Lazer / Café', color: '#eab308', bg: 'bg-cat-yellow/10', border: 'border-cat-yellow/20', icon: Smile },
     { name: 'Outros', label: 'Outros Custos / Rendimentos', color: '#64748b', bg: 'bg-cat-gray/10', border: 'border-cat-gray/20', icon: HelpCircle },
@@ -159,16 +190,39 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     { name: 'Salário', label: 'Salário Principal', color: '#10b981', bg: 'bg-cat-green/10', border: 'border-cat-green/20', icon: DollarSign },
   ];
 
+  // Extrair categorias personalizadas existentes nas transações
+  const defaultNames = defaultCategories.map(c => c.name);
+  const existingCustomCats = Array.from(
+    new Set(
+      transactions
+        .map(t => t.category)
+        .filter(cat => cat && !defaultNames.includes(cat) && cat !== 'Transferência Interna')
+    )
+  );
+
+  const allCustomCats = Array.from(new Set([...existingCustomCats, ...sessionCustomCategories]));
+
+  const customCategoriesList = allCustomCats.map(cat => ({
+    name: cat,
+    label: cat,
+    color: '#4F6EF7',
+    bg: 'rgba(79,110,247,0.1)',
+    border: 'border-indigo-100',
+    icon: Tag
+  }));
+
+  const categoriesList = [...defaultCategories, ...customCategoriesList];
+
   // Filtrar categorias com base no tipo selecionado
   const filteredCategories = categoriesList.filter((cat) => {
     if (type === 'expense') {
-      return ['Transportes', 'Lazer', 'Fixos', 'Outros'].includes(cat.name);
+      return ['Transportes', 'Lazer', 'Fixos', 'Outros'].includes(cat.name) || allCustomCats.includes(cat.name);
     }
     if (type === 'transfer') {
       return ['Poupança', 'Investimento'].includes(cat.name);
     }
     if (type === 'income') {
-      return ['Salário', 'Outros'].includes(cat.name);
+      return ['Salário', 'Outros'].includes(cat.name) || allCustomCats.includes(cat.name);
     }
     return true;
   });
@@ -443,6 +497,83 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         </button>
                       );
                     })}
+
+                    {/* Botão/Formulário para adicionar nova categoria personalizada */}
+                    {!showNewCategoryInput ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowNewCategoryInput(true)}
+                        className="w-full bg-white rounded-2xl border border-dashed border-slate-200 p-3.5 flex items-center justify-center gap-2 hover:translate-y-[-1px] transition-custom text-left"
+                      >
+                        <Plus className="w-4 h-4 text-slate-400" />
+                        <span className="text-xs font-bold text-slate-400">Criar Nova Categoria...</span>
+                      </button>
+                    ) : (
+                      <div style={{
+                        display: 'flex',
+                        gap: 8,
+                        background: '#F7F8FF',
+                        padding: '10px 12px',
+                        borderRadius: '16px',
+                        border: '1.5px solid #E5E8F8',
+                        alignItems: 'center'
+                      }}>
+                        <input
+                          type="text"
+                          placeholder="Nome da categoria..."
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          style={{
+                            flex: 1,
+                            border: 'none',
+                            background: 'transparent',
+                            outline: 'none',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: '#111827'
+                          }}
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddNewCategory();
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddNewCategory}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '10px',
+                            background: '#4F6EF7',
+                            color: '#fff',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Criar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setShowNewCategoryInput(false); setNewCategoryName(''); }}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '10px',
+                            background: '#EEF1FE',
+                            color: '#4F6EF7',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
