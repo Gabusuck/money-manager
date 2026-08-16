@@ -34,7 +34,9 @@ export const Evolution: React.FC<EvolutionProps> = ({
 
   // 1. Filtrar transações para o mês corrente para a Distribuição Mensal
   const currentMonthTransactions = transactions.filter(tx => {
+    if (!tx || !tx.date) return false;
     const txDate = new Date(tx.date);
+    if (isNaN(txDate.getTime())) return false;
     const now = new Date();
     return txDate.getFullYear() === now.getFullYear() && txDate.getMonth() === now.getMonth();
   });
@@ -63,7 +65,8 @@ export const Evolution: React.FC<EvolutionProps> = ({
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   const otherIncome = totalIncome - salaryTxsSum;
-  const baseSalary = salaryTxsSum > 0 ? salaryTxsSum : budget.salary;
+  const budgetSalary = Number(budget?.salary ?? 0);
+  const baseSalary = salaryTxsSum > 0 ? salaryTxsSum : budgetSalary;
   const effectiveSalary = baseSalary + otherIncome;
   const allocatedPlafondReal = Math.max(0, effectiveSalary - spentFixos - savedPoupanca - investedInvestimento);
   const remainingPlafondReal = allocatedPlafondReal - spentPlafondReal;

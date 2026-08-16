@@ -361,7 +361,8 @@ function App() {
 
       // 5. Carregar Transações e Executar Recorrências
       const localTxs = await getTransactions();
-      let currentTxs = localTxs.length > 0 ? localTxs : MOCK_TRANSACTIONS;
+      const rawTxs = localTxs.length > 0 ? localTxs : MOCK_TRANSACTIONS;
+      let currentTxs = rawTxs.filter(tx => tx && typeof tx === 'object' && tx.date);
 
       // Executar geração de novas recorrências baseadas em moldes
       const { updated: updatedRecs, transactions: afterRecsTxs } = generateRecurringTransactions(localRecs, currentTxs);
@@ -369,9 +370,11 @@ function App() {
       // Executar geração de recorrências legadas (isRecurring no objeto de transação)
       const { updated: updatedLegacy, transactions: finalTxs } = checkAndGenerateRecurring(afterRecsTxs);
 
+      const cleanFinalTxs = finalTxs.filter(tx => tx && typeof tx === 'object' && tx.date);
+
       // 6. Verificar se há transações automáticas enviadas no hash do URL (Atalhos/Automação)
       const hash = window.location.hash;
-      let finalTxsWithAuto = [...finalTxs];
+      let finalTxsWithAuto = [...cleanFinalTxs];
       if (hash && hash.startsWith('#add?')) {
         try {
           const params = new URLSearchParams(hash.substring(5));
@@ -583,7 +586,7 @@ function App() {
 
   // Handler para atualizar o salário de referência por prompt
   const handleEditSalary = async () => {
-    const newSalaryStr = prompt('Qual é o teu Salário Líquido de Referência?', budget.salary.toString());
+    const newSalaryStr = prompt('Qual é o teu Salário Líquido de Referência?', (budget?.salary ?? 1300).toString());
     if (newSalaryStr === null) return;
     const newSalary = parseFloat(newSalaryStr);
     if (!isNaN(newSalary) && newSalary >= 0) {
