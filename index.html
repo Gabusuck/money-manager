@@ -2,25 +2,6 @@
 <html lang="pt">
   <head>
     <meta charset="UTF-8" />
-    <script>
-      // Limpeza forçada de cache corrompida e Service Workers persistentes da PWA
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for (let reg of registrations) {
-            reg.unregister().then(function() {
-              if (window.caches) {
-                caches.keys().then(function(names) {
-                  for (let name of names) {
-                    caches.delete(name);
-                  }
-                });
-              }
-              window.location.reload();
-            });
-          }
-        });
-      }
-    </script>
     <link rel="icon" type="image/png" href="/icons/icon-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     

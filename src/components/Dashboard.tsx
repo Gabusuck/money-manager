@@ -67,13 +67,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [isAddingBank, setIsAddingBank] = useState(false);
   const [newBankName, setNewBankName] = useState('');
   const [newBankBalance, setNewBankBalance] = useState('');
-  const currentMonthTransactions = transactions.filter(tx => {
-    if (!tx || !tx.date) return false;
-    const txDate = new Date(tx.date);
-    if (isNaN(txDate.getTime())) return false;
-    const now = new Date();
-    return txDate.getFullYear() === now.getFullYear() && txDate.getMonth() === now.getMonth();
-  });
+  const currentMonthTransactions = transactions; 
 
   const getSumByCategoryAndType = (category: string, type: 'expense' | 'transfer' | 'income') => {
     return currentMonthTransactions
@@ -93,14 +87,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     .filter(tx => tx.type === 'income')
     .reduce((sum, tx) => sum + tx.amount, 0);
 
-  const salaryTxsSum = currentMonthTransactions
-    .filter(tx => tx.category === 'Salário' && tx.type === 'income')
-    .reduce((sum, tx) => sum + tx.amount, 0);
-
-  const otherIncome = totalIncome - salaryTxsSum;
-  const budgetSalary = Number(budget?.salary ?? 0);
-  const baseSalary = salaryTxsSum > 0 ? salaryTxsSum : budgetSalary;
-  const effectiveSalary = baseSalary + otherIncome;
+  const effectiveSalary = budget.salary + totalIncome;
   const allocatedPlafondReal = Math.max(0, effectiveSalary - spentFixos - savedPoupanca - investedInvestimento);
   const remainingPlafondReal = allocatedPlafondReal - spentPlafondReal;
 
@@ -373,7 +360,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           {/* 5. Gráfico Donut */}
-          {baseSalary > 0 && (
+          {budget.salary > 0 && (
             <div style={{background:'#FFFFFF',borderRadius:'24px',border:`1px solid ${P.border}`,padding:'18px 16px',boxShadow:'0 2px 16px rgba(79,110,247,0.06)'}}>
               <div style={{marginBottom:14}}>
                 <span style={{fontSize:11,fontWeight:800,color:P.inkSubtle,letterSpacing:'0.08em',textTransform:'uppercase'}}>Distribuição do Plafond</span>

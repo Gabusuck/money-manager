@@ -278,8 +278,18 @@ export const SubscriptionsView: React.FC<SubscriptionsViewProps> = ({
 };
 
 // Funções auxiliares para datas na hora local
-const parseLocalDate = (dateStr: string): Date => {
-  const [year, month, day] = dateStr.split('-').map(Number);
+const parseLocalDate = (dateStr: string | undefined | null): Date => {
+  if (!dateStr || typeof dateStr !== 'string') {
+    return new Date();
+  }
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) {
+    return new Date();
+  }
+  const [year, month, day] = parts.map(Number);
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    return new Date();
+  }
   return new Date(year, month - 1, day);
 };
 
@@ -290,7 +300,7 @@ const getLocalDateString = (date: Date): string => {
   return `${y}-${m}-${d}`;
 };
 
-const getNextPaymentDate = (startDateStr: string, frequency: RecurringInterval): Date => {
+const getNextPaymentDate = (startDateStr: string | undefined | null, frequency: RecurringInterval): Date => {
   const now = new Date();
   const todayStr = getLocalDateString(now);
   const today = parseLocalDate(todayStr);

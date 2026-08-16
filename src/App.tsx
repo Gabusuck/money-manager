@@ -49,24 +49,18 @@ import { SubscriptionsView } from './components/SubscriptionsView';
 import { TransactionModal } from './components/TransactionModal';
 
 // Funções auxiliares para lidar com datas na hora local da máquina de forma segura, evitando bugs de fuso horário UTC
-const parseLocalDate = (dateStr: string): Date => {
+const parseLocalDate = (dateStr: string | undefined | null): Date => {
   if (!dateStr || typeof dateStr !== 'string') {
     return new Date();
   }
   const parts = dateStr.split('-');
   if (parts.length !== 3) {
-    const partsSlash = dateStr.split('/');
-    if (partsSlash.length === 3) {
-      if (partsSlash[0].length === 4) {
-        return new Date(Number(partsSlash[0]), Number(partsSlash[1]) - 1, Number(partsSlash[2]));
-      } else {
-        return new Date(Number(partsSlash[2]), Number(partsSlash[1]) - 1, Number(partsSlash[0]));
-      }
-    }
     return new Date();
   }
   const [year, month, day] = parts.map(Number);
-  if (isNaN(year) || isNaN(month) || isNaN(day)) return new Date();
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    return new Date();
+  }
   return new Date(year, month - 1, day);
 };
 
@@ -299,25 +293,8 @@ function App() {
   const [goals, setGoals] = useState<SavingGoal[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [runtimeError, setRuntimeError] = useState<string | null>(null);
   
   const mainRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleGlobalError = (event: ErrorEvent) => {
-      setRuntimeError(`Erro: ${event.message} em ${event.filename}:${event.lineno}`);
-    };
-    const handleRejection = (event: PromiseRejectionEvent) => {
-      setRuntimeError(`Erro de Promessa: ${event.reason}`);
-    };
-    window.addEventListener('error', handleGlobalError);
-    window.addEventListener('unhandledrejection', handleRejection);
-    return () => {
-      window.removeEventListener('error', handleGlobalError);
-      window.removeEventListener('unhandledrejection', handleRejection);
-    };
-  }, []);
 
   // Fazer scroll para o topo sempre que se muda de página/aba
   useEffect(() => {
@@ -377,8 +354,7 @@ function App() {
 
       // 5. Carregar Transações e Executar Recorrências
       const localTxs = await getTransactions();
-      const rawTxs = localTxs.length > 0 ? localTxs : MOCK_TRANSACTIONS;
-      let currentTxs = rawTxs.filter(tx => tx && typeof tx === 'object' && tx.date);
+      let currentTxs = localTxs.length > 0 ? localTxs : MOCK_TRANSACTIONS;
 
       // Executar geração de novas recorrências baseadas em moldes
       const { updated: updatedRecs, transactions: afterRecsTxs } = generateRecurringTransactions(localRecs, currentTxs);
@@ -386,93 +362,9 @@ function App() {
       // Executar geração de recorrências legadas (isRecurring no objeto de transação)
       const { updated: updatedLegacy, transactions: finalTxs } = checkAndGenerateRecurring(afterRecsTxs);
 
-      const cleanFinalTxs = finalTxs.filter(tx => tx && typeof tx === 'object' && tx.date);
-
-      // 6. Verificar se há transações automáticas enviadas no hash do URL (Atalhos/Automação)
-      const hash = window.location.hash;
-      let finalTxsWithAuto = [...cleanFinalTxs];
-      if (hash && hash.startsWith('#add?')) {
-        try {
-          const params = new URLSearchParams(hash.substring(5));
-          const amountVal = parseFloat(params.get('amount') || '');
-          const descVal = params.get('desc') || 'Lançamento Automático';
-          const typeVal = (params.get('type') || 'expense') as TransactionType;
-          const bankNameOrId = params.get('bank') || '';
-          const categoryVal = params.get('category') || '';
-
-          if (!isNaN(amountVal) && amountVal > 0) {
-            const activeBanks = localBanks && localBanks.length > 0 ? localBanks : [
-              { id: 'activo', name: 'ActivoBank' },
-              { id: 'revolut', name: 'Revolut' }
-            ];
-            let targetBank = activeBanks[0];
-            if (bankNameOrId) {
-              const found = activeBanks.find(b => 
-                b.id === bankNameOrId || 
-                b.name.toLowerCase().includes(bankNameOrId.toLowerCase())
-              );
-              if (found) targetBank = found;
-            }
-
-            let finalCategory: TransactionCategory = categoryVal || 'Outros';
-            if (!categoryVal && typeVal === 'expense') {
-              const descLower = descVal.toLowerCase();
-              if (descLower.includes('uber') || descLower.includes('bolt') || descLower.includes('combustivel') || descLower.includes('galp') || descLower.includes('bp') || descLower.includes('repsol') || descLower.includes('metro') || descLower.includes('carris')) {
-                finalCategory = 'Transportes';
-              } else if (descLower.includes('netflix') || descLower.includes('spotify') || descLower.includes('cafe') || descLower.includes('restaurante') || descLower.includes('bar') || descLower.includes('mcdonald') || descLower.includes('burger')) {
-                finalCategory = 'Lazer';
-              } else if (descLower.includes('renda') || descLower.includes('agua') || descLower.includes('luz') || descLower.includes('gas') || descLower.includes('seguro') || descLower.includes('continente') || descLower.includes('pingo doce') || descLower.includes('auchan')) {
-                finalCategory = 'Fixos';
-              }
-            } else if (!categoryVal && typeVal === 'income') {
-              finalCategory = 'Salário';
-            }
-
-            const newTx: Transaction = {
-              id: 'tx-auto-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
-              description: descVal,
-              amount: amountVal,
-              type: typeVal,
-              category: finalCategory,
-              date: new Date().toISOString().split('T')[0],
-              bankId: targetBank?.id || '',
-            };
-
-            finalTxsWithAuto = [newTx, ...finalTxs];
-            await saveTransactions(finalTxsWithAuto);
-
-            // Ajustar metas dinamicamente
-            const activeGoals = localGoals && localGoals.length > 0 ? localGoals : MOCK_GOALS;
-            if (newTx.category === 'Poupança' || newTx.category === 'Investimento') {
-              const matchingGoal = activeGoals.find(g => 
-                g.category === newTx.category && 
-                newTx.description.toLowerCase().includes(g.title.toLowerCase())
-              );
-              if (matchingGoal) {
-                const updatedGoals = activeGoals.map(g => {
-                  if (g.id === matchingGoal.id) {
-                    return { ...g, current: g.current + newTx.amount };
-                  }
-                  return g;
-                });
-                setGoals(updatedGoals);
-                await saveGoals(updatedGoals);
-              }
-            }
-
-            setToastMessage(`Importado: ${amountVal.toFixed(2)}€ (${descVal}) no ${targetBank?.name || 'Banco'}`);
-            setTimeout(() => setToastMessage(null), 5000);
-          }
-        } catch (err) {
-          console.error(err);
-        } finally {
-          window.history.replaceState(null, '', window.location.pathname + window.location.search);
-        }
-      }
-
-      setTransactions(finalTxsWithAuto);
-      if (updatedRecs || updatedLegacy || localTxs.length === 0 || hash.startsWith('#add?')) {
-        await saveTransactions(finalTxsWithAuto);
+      setTransactions(finalTxs);
+      if (updatedRecs || updatedLegacy || localTxs.length === 0) {
+        await saveTransactions(finalTxs);
       }
     }
     
@@ -602,7 +494,7 @@ function App() {
 
   // Handler para atualizar o salário de referência por prompt
   const handleEditSalary = async () => {
-    const newSalaryStr = prompt('Qual é o teu Salário Líquido de Referência?', (budget?.salary ?? 1300).toString());
+    const newSalaryStr = prompt('Qual é o teu Salário Líquido de Referência?', budget.salary.toString());
     if (newSalaryStr === null) return;
     const newSalary = parseFloat(newSalaryStr);
     if (!isNaN(newSalary) && newSalary >= 0) {
@@ -802,42 +694,6 @@ function App() {
     await saveRecurringTransactions(updatedRecs);
   };
 
-  const handleImportTransactions = async (newTxsData: Omit<Transaction, 'id'>[]) => {
-    const newTxs: Transaction[] = newTxsData.map((tx, idx) => ({
-      ...tx,
-      id: 'tx-' + Date.now() + '-' + idx + '-' + Math.random().toString(36).substring(2, 6)
-    }));
-    const updatedTxs = [...newTxs, ...transactions];
-    setTransactions(updatedTxs);
-    await saveTransactions(updatedTxs);
-
-    // Ajustar metas dinamicamente para as transações importadas se forem Poupança ou Investimento
-    let goalsUpdated = false;
-    let updatedGoals = [...goals];
-
-    newTxs.forEach(tx => {
-      if (tx.category === 'Poupança' || tx.category === 'Investimento') {
-        const matchingGoal = updatedGoals.find(g => 
-          g.category === tx.category && 
-          tx.description.toLowerCase().includes(g.title.toLowerCase())
-        );
-        if (matchingGoal) {
-          updatedGoals = updatedGoals.map(g => {
-            if (g.id === matchingGoal.id) {
-              return { ...g, current: g.current + tx.amount };
-            }
-            return g;
-          });
-          goalsUpdated = true;
-        }
-      }
-    });
-
-    if (goalsUpdated) {
-      setGoals(updatedGoals);
-      await saveGoals(updatedGoals);
-    }
-  };
 
   // Render da view selecionada na dock
   const renderActiveView = () => {
@@ -880,7 +736,6 @@ function App() {
             transactions={transactions} 
             onDeleteTransaction={handleDeleteTransaction}
             banks={banks}
-            onImportTransactions={handleImportTransactions}
           />
         );
       case 'recurring':
@@ -894,26 +749,6 @@ function App() {
         );
     }
   };
-
-  if (runtimeError) {
-    return (
-      <div style={{ padding: 24, background: '#FEF2F2', border: '2px solid #EF4444', borderRadius: 20, margin: 20, color: '#EF4444', fontFamily: 'sans-serif' }}>
-        <h3 style={{ fontSize: 16, fontWeight: 900 }}>Desculpa, ocorreu um erro no arranque 😢</h3>
-        <p style={{ fontSize: 11, marginTop: 10, lineHeight: 1.4, wordBreak: 'break-all', fontFamily: 'monospace' }}>
-          {runtimeError}
-        </p>
-        <button 
-          onClick={() => {
-            localStorage.clear();
-            window.location.reload();
-          }}
-          style={{ marginTop: 20, padding: '10px 16px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: 10, fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
-        >
-          Apagar todos os dados locais e Reiniciar
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="h-[100dvh] w-full flex flex-col relative overflow-hidden font-sans antialiased select-none" style={{background:'#EFF1FB',color:'#111827'}}>
@@ -1021,7 +856,6 @@ function App() {
         budget={budget}
         goals={goals}
         onRestoreData={handleRestoreData}
-        onImportTransactions={handleImportTransactions}
       />
 
       <RecurringModal
@@ -1035,35 +869,6 @@ function App() {
         onAddRecurring={handleAddRecurringTransaction}
         onDeleteRecurring={handleDeleteRecurringTransaction}
       />
-      {toastMessage && (
-        <div 
-          style={{
-            position: 'fixed',
-            bottom: '96px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 9999,
-            background: 'rgba(17, 24, 39, 0.95)',
-            backdropFilter: 'blur(8px)',
-            color: '#fff',
-            borderRadius: 16,
-            padding: '12px 20px',
-            fontSize: 12,
-            fontWeight: 800,
-            boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            boxSizing: 'border-box',
-            width: 'calc(100% - 32px)',
-            maxWidth: '380px'
-          }}
-        >
-          <span style={{color: '#16C784', fontSize: '14px'}}>✔</span>
-          <span>{toastMessage}</span>
-        </div>
-      )}
 
     </div>
   );
