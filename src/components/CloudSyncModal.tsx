@@ -468,7 +468,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
 
               {/* iOS Shortcuts */}
               <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-2">
-                <span className="text-[9px] font-black text-brand-dark uppercase tracking-widest block" style={{color:'#4F6EF7'}}>Opção A: iPhone (iOS Atalhos)</span>
+                <span className="text-[9px] font-black text-brand-dark uppercase tracking-widest block" style={{color:'#4F6EF7'}}>Configuração do iPhone (iOS Atalhos)</span>
                 <ol className="text-[9px] text-slate-500 leading-relaxed font-semibold pl-4 list-decimal space-y-1">
                   <li>Abre a app <strong className="text-slate-800">Atalhos</strong> no iPhone e vai a <strong className="text-slate-800">Automação</strong>.</li>
                   <li>Cria uma nova Automação Pessoal e escolhe <strong className="text-slate-800">Transação</strong> (Apple Pay) ou ao receber Notificação do teu Banco (Revolut, Millennium).</li>
@@ -479,21 +479,6 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
                     </div>
                   </li>
                   <li>Desativa "Perguntar ao Executar". Fica 100% automático!</li>
-                </ol>
-              </div>
-
-              {/* Android MacroDroid */}
-              <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-2">
-                <span className="text-[9px] font-black text-brand-dark uppercase tracking-widest block" style={{color:'#16C784'}}>Opção B: Android (MacroDroid)</span>
-                <ol className="text-[9px] text-slate-500 leading-relaxed font-semibold pl-4 list-decimal space-y-1">
-                  <li>Instala a app gratuita <strong className="text-slate-800">MacroDroid</strong> na Google Play.</li>
-                  <li>Cria uma Macro com o Gatilho: <strong className="text-slate-800">Notificação Recebida</strong> e escolhe a app do teu banco.</li>
-                  <li>Adiciona a Ação: <strong className="text-slate-800">Abrir Site / URL</strong>.</li>
-                  <li>Insere o link e mapeia o valor e texto da notificação:
-                    <div style={{background:'#F7F8FF',padding:'6px 8px',borderRadius:8,fontFamily:'monospace',fontSize:8,wordBreak:'break-all',marginTop:4,color:'#16C784'}}>
-                      {window.location.origin}/#add?amount=[notification_value]&amp;desc=[notification_title]&amp;bank=millennium
-                    </div>
-                  </li>
                 </ol>
               </div>
             </div>
