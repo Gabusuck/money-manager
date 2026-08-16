@@ -300,8 +300,24 @@ function App() {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [runtimeError, setRuntimeError] = useState<string | null>(null);
   
   const mainRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleGlobalError = (event: ErrorEvent) => {
+      setRuntimeError(`Erro: ${event.message} em ${event.filename}:${event.lineno}`);
+    };
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      setRuntimeError(`Erro de Promessa: ${event.reason}`);
+    };
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleRejection);
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleRejection);
+    };
+  }, []);
 
   // Fazer scroll para o topo sempre que se muda de página/aba
   useEffect(() => {
@@ -878,6 +894,26 @@ function App() {
         );
     }
   };
+
+  if (runtimeError) {
+    return (
+      <div style={{ padding: 24, background: '#FEF2F2', border: '2px solid #EF4444', borderRadius: 20, margin: 20, color: '#EF4444', fontFamily: 'sans-serif' }}>
+        <h3 style={{ fontSize: 16, fontWeight: 900 }}>Desculpa, ocorreu um erro no arranque 😢</h3>
+        <p style={{ fontSize: 11, marginTop: 10, lineHeight: 1.4, wordBreak: 'break-all', fontFamily: 'monospace' }}>
+          {runtimeError}
+        </p>
+        <button 
+          onClick={() => {
+            localStorage.clear();
+            window.location.reload();
+          }}
+          style={{ marginTop: 20, padding: '10px 16px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: 10, fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
+        >
+          Apagar todos os dados locais e Reiniciar
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[100dvh] w-full flex flex-col relative overflow-hidden font-sans antialiased select-none" style={{background:'#EFF1FB',color:'#111827'}}>
