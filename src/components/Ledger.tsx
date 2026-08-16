@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Search, Trash2, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign } from 'lucide-react';
+import { Search, Trash2, HelpCircle, Car, Smile, Shield, PiggyBank, TrendingUp, DollarSign, Upload } from 'lucide-react';
 import type { Transaction, TransactionCategory, Bank } from '../types';
+import { CSVImportModal } from './CSVImportModal';
 
 interface LedgerProps {
   transactions: Transaction[];
   onDeleteTransaction: (id: string) => void;
   banks: Bank[];
+  onImportTransactions: (transactions: Omit<Transaction, 'id'>[]) => void;
 }
 
 const P = {
@@ -21,10 +23,11 @@ const P = {
   bg: '#EFF1FB',
 };
 
-export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransaction, banks }) => {
+export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransaction, banks, onImportTransactions }) => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<TransactionCategory | 'Todas'>('Todas');
   const [selectedDateFilter, setSelectedDateFilter] = useState<string | 'Todas'>('Todas');
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const formatEuro = (value: number) =>
     new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
@@ -84,6 +87,33 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
 
   return (
     <div style={{ padding: '4px 16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Cabeçalho do Extrato */}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0 2px',marginTop:4}}>
+        <div>
+          <h2 style={{fontSize:14,fontWeight:900,color:P.ink,textTransform:'uppercase',letterSpacing:'0.06em'}}>Movimentos</h2>
+          <p style={{fontSize:10,color:P.inkSubtle}}>Gere e importa as tuas transações</p>
+        </div>
+        <button
+          onClick={() => setIsImportOpen(true)}
+          style={{
+            display:'flex',
+            alignItems:'center',
+            gap:6,
+            padding:'8px 14px',
+            borderRadius:12,
+            background:P.brandLight,
+            border:`1.5px solid #C7D2FE`,
+            color:P.brand,
+            fontSize:11,
+            fontWeight:800,
+            cursor:'pointer'
+          }}
+        >
+          <Upload style={{width:13,height:13}} />
+          Importar CSV
+        </button>
+      </div>
 
       {/* Pesquisa */}
       <div style={{position:'relative'}}>
@@ -294,6 +324,13 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
           ))
         )}
       </div>
+
+      <CSVImportModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        banks={banks}
+        onImport={onImportTransactions}
+      />
     </div>
   );
 };

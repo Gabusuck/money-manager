@@ -684,6 +684,42 @@ function App() {
     await saveRecurringTransactions(updatedRecs);
   };
 
+  const handleImportTransactions = async (newTxsData: Omit<Transaction, 'id'>[]) => {
+    const newTxs: Transaction[] = newTxsData.map((tx, idx) => ({
+      ...tx,
+      id: 'tx-' + Date.now() + '-' + idx + '-' + Math.random().toString(36).substring(2, 6)
+    }));
+    const updatedTxs = [...newTxs, ...transactions];
+    setTransactions(updatedTxs);
+    await saveTransactions(updatedTxs);
+
+    // Ajustar metas dinamicamente para as transações importadas se forem Poupança ou Investimento
+    let goalsUpdated = false;
+    let updatedGoals = [...goals];
+
+    newTxs.forEach(tx => {
+      if (tx.category === 'Poupança' || tx.category === 'Investimento') {
+        const matchingGoal = updatedGoals.find(g => 
+          g.category === tx.category && 
+          tx.description.toLowerCase().includes(g.title.toLowerCase())
+        );
+        if (matchingGoal) {
+          updatedGoals = updatedGoals.map(g => {
+            if (g.id === matchingGoal.id) {
+              return { ...g, current: g.current + tx.amount };
+            }
+            return g;
+          });
+          goalsUpdated = true;
+        }
+      }
+    });
+
+    if (goalsUpdated) {
+      setGoals(updatedGoals);
+      await saveGoals(updatedGoals);
+    }
+  };
 
   // Render da view selecionada na dock
   const renderActiveView = () => {
@@ -726,6 +762,7 @@ function App() {
             transactions={transactions} 
             onDeleteTransaction={handleDeleteTransaction}
             banks={banks}
+            onImportTransactions={handleImportTransactions}
           />
         );
       case 'recurring':
