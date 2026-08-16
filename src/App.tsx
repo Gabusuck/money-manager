@@ -288,6 +288,8 @@ const generateRecurringTransactions = (
 
 function App() {
   const [currentTab, setCurrentTab] = useState<'home' | 'evolution' | 'goals' | 'ledger' | 'recurring'>('home');
+  const [prevTab, setPrevTab] = useState<'home' | 'evolution' | 'goals' | 'ledger' | 'recurring'>('home');
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | 'fade'>('fade');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budget, setBudget] = useState<BudgetAllocation>(MOCK_BUDGET);
   const [goals, setGoals] = useState<SavingGoal[]>([]);
@@ -295,6 +297,28 @@ function App() {
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
   
   const mainRef = useRef<HTMLDivElement>(null);
+
+  // Detetar a direção da transição entre abas para aplicar a animação correta
+  useEffect(() => {
+    const tabs: ('evolution' | 'goals' | 'home' | 'recurring' | 'ledger')[] = [
+      'evolution',
+      'goals',
+      'home',
+      'recurring',
+      'ledger'
+    ];
+    const prevIdx = tabs.indexOf(prevTab);
+    const currIdx = tabs.indexOf(currentTab);
+
+    if (prevIdx !== currIdx) {
+      if (currIdx > prevIdx) {
+        setSlideDirection('left');
+      } else {
+        setSlideDirection('right');
+      }
+      setPrevTab(currentTab);
+    }
+  }, [currentTab, prevTab]);
 
   // Fazer scroll para o topo sempre que se muda de página/aba
   useEffect(() => {
@@ -843,7 +867,17 @@ function App() {
       </header>
 
       {/* Conteúdo Principal (Scrollable com Animação Premium de Entrada de View) */}
-      <main ref={mainRef} key={currentTab} className="relative z-10 flex-1 overflow-y-auto no-scrollbar w-full min-h-0 overscroll-none animate-view-change">
+      <main 
+        ref={mainRef} 
+        key={`${currentTab}_${slideDirection}`} 
+        className={`relative z-10 flex-1 overflow-y-auto no-scrollbar w-full min-h-0 overscroll-none ${
+          slideDirection === 'left' 
+            ? 'animate-slide-from-right' 
+            : slideDirection === 'right' 
+            ? 'animate-slide-from-left' 
+            : 'animate-view-change'
+        }`}
+      >
         {renderActiveView()}
         {/* Espaçador físico no fim do scroll para empurrar o conteúdo acima da navbar no iOS Safari */}
         <div className="h-36 w-full block pointer-events-none shrink-0" />
