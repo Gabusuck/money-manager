@@ -966,6 +966,7 @@ function App() {
         budget={budget}
         goals={goals}
         onRestoreData={handleRestoreData}
+        onImportTransactions={handleImportTransactions}
       />
 
       <RecurringModal
