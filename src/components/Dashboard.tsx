@@ -285,7 +285,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <span style={{fontSize:9,fontWeight:600,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.06em'}}>Saldos Atuais</span>
             </div>
 
-            <div className="flex gap-3 overflow-x-auto no-scrollbar py-1">
+            <div className="flex gap-3 overflow-x-auto no-scrollbar py-1 ignore-swipe">
               {banks.map((bank, idx) => {
                 const balance = getBankBalance(bank.id);
                 const grad = bankGradients[idx % bankGradients.length];

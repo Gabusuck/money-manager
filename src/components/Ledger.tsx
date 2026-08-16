@@ -112,7 +112,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
       </div>
 
       {/* Filtros de Categoria */}
-      <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}} className="no-scrollbar">
+      <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}} className="no-scrollbar ignore-swipe">
         {categories.map(cat => {
           const active = selectedCategory === cat;
           return (
@@ -144,7 +144,7 @@ export const Ledger: React.FC<LedgerProps> = ({ transactions, onDeleteTransactio
         <span style={{fontSize:10,fontWeight:800,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.08em',padding:'0 2px'}}>
           Selecione o Dia
         </span>
-        <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}} className="no-scrollbar">
+        <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}} className="no-scrollbar ignore-swipe">
           {/* Todos */}
           <button
             onClick={() => setSelectedDateFilter('Todas')}

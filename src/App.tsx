@@ -302,6 +302,60 @@ function App() {
       mainRef.current.scrollTop = 0;
     }
   }, [currentTab]);
+
+  // Estados e lógica para navegação por swipe (deslizar o dedo) entre abas
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchStartY, setTouchStartY] = useState(0);
+
+  const handleTouchStartApp = (e: React.TouchEvent) => {
+    const target = e.target as HTMLElement;
+    // Ignorar swipe se o toque começar em elementos com scroll horizontal (ignore-swipe), botões ou inputs
+    if (
+      target.closest('.ignore-swipe') || 
+      target.closest('button') || 
+      target.closest('select') || 
+      target.closest('input') || 
+      target.closest('textarea')
+    ) {
+      return;
+    }
+    setTouchStartX(e.touches[0].clientX);
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchEndApp = (e: React.TouchEvent) => {
+    if (touchStartX === 0 || touchStartY === 0) return;
+
+    const diffX = e.changedTouches[0].clientX - touchStartX;
+    const diffY = e.changedTouches[0].clientY - touchStartY;
+
+    setTouchStartX(0);
+    setTouchStartY(0);
+
+    // Garantir que o movimento foi predominantemente horizontal e superior a um limiar mínimo de 60px
+    if (Math.abs(diffX) > Math.abs(diffY) * 1.5 && Math.abs(diffX) > 60) {
+      const tabs: ('evolution' | 'goals' | 'home' | 'recurring' | 'ledger')[] = [
+        'evolution',
+        'goals',
+        'home',
+        'recurring',
+        'ledger'
+      ];
+      const currentIndex = tabs.indexOf(currentTab);
+
+      if (diffX > 0) {
+        // Dedo moveu-se para a direita -> quer ver a aba anterior (esquerda)
+        if (currentIndex > 0) {
+          setCurrentTab(tabs[currentIndex - 1]);
+        }
+      } else {
+        // Dedo moveu-se para a esquerda -> quer ver a aba seguinte (direita)
+        if (currentIndex < tabs.length - 1) {
+          setCurrentTab(tabs[currentIndex + 1]);
+        }
+      }
+    }
+  };
   
   // Modals
   const [isTxOpen, setIsTxOpen] = useState(false);
@@ -751,7 +805,12 @@ function App() {
   };
 
   return (
-    <div className="h-[100dvh] w-full flex flex-col relative overflow-hidden font-sans antialiased select-none" style={{background:'#EFF1FB',color:'#111827'}}>
+    <div 
+      className="h-[100dvh] w-full flex flex-col relative overflow-hidden font-sans antialiased select-none" 
+      style={{background:'#EFF1FB',color:'#111827'}}
+      onTouchStart={handleTouchStartApp}
+      onTouchEnd={handleTouchEndApp}
+    >
       
       {/* Cabeçalho da App */}
       <header className="relative z-10 px-5 pt-5 pb-3 flex justify-between items-center shrink-0 safe-pt">
