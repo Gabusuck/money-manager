@@ -31,6 +31,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
   const [copied, setCopied] = useState<boolean>(false);
   const [statusText, setStatusText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'cloud' | 'automation'>('cloud');
 
   useEffect(() => {
     const code = localStorage.getItem('allmymoney_sync_code');
@@ -282,132 +283,221 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-in fade-in duration-200">
-      <div className="bg-slate-50 w-full max-w-sm max-h-[90vh] rounded-[32px] border border-slate-100 p-5 shadow-premium flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-slate-50 w-full max-w-sm max-h-[85vh] rounded-[32px] border border-slate-100 p-5 shadow-premium flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Cabeçalho */}
         <div className="flex justify-between items-center">
           <h4 className="text-xs font-black text-brand-dark uppercase tracking-widest flex items-center gap-1.5">
             <Cloud className="w-4 h-4 text-brand-purple shrink-0" />
-            Sincronização & Nuvem
+            Sincronização &amp; Ligar Bancos
           </h4>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-custom"
+            className="w-7 h-7 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-400 hover:bg-slate-55 transition-custom"
           >
             <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Tabs de Seleção */}
+        <div style={{display:'flex',background:'#F7F8FF',border:'1px solid #E5E8F8',borderRadius:16,padding:4,gap:4,marginTop:12,flexShrink:0}}>
+          <button
+            type="button"
+            onClick={() => setActiveTab('cloud')}
+            style={{
+              flex:1,
+              padding:'8px 4px',
+              borderRadius:12,
+              border:'none',
+              cursor:'pointer',
+              fontSize:10,
+              fontWeight:800,
+              textTransform:'uppercase',
+              letterSpacing:'0.05em',
+              transition:'all 0.2s',
+              background: activeTab === 'cloud' ? '#FFFFFF' : 'transparent',
+              color: activeTab === 'cloud' ? '#4F6EF7' : '#9CA3AF',
+              boxShadow: activeTab === 'cloud' ? '0 1px 6px rgba(0,0,0,0.06)' : 'none',
+            }}
+          >
+            Nuvem &amp; Ficheiro
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('automation')}
+            style={{
+              flex:1,
+              padding:'8px 4px',
+              borderRadius:12,
+              border:'none',
+              cursor:'pointer',
+              fontSize:10,
+              fontWeight:800,
+              textTransform:'uppercase',
+              letterSpacing:'0.05em',
+              transition:'all 0.2s',
+              background: activeTab === 'automation' ? '#FFFFFF' : 'transparent',
+              color: activeTab === 'automation' ? '#4F6EF7' : '#9CA3AF',
+              boxShadow: activeTab === 'automation' ? '0 1px 6px rgba(0,0,0,0.06)' : 'none',
+            }}
+          >
+            Ligar em Tempo Real
           </button>
         </div>
 
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-0.5 mt-4">
           {statusText && (
-            <div className="p-3 bg-purple-50 border border-purple-100/50 rounded-2xl text-[10px] text-brand-purple font-bold text-center flex items-center justify-center gap-2">
+            <div className="p-3 bg-purple-55 border border-purple-100/50 rounded-2xl text-[10px] text-brand-purple font-bold text-center flex items-center justify-center gap-2">
               {loading && <RefreshCw className="w-3 h-3 animate-spin text-brand-purple" />}
               {statusText}
             </div>
           )}
 
-        {/* Cópia de Segurança na Nuvem */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3.5">
-          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Guardar / Restaurar Nuvem</span>
-          
-          {syncCode ? (
-            <div className="space-y-3">
-              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5 flex justify-between items-center relative overflow-hidden">
-                <div>
-                  <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest block">Código da Nuvem</span>
-                  <span className="text-sm font-black text-brand-dark tracking-wider select-all">{syncCode}</span>
-                </div>
-                <button
-                  onClick={copyToClipboard}
-                  className="w-8 h-8 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-400 hover:text-brand-purple transition-custom"
-                  title="Copiar Código"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-cat-green" /> : <Copy className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-              <p className="text-[9px] text-slate-400 leading-relaxed font-semibold px-0.5">
-                Guarda este código! Introduz este código noutro telemóvel para transferir e recuperar todas as tuas contas e transações.
-              </p>
-              
-              <div className="grid grid-cols-2 gap-2 pt-1.5">
-                <button
-                  onClick={handleBackup}
-                  disabled={loading}
-                  className="w-full py-2.5 bg-gradient-to-tr from-[#633bbf] to-[#05bde8] text-white rounded-xl text-xxs font-black uppercase tracking-wider shadow-sm hover:scale-[1.01] active:scale-99 transition-transform whitespace-nowrap"
-                >
-                  Guardar
-                </button>
-                <button
-                  onClick={() => handleRestore(syncCode)}
-                  disabled={loading}
-                  className="w-full py-2.5 bg-white border border-slate-150 text-brand-purple hover:bg-slate-55 rounded-xl text-xxs font-black uppercase tracking-wider shadow-sm hover:scale-[1.01] active:scale-99 transition-transform whitespace-nowrap"
-                >
-                  Restaurar
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3.5">
-              <p className="text-[10px] text-slate-400 leading-relaxed font-semibold">
-                Guarda os teus dados na nuvem de forma anónima para poderes mudar de telemóvel sem perder nada.
-              </p>
-              <button
-                onClick={handleBackup}
-                disabled={loading}
-                className="w-full py-3 bg-gradient-to-tr from-[#633bbf] to-[#05bde8] text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
-              >
-                Ativar & Guardar na Nuvem
-              </button>
+          {activeTab === 'cloud' ? (
+            <>
+              {/* Cópia de Segurança na Nuvem */}
+              <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3.5">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Guardar / Restaurar Nuvem</span>
+                
+                {syncCode ? (
+                  <div className="space-y-3">
+                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5 flex justify-between items-center relative overflow-hidden">
+                      <div>
+                        <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest block">Código da Nuvem</span>
+                        <span className="text-sm font-black text-brand-dark tracking-wider select-all">{syncCode}</span>
+                      </div>
+                      <button
+                        onClick={copyToClipboard}
+                        className="w-8 h-8 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-400 hover:text-brand-purple transition-custom"
+                        title="Copiar Código"
+                      >
+                        {copied ? <Check className="w-3.5 h-3.5 text-cat-green" /> : <Copy className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                    <p className="text-[9px] text-slate-400 leading-relaxed font-semibold px-0.5">
+                      Guarda este código! Introduz este código noutro telemóvel para transferir e recuperar todas as tuas contas e transações.
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-2 pt-1.5">
+                      <button
+                        onClick={handleBackup}
+                        disabled={loading}
+                        className="w-full py-2.5 bg-gradient-to-tr from-[#633bbf] to-[#05bde8] text-white rounded-xl text-xxs font-black uppercase tracking-wider shadow-sm hover:scale-[1.01] active:scale-99 transition-transform whitespace-nowrap"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        onClick={() => handleRestore(syncCode)}
+                        disabled={loading}
+                        className="w-full py-2.5 bg-white border border-slate-150 text-brand-purple hover:bg-slate-55 rounded-xl text-xxs font-black uppercase tracking-wider shadow-sm hover:scale-[1.01] active:scale-99 transition-transform whitespace-nowrap"
+                      >
+                        Restaurar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3.5">
+                    <p className="text-[10px] text-slate-400 leading-relaxed font-semibold">
+                      Guarda os teus dados na nuvem de forma anónima para poderes mudar de telemóvel sem perder nada.
+                    </p>
+                    <button
+                      onClick={handleBackup}
+                      disabled={loading}
+                      className="w-full py-3 bg-gradient-to-tr from-[#633bbf] to-[#05bde8] text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-purple-glow hover:scale-[1.01] active:scale-99 transition-transform"
+                    >
+                      Ativar &amp; Guardar na Nuvem
+                    </button>
 
-              <div className="border-t border-slate-100 pt-3.5 space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Restaurar com Código existente</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Código..."
-                    value={inputCode}
-                    onChange={(e) => setInputCode(e.target.value)}
-                    className="flex-1 min-w-0 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-inner-soft"
-                  />
+                    <div className="border-t border-slate-100 pt-3.5 space-y-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Restaurar com Código existente</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Código..."
+                          value={inputCode}
+                          onChange={(e) => setInputCode(e.target.value)}
+                          className="flex-1 min-w-0 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:border-brand-purple text-brand-dark text-xs font-bold shadow-inner-soft"
+                        />
+                        <button
+                          onClick={() => handleRestore(inputCode)}
+                          disabled={loading}
+                          className="px-4 py-2 bg-slate-200 text-brand-dark font-black rounded-xl text-[10px] uppercase tracking-wider hover:bg-slate-300 transition-colors whitespace-nowrap shrink-0"
+                        >
+                          Restaurar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Backup Manual */}
+              <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Backup Manual por Ficheiro</span>
+                <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={() => handleRestore(inputCode)}
-                    disabled={loading}
-                    className="px-4 py-2 bg-slate-200 text-brand-dark font-black rounded-xl text-[10px] uppercase tracking-wider hover:bg-slate-300 transition-colors whitespace-nowrap shrink-0"
+                    onClick={handleExportFile}
+                    className="py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-150 text-brand-dark rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors"
                   >
-                    Restaurar
+                    <Download className="w-3.5 h-3.5 text-slate-500" />
+                    Exportar JSON
                   </button>
+                  
+                  <label className="py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-150 text-brand-dark rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center">
+                    <Upload className="w-3.5 h-3.5 text-slate-500" />
+                    Importar JSON
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={handleImportFile}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-2">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Automação de Gastos</span>
+                <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
+                  Como esta app garante a tua **total privacidade** e guarda tudo de forma local, podes criar atalhos automáticos no telemóvel para registar as compras reais instantaneamente!
+                </p>
+              </div>
+
+              {/* iOS Shortcuts */}
+              <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-2">
+                <span className="text-[9px] font-black text-brand-dark uppercase tracking-widest block" style={{color:'#4F6EF7'}}>Opção A: iPhone (iOS Atalhos)</span>
+                <ol className="text-[9px] text-slate-500 leading-relaxed font-semibold pl-4 list-decimal space-y-1">
+                  <li>Abre a app <strong className="text-slate-800">Atalhos</strong> no iPhone e vai a <strong className="text-slate-800">Automação</strong>.</li>
+                  <li>Cria uma nova Automação Pessoal e escolhe <strong className="text-slate-800">Transação</strong> (Apple Pay) ou ao receber Notificação do teu Banco (Revolut, Millennium).</li>
+                  <li>Adiciona a ação <strong className="text-slate-800">Obter conteúdo de URL</strong>.</li>
+                  <li>Configura o URL do teu atalho (substituindo as variáveis do valor e comerciante):
+                    <div style={{background:'#F7F8FF',padding:'6px 8px',borderRadius:8,fontFamily:'monospace',fontSize:8,wordBreak:'break-all',marginTop:4,color:'#4F6EF7'}}>
+                      {window.location.origin}/#add?amount=<strong>[Valor]</strong>&amp;desc=<strong>[Comerciante]</strong>&amp;bank=revolut
+                    </div>
+                  </li>
+                  <li>Desativa "Perguntar ao Executar". Fica 100% automático!</li>
+                </ol>
+              </div>
+
+              {/* Android MacroDroid */}
+              <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-2">
+                <span className="text-[9px] font-black text-brand-dark uppercase tracking-widest block" style={{color:'#16C784'}}>Opção B: Android (MacroDroid)</span>
+                <ol className="text-[9px] text-slate-500 leading-relaxed font-semibold pl-4 list-decimal space-y-1">
+                  <li>Instala a app gratuita <strong className="text-slate-800">MacroDroid</strong> na Google Play.</li>
+                  <li>Cria uma Macro com o Gatilho: <strong className="text-slate-800">Notificação Recebida</strong> e escolhe a app do teu banco.</li>
+                  <li>Adiciona a Ação: <strong className="text-slate-800">Abrir Site / URL</strong>.</li>
+                  <li>Insere o link e mapeia o valor e texto da notificação:
+                    <div style={{background:'#F7F8FF',padding:'6px 8px',borderRadius:8,fontFamily:'monospace',fontSize:8,wordBreak:'break-all',marginTop:4,color:'#16C784'}}>
+                      {window.location.origin}/#add?amount=[notification_value]&amp;desc=[notification_title]&amp;bank=millennium
+                    </div>
+                  </li>
+                </ol>
               </div>
             </div>
           )}
-        </div>
-
-        {/* Cópia de Segurança Local por Ficheiro */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 space-y-3">
-          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Backup Manual por Ficheiro</span>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={handleExportFile}
-              className="py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-150 text-brand-dark rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              Exportar Ficheiro
-            </button>
-            
-            <label className="py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-150 text-brand-dark rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center">
-              <Upload className="w-3.5 h-3.5 text-slate-500" />
-              Importar Ficheiro
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImportFile}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </div>
-
         </div>
       </div>
     </div>

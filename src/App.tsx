@@ -283,6 +283,7 @@ function App() {
   const [goals, setGoals] = useState<SavingGoal[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   const mainRef = useRef<HTMLDivElement>(null);
 
@@ -352,9 +353,91 @@ function App() {
       // Executar geração de recorrências legadas (isRecurring no objeto de transação)
       const { updated: updatedLegacy, transactions: finalTxs } = checkAndGenerateRecurring(afterRecsTxs);
 
-      setTransactions(finalTxs);
-      if (updatedRecs || updatedLegacy || localTxs.length === 0) {
-        await saveTransactions(finalTxs);
+      // 6. Verificar se há transações automáticas enviadas no hash do URL (Atalhos/Automação)
+      const hash = window.location.hash;
+      let finalTxsWithAuto = [...finalTxs];
+      if (hash && hash.startsWith('#add?')) {
+        try {
+          const params = new URLSearchParams(hash.substring(5));
+          const amountVal = parseFloat(params.get('amount') || '');
+          const descVal = params.get('desc') || 'Lançamento Automático';
+          const typeVal = (params.get('type') || 'expense') as TransactionType;
+          const bankNameOrId = params.get('bank') || '';
+          const categoryVal = params.get('category') || '';
+
+          if (!isNaN(amountVal) && amountVal > 0) {
+            const activeBanks = localBanks && localBanks.length > 0 ? localBanks : [
+              { id: 'activo', name: 'ActivoBank' },
+              { id: 'revolut', name: 'Revolut' }
+            ];
+            let targetBank = activeBanks[0];
+            if (bankNameOrId) {
+              const found = activeBanks.find(b => 
+                b.id === bankNameOrId || 
+                b.name.toLowerCase().includes(bankNameOrId.toLowerCase())
+              );
+              if (found) targetBank = found;
+            }
+
+            let finalCategory: TransactionCategory = categoryVal || 'Outros';
+            if (!categoryVal && typeVal === 'expense') {
+              const descLower = descVal.toLowerCase();
+              if (descLower.includes('uber') || descLower.includes('bolt') || descLower.includes('combustivel') || descLower.includes('galp') || descLower.includes('bp') || descLower.includes('repsol') || descLower.includes('metro') || descLower.includes('carris')) {
+                finalCategory = 'Transportes';
+              } else if (descLower.includes('netflix') || descLower.includes('spotify') || descLower.includes('cafe') || descLower.includes('restaurante') || descLower.includes('bar') || descLower.includes('mcdonald') || descLower.includes('burger')) {
+                finalCategory = 'Lazer';
+              } else if (descLower.includes('renda') || descLower.includes('agua') || descLower.includes('luz') || descLower.includes('gas') || descLower.includes('seguro') || descLower.includes('continente') || descLower.includes('pingo doce') || descLower.includes('auchan')) {
+                finalCategory = 'Fixos';
+              }
+            } else if (!categoryVal && typeVal === 'income') {
+              finalCategory = 'Salário';
+            }
+
+            const newTx: Transaction = {
+              id: 'tx-auto-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+              description: descVal,
+              amount: amountVal,
+              type: typeVal,
+              category: finalCategory,
+              date: new Date().toISOString().split('T')[0],
+              bankId: targetBank?.id || '',
+            };
+
+            finalTxsWithAuto = [newTx, ...finalTxs];
+            await saveTransactions(finalTxsWithAuto);
+
+            // Ajustar metas dinamicamente
+            const activeGoals = localGoals && localGoals.length > 0 ? localGoals : MOCK_GOALS;
+            if (newTx.category === 'Poupança' || newTx.category === 'Investimento') {
+              const matchingGoal = activeGoals.find(g => 
+                g.category === newTx.category && 
+                newTx.description.toLowerCase().includes(g.title.toLowerCase())
+              );
+              if (matchingGoal) {
+                const updatedGoals = activeGoals.map(g => {
+                  if (g.id === matchingGoal.id) {
+                    return { ...g, current: g.current + newTx.amount };
+                  }
+                  return g;
+                });
+                setGoals(updatedGoals);
+                await saveGoals(updatedGoals);
+              }
+            }
+
+            setToastMessage(`Importado: ${amountVal.toFixed(2)}€ (${descVal}) no ${targetBank.name}`);
+            setTimeout(() => setToastMessage(null), 5000);
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
+
+      setTransactions(finalTxsWithAuto);
+      if (updatedRecs || updatedLegacy || localTxs.length === 0 || hash.startsWith('#add?')) {
+        await saveTransactions(finalTxsWithAuto);
       }
     }
     
@@ -896,6 +979,35 @@ function App() {
         onAddRecurring={handleAddRecurringTransaction}
         onDeleteRecurring={handleDeleteRecurringTransaction}
       />
+      {toastMessage && (
+        <div 
+          style={{
+            position: 'fixed',
+            bottom: '96px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+            background: 'rgba(17, 24, 39, 0.95)',
+            backdropFilter: 'blur(8px)',
+            color: '#fff',
+            borderRadius: 16,
+            padding: '12px 20px',
+            fontSize: 12,
+            fontWeight: 800,
+            boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            boxSizing: 'border-box',
+            width: 'calc(100% - 32px)',
+            maxWidth: '380px'
+          }}
+        >
+          <span style={{color: '#16C784', fontSize: '14px'}}>✔</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
     </div>
   );
