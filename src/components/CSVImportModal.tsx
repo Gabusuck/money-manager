@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Upload, FileText, CheckCircle2, AlertCircle, Clipboard } from 'lucide-react';
 import type { Transaction, Bank, TransactionCategory, TransactionType } from '../types';
 
 interface CSVImportModalProps {
@@ -70,8 +70,113 @@ const parseCSV = (text: string): string[][] => {
   return lines.filter(l => l.length > 0 && l.some(cell => cell !== ''));
 };
 
+const parseFreeText = (text: string, bankId: string): Omit<Transaction, 'id'>[] => {
+  const lines = text.split('\n');
+  const txs: Omit<Transaction, 'id'>[] = [];
+  
+  // Regex para detetar valores com sinal e símbolos opcionais
+  const amountRegex = /(-?\+?\d+(?:[\s\.]\d{3})*(?:[\.,]\d{2}))\s*(?:€|EUR|usd)?/i;
+  // Regex para datas comuns
+  const dateRegex = /(\d{1,2})[\/\-\s](\d{1,2}|\w{3,4})[\/\-\s]?(\d{2,4})?/;
+
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
+
+    // Extrair valor
+    const amountMatch = line.match(amountRegex);
+    if (!amountMatch) continue;
+
+    let rawAmountStr = amountMatch[1].replace(/\s/g, '');
+    if (rawAmountStr.includes(',') && rawAmountStr.includes('.')) {
+      rawAmountStr = rawAmountStr.replace(/\./g, '').replace(',', '.');
+    } else if (rawAmountStr.includes(',')) {
+      rawAmountStr = rawAmountStr.replace(',', '.');
+    }
+    
+    const rawAmount = parseFloat(rawAmountStr);
+    if (isNaN(rawAmount)) continue;
+
+    const type: TransactionType = rawAmount < 0 || line.includes('-') ? 'expense' : 'income';
+    const amount = Math.abs(rawAmount);
+
+    // Extrair data
+    let dateStr = new Date().toISOString().split('T')[0];
+    const dateMatch = line.match(dateRegex);
+    if (dateMatch) {
+      const day = parseInt(dateMatch[1]);
+      let month = new Date().getMonth();
+      let year = new Date().getFullYear();
+
+      const rawMonth = dateMatch[2];
+      if (/^\d+$/.test(rawMonth)) {
+        month = parseInt(rawMonth) - 1;
+      } else {
+        const monthsPT = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+        const monthsEN = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+        const mLower = rawMonth.toLowerCase();
+        const ptIdx = monthsPT.findIndex(m => mLower.startsWith(m));
+        const enIdx = monthsEN.findIndex(m => mLower.startsWith(m));
+        if (ptIdx !== -1) month = ptIdx;
+        else if (enIdx !== -1) month = enIdx;
+      }
+
+      if (dateMatch[3]) {
+        let yr = parseInt(dateMatch[3]);
+        if (yr < 100) yr += 2000;
+        year = yr;
+      }
+
+      try {
+        const d = new Date(year, month, day);
+        if (!isNaN(d.getTime())) {
+          dateStr = d.toISOString().split('T')[0];
+        }
+      } catch {}
+    }
+
+    // Obter descrição limpa
+    let description = line
+      .replace(amountRegex, '')
+      .replace(dateRegex, '')
+      .replace(/[\-\|•\t]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!description || description.length < 2) {
+      description = 'Movimento Colado';
+    }
+
+    // Categorização inteligente automática
+    let category = 'Outros';
+    const descLower = description.toLowerCase();
+    if (descLower.includes('uber') || descLower.includes('bolt') || descLower.includes('combustivel') || descLower.includes('galp') || descLower.includes('bp') || descLower.includes('repsol') || descLower.includes('metro') || descLower.includes('carris')) {
+      category = 'Transportes';
+    } else if (descLower.includes('netflix') || descLower.includes('spotify') || descLower.includes('cafe') || descLower.includes('restaurante') || descLower.includes('bar') || descLower.includes('mcdonald') || descLower.includes('burger')) {
+      category = 'Lazer';
+    } else if (descLower.includes('renda') || descLower.includes('agua') || descLower.includes('luz') || descLower.includes('gas') || descLower.includes('seguro') || descLower.includes('continente') || descLower.includes('pingo doce') || descLower.includes('auchan')) {
+      category = 'Fixos';
+    } else if (descLower.includes('vencimento') || descLower.includes('salario') || descLower.includes('recompensa')) {
+      category = 'Salário';
+    }
+
+    txs.push({
+      description,
+      amount,
+      type,
+      category,
+      date: dateStr,
+      bankId
+    });
+  }
+
+  return txs;
+};
+
 export const CSVImportModal: React.FC<CSVImportModalProps> = ({ isOpen, onClose, banks, onImport }) => {
+  const [importMode, setImportMode] = useState<'csv' | 'text'>('csv');
   const [file, setFile] = useState<File | null>(null);
+  const [pastedText, setPastedText] = useState('');
   const [selectedBankId, setSelectedBankId] = useState(banks.length > 0 ? banks[0].id : '');
   const [format, setFormat] = useState<'auto' | 'revolut' | 'millennium' | 't212'>('auto');
   const [parsedTransactions, setParsedTransactions] = useState<Omit<Transaction, 'id'>[]>([]);
@@ -129,9 +234,9 @@ export const CSVImportModal: React.FC<CSVImportModalProps> = ({ isOpen, onClose,
 
     if (detectedFormat === 'auto') {
       const filename = selectedFile.name.toLowerCase();
-      if (filename.includes('revolut') || headers.includes('completed date') || headers.includes('started date') || (headers.includes('descrição') && headers.includes('valor'))) {
+      if (filename.includes('revolut') || headers.includes('completed date') || headers.includes('started date') || headers.includes('balance')) {
         detectedFormat = 'revolut';
-      } else if (filename.includes('trading') || filename.includes('t212') || headers.includes('ticker') || headers.includes('action') || headers.includes('total (eur)')) {
+      } else if (filename.includes('trading') || filename.includes('t212') || headers.includes('action') || headers.includes('ticker') || headers.includes('sub account')) {
         detectedFormat = 't212';
       } else if (filename.includes('millennium') || filename.includes('bcp') || rows.some(r => r.some(c => c.toLowerCase().includes('millennium') || c.toLowerCase().includes('data valor')))) {
         detectedFormat = 'millennium';
@@ -141,7 +246,6 @@ export const CSVImportModal: React.FC<CSVImportModalProps> = ({ isOpen, onClose,
     }
 
     const txs: Omit<Transaction, 'id'>[] = [];
-
 
     if (detectedFormat === 'revolut') {
       const dateIdx = rows[0].findIndex(h => h.toLowerCase().includes('date') || h.toLowerCase().includes('data') || h.toLowerCase().includes('concluído') || h.toLowerCase().includes('iniciado'));
@@ -156,379 +260,490 @@ export const CSVImportModal: React.FC<CSVImportModalProps> = ({ isOpen, onClose,
         const row = rows[i];
         if (row.length <= Math.max(dateIdx, descIdx, amountIdx)) continue;
 
-        const rawDate = row[dateIdx];
-        const rawDesc = row[descIdx];
-        const rawAmount = row[amountIdx];
+        const rawAmount = parseFloat(row[amountIdx].replace(',', '.'));
+        if (isNaN(rawAmount)) continue;
 
-        if (!rawDate || !rawDesc || !rawAmount) continue;
-
-        let dateStr = '';
-        try {
-          const cleanDate = rawDate.split(' ')[0]; // pega só a data caso tenha horas
-          const parts = cleanDate.split(/[-/.]/);
-          if (parts.length === 3) {
-            if (parts[2].length === 4) {
-              dateStr = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-            } else if (parts[0].length === 4) {
-              dateStr = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-            }
-          } else {
-            const dateObj = new Date(rawDate);
-            if (!isNaN(dateObj.getTime())) {
-              dateStr = dateObj.toISOString().split('T')[0];
-            }
-          }
-        } catch {
-          continue;
-        }
-
-        if (!dateStr) continue;
-
-        const cleanAmount = rawAmount.replace(/[^\d.,-]/g, '').replace(',', '.');
-        const numAmount = parseFloat(cleanAmount);
-        if (isNaN(numAmount) || numAmount === 0) continue;
-
-        const type: TransactionType = numAmount > 0 ? 'income' : 'expense';
-        const finalVal = Math.abs(numAmount);
+        const desc = row[descIdx] || 'Lançamento Revolut';
+        const type: TransactionType = rawAmount > 0 ? 'income' : 'expense';
 
         let category: TransactionCategory = 'Outros';
-        const descLower = rawDesc.toLowerCase();
+        const descLower = desc.toLowerCase();
         if (descLower.includes('uber') || descLower.includes('bolt') || descLower.includes('combustivel') || descLower.includes('galp') || descLower.includes('bp') || descLower.includes('repsol') || descLower.includes('metro') || descLower.includes('carris')) {
           category = 'Transportes';
         } else if (descLower.includes('netflix') || descLower.includes('spotify') || descLower.includes('cafe') || descLower.includes('restaurante') || descLower.includes('bar') || descLower.includes('mcdonald') || descLower.includes('burger')) {
           category = 'Lazer';
-        } else if (descLower.includes('renda') || descLower.includes('agua') || descLower.includes('luz') || descLower.includes('gas') || descLower.includes('seguro')) {
+        } else if (descLower.includes('renda') || descLower.includes('agua') || descLower.includes('luz') || descLower.includes('gas') || descLower.includes('seguro') || descLower.includes('continente') || descLower.includes('pingo doce') || descLower.includes('auchan')) {
           category = 'Fixos';
-        } else if (descLower.includes('vencimento') || descLower.includes('salario') || descLower.includes('transferencia recebida')) {
+        } else if (descLower.includes('vencimento') || descLower.includes('salario') || descLower.includes('recompensa')) {
           category = 'Salário';
         }
 
+        let formattedDate = new Date().toISOString().split('T')[0];
+        try {
+          const rawDate = row[dateIdx].trim();
+          const cleanDate = rawDate.split(' ')[0];
+          const parts = cleanDate.split(/[\-\/]/);
+          if (parts.length === 3) {
+            if (parts[0].length === 4) {
+              formattedDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            } else if (parts[2].length === 4) {
+              formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+          }
+        } catch {}
+
         txs.push({
-          description: rawDesc,
-          amount: finalVal,
+          description: desc,
+          amount: Math.abs(rawAmount),
           type,
           category,
-          date: dateStr,
-          bankId: selectedBankId,
+          date: formattedDate,
+          bankId: selectedBankId
         });
       }
     } else if (detectedFormat === 'millennium') {
-      let tableStartRow = -1;
-      let dateIdx = -1, descIdx = -1, amountIdx = -1;
+      let dataIndex = -1;
+      let descIndex = -1;
+      let importeValeurIndex = -1;
 
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i].map(c => c.toLowerCase());
-        const hasDate = row.some(c => c.includes('data valor') || c.includes('data lan') || c.includes('data mov'));
-        const hasDesc = row.some(c => c.includes('descri') || c.includes('movimento') || c.includes('conceito') || c.includes('desc'));
-        const hasAmount = row.some(c => c.includes('valor') || c.includes('montante') || c.includes('importe') || c.includes('quantia'));
+      for (let r = 0; r < Math.min(rows.length, 10); r++) {
+        const row = rows[r];
+        const dateIdx = row.findIndex(c => c.toLowerCase().includes('data valor') || c.toLowerCase().includes('data mov'));
+        const descIdx = row.findIndex(c => c.toLowerCase().includes('descrição') || c.toLowerCase().includes('descritivo') || c.toLowerCase().includes('movimento'));
+        const valueIdx = row.findIndex(c => c.toLowerCase().includes('importâncias') || c.toLowerCase().includes('valor') || c.toLowerCase().includes('montante'));
 
-        if (hasDate && hasDesc && hasAmount) {
-          tableStartRow = i;
-          dateIdx = rows[i].findIndex(c => c.toLowerCase().includes('data valor') || c.toLowerCase().includes('data lan') || c.toLowerCase().includes('data mov'));
-          descIdx = rows[i].findIndex(c => c.toLowerCase().includes('descri') || c.toLowerCase().includes('movimento') || c.toLowerCase().includes('conceito') || c.toLowerCase().includes('desc'));
-          amountIdx = rows[i].findIndex(c => c.toLowerCase().includes('valor') || c.toLowerCase().includes('montante') || c.toLowerCase().includes('importe') || c.toLowerCase().includes('quantia'));
+        if (dateIdx !== -1 && descIdx !== -1 && valueIdx !== -1) {
+          dataIndex = dateIdx;
+          descIndex = descIdx;
+          importeValeurIndex = valueIdx;
           break;
         }
       }
 
-      if (tableStartRow === -1) {
-        throw new Error('Não identificámos a tabela do Millennium BCP. Verifica se tens cabeçalhos como "Data Lançamento", "Descrição" e "Valor".');
+      if (dataIndex === -1) {
+        dataIndex = rows[0].findIndex(c => c.toLowerCase().includes('data') || /^\d{2}[\-\/]\d{2}[\-\/]\d{4}$/.test(c));
+        descIndex = rows[0].findIndex(c => c.toLowerCase().includes('desc') || c.toLowerCase().includes('conceito') || c.toLowerCase().includes('descritivo'));
+        importeValeurIndex = rows[0].findIndex(c => c.toLowerCase().includes('valor') || c.toLowerCase().includes('quantia') || c.toLowerCase().includes('importe') || c.toLowerCase().includes('saldo'));
       }
 
-      for (let i = tableStartRow + 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (row.length <= Math.max(dateIdx, descIdx, amountIdx)) continue;
-
-        const rawDate = row[dateIdx];
-        const rawDesc = row[descIdx];
-        const rawAmount = row[amountIdx];
-
-        if (!rawDate || !rawDesc || !rawAmount) continue;
-
-        const parts = rawDate.split(/[-/.]/);
-        if (parts.length !== 3) continue;
-        let dateStr = '';
-        if (parts[2].length === 4) {
-          dateStr = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        } else if (parts[0].length === 4) {
-          dateStr = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-        }
-        if (!dateStr) continue;
-
-        const cleanAmount = rawAmount.replace(/[^\d.,-]/g, '').replace(/\./g, '').replace(',', '.');
-        const numAmount = parseFloat(cleanAmount);
-        if (isNaN(numAmount) || numAmount === 0) continue;
-
-        const type: TransactionType = numAmount > 0 ? 'income' : 'expense';
-        const finalVal = Math.abs(numAmount);
-
-        let category: TransactionCategory = 'Outros';
-        const descLower = rawDesc.toLowerCase();
-        if (descLower.includes('uber') || descLower.includes('bolt') || descLower.includes('gasolin') || descLower.includes('prio') || descLower.includes('galp') || descLower.includes('via verde')) {
-          category = 'Transportes';
-        } else if (descLower.includes('netflix') || descLower.includes('spotify') || descLower.includes('cafe') || descLower.includes('rest') || descLower.includes('comer') || descLower.includes('taberna')) {
-          category = 'Lazer';
-        } else if (descLower.includes('renda') || descLower.includes('condominio') || descLower.includes('continente') || descLower.includes('pingo doce') || descLower.includes('auchan')) {
-          category = 'Fixos';
-        } else if (descLower.includes('vencimento') || descLower.includes('salario') || descLower.includes('reforma')) {
-          category = 'Salário';
-        }
-
-        txs.push({
-          description: rawDesc,
-          amount: finalVal,
-          type,
-          category,
-          date: dateStr,
-          bankId: selectedBankId,
-        });
-      }
-    } else if (detectedFormat === 't212') {
-      const actionIdx = rows[0].findIndex(h => h.toLowerCase().includes('action') || h.toLowerCase().includes('ação') || h.toLowerCase().includes('oper'));
-      const timeIdx = rows[0].findIndex(h => h.toLowerCase().includes('time') || h.toLowerCase().includes('tempo') || h.toLowerCase().includes('data'));
-      const totalIdx = rows[0].findIndex(h => h.toLowerCase().includes('total') || h.toLowerCase().includes('importe') || h.toLowerCase().includes('valor'));
-      const nameIdx = rows[0].findIndex(h => h.toLowerCase().includes('name') || h.toLowerCase().includes('nome') || h.toLowerCase().includes('ticker'));
-
-      if (timeIdx === -1 || totalIdx === -1) {
-        throw new Error('Não identificámos colunas cruciais no CSV da Trading 212 (Time, Total).');
+      if (dataIndex === -1 || descIndex === -1 || importeValeurIndex === -1) {
+        throw new Error('Não conseguimos ler as colunas de data/descrição/valores do Millennium. Tenta o método Copiar e Colar Texto!');
       }
 
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
-        if (row.length <= Math.max(timeIdx, totalIdx)) continue;
+        if (row.length <= Math.max(dataIndex, descIndex, importeValeurIndex)) continue;
 
-        const rawTime = row[timeIdx];
-        const rawTotal = row[totalIdx];
-        const rawAction = actionIdx !== -1 ? row[actionIdx] : 'Investimento';
-        const rawName = nameIdx !== -1 ? row[nameIdx] : '';
+        const dateStr = row[dataIndex].trim();
+        if (!dateStr || dateStr.toLowerCase().includes('data')) continue;
 
-        if (!rawTime || !rawTotal) continue;
-
-        const dateStr = rawTime.split(' ')[0];
-        const cleanAmount = rawTotal.replace(/[^\d.,-]/g, '').replace(',', '.');
-        const numAmount = parseFloat(cleanAmount);
-        if (isNaN(numAmount) || numAmount === 0) continue;
-
-        const actionLower = rawAction.toLowerCase();
-        let type: TransactionType = 'transfer';
-        let category: TransactionCategory = 'Investimento';
-        
-        if (actionLower.includes('dividend') || actionLower.includes('juro') || actionLower.includes('interest')) {
-          type = 'income';
-          category = 'Investimento';
+        let rawAmountStr = row[importeValeurIndex].replace(/\s/g, '');
+        if (rawAmountStr.includes('.') && rawAmountStr.includes(',')) {
+          rawAmountStr = rawAmountStr.replace(/\./g, '').replace(',', '.');
+        } else if (rawAmountStr.includes(',')) {
+          rawAmountStr = rawAmountStr.replace(',', '.');
         }
 
+        const rawAmount = parseFloat(rawAmountStr);
+        if (isNaN(rawAmount)) continue;
+
+        const desc = row[descIndex] || 'Lançamento Millennium';
+        const type: TransactionType = rawAmount > 0 ? 'income' : 'expense';
+
+        let category: TransactionCategory = 'Outros';
+        const descLower = desc.toLowerCase();
+        if (descLower.includes('uber') || descLower.includes('bolt') || descLower.includes('combustivel') || descLower.includes('galp') || descLower.includes('bp') || descLower.includes('repsol') || descLower.includes('metro') || descLower.includes('carris')) {
+          category = 'Transportes';
+        } else if (descLower.includes('netflix') || descLower.includes('spotify') || descLower.includes('cafe') || descLower.includes('restaurante') || descLower.includes('bar') || descLower.includes('mcdonald') || descLower.includes('burger')) {
+          category = 'Lazer';
+        } else if (descLower.includes('renda') || descLower.includes('agua') || descLower.includes('luz') || descLower.includes('gas') || descLower.includes('seguro') || descLower.includes('continente') || descLower.includes('pingo doce') || descLower.includes('auchan')) {
+          category = 'Fixos';
+        } else if (descLower.includes('vencimento') || descLower.includes('salario') || descLower.includes('recompensa')) {
+          category = 'Salário';
+        }
+
+        let formattedDate = new Date().toISOString().split('T')[0];
+        try {
+          const parts = dateStr.split(/[\-\/]/);
+          if (parts.length === 3) {
+            if (parts[0].length === 4) {
+              formattedDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            } else if (parts[2].length === 4) {
+              formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+          }
+        } catch {}
+
         txs.push({
-          description: `${rawAction}${rawName ? ' - ' + rawName : ''}`,
-          amount: Math.abs(numAmount),
+          description: desc,
+          amount: Math.abs(rawAmount),
           type,
           category,
-          date: dateStr,
-          bankId: selectedBankId,
+          date: formattedDate,
+          bankId: selectedBankId
+        });
+      }
+    } else if (detectedFormat === 't212') {
+      const dateIdx = rows[0].findIndex(h => h.toLowerCase().includes('time') || h.toLowerCase().includes('data') || h.toLowerCase().includes('hora'));
+      const actionIdx = rows[0].findIndex(h => h.toLowerCase().includes('action') || h.toLowerCase().includes('ação') || h.toLowerCase().includes('tipo'));
+      const totalIdx = rows[0].findIndex(h => h.toLowerCase().includes('total') || h.toLowerCase().includes('valor') || h.toLowerCase().includes('importe'));
+      const notesIdx = rows[0].findIndex(h => h.toLowerCase().includes('notes') || h.toLowerCase().includes('notas') || h.toLowerCase().includes('comentário'));
+
+      if (dateIdx === -1 || actionIdx === -1 || totalIdx === -1) {
+        throw new Error('Não foi possível identificar colunas (Hora, Ação, Total) no CSV da Trading 212.');
+      }
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (row.length <= Math.max(dateIdx, actionIdx, totalIdx)) continue;
+
+        const action = row[actionIdx] || '';
+        const isDeposit = action.toLowerCase().includes('deposit') || action.toLowerCase().includes('depósito');
+        const isWithdrawal = action.toLowerCase().includes('withdraw') || action.toLowerCase().includes('levantamento');
+        const isInterest = action.toLowerCase().includes('interest') || action.toLowerCase().includes('juro');
+        
+        let type: TransactionType = 'expense';
+        let category: TransactionCategory = 'Investimento';
+
+        if (isDeposit) {
+          type = 'expense';
+          category = 'Investimento';
+        } else if (isWithdrawal) {
+          type = 'income';
+          category = 'Investimento';
+        } else if (isInterest) {
+          type = 'income';
+          category = 'Investimento';
+        } else {
+          continue; // Ignorar ordens normais de compra e venda interna de ações
+        }
+
+        const rawAmount = parseFloat(row[totalIdx].replace(',', '.'));
+        if (isNaN(rawAmount)) continue;
+
+        const notes = row[notesIdx] || action;
+        let formattedDate = new Date().toISOString().split('T')[0];
+        try {
+          const rawDate = row[dateIdx].trim();
+          const cleanDate = rawDate.split(' ')[0];
+          const parts = cleanDate.split(/[\-\/]/);
+          if (parts.length === 3) {
+            if (parts[0].length === 4) {
+              formattedDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            } else if (parts[2].length === 4) {
+              formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+          }
+        } catch {}
+
+        txs.push({
+          description: `T212: ${notes}`,
+          amount: Math.abs(rawAmount),
+          type,
+          category,
+          date: formattedDate,
+          bankId: selectedBankId
         });
       }
     }
 
     if (txs.length === 0) {
-      throw new Error('Não encontrámos lançamentos válidos com este formato no CSV.');
+      throw new Error('Nenhuma transação válida foi encontrada no ficheiro.');
     }
 
     setParsedTransactions(txs);
   };
 
+  const handleFreeTextChange = (text: string) => {
+    setPastedText(text);
+    setErrorMsg(null);
+    if (!text.trim()) {
+      setParsedTransactions([]);
+      return;
+    }
+    try {
+      const txs = parseFreeText(text, selectedBankId);
+      setParsedTransactions(txs);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Erro ao processar o texto colado.');
+      setParsedTransactions([]);
+    }
+  };
+
   const handleConfirm = () => {
     if (parsedTransactions.length === 0) return;
     onImport(parsedTransactions);
-    setFile(null);
-    setParsedTransactions([]);
     onClose();
+    // Limpar estado
+    setFile(null);
+    setPastedText('');
+    setParsedTransactions([]);
   };
 
-  const totalExp = parsedTransactions.filter(t => t.type !== 'income').reduce((s,t) => s + t.amount, 0);
-  const totalInc = parsedTransactions.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
+  const formatEuro = (value: number) =>
+    new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
 
-  const formatEuro = (value: number) => {
-    return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
-  };
+  const totalExp = parsedTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const totalInc = parsedTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div style={{position:'fixed',inset:0,background:'rgba(15,23,42,0.50)',backdropFilter:'blur(8px)',zIndex:55,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-      <div 
-        style={{
-          background:'#FFFFFF',
-          borderRadius:24,
-          border:`1px solid ${P.border}`,
-          padding:20,
-          width:'100%',
-          maxWidth:440,
-          boxShadow:'0 20px 60px rgba(79,110,247,0.15)',
-          maxHeight:'90vh',
-          display:'flex',
-          flexDirection:'column'
-        }}
-      >
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:`1px solid ${P.border}`,paddingBottom:12,marginBottom:16,flexShrink:0}}>
+    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-in fade-in duration-200">
+      <div className="bg-slate-50 w-full max-w-sm max-h-[85vh] rounded-[32px] border border-slate-100 p-5 shadow-premium flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        
+        {/* Cabeçalho */}
+        <div className="flex justify-between items-center">
           <div>
-            <h3 style={{fontSize:13,fontWeight:900,color:P.ink,display:'flex',alignItems:'center',gap:6}}>
-              <Upload style={{width:16,height:16,color:P.brand}} />
-              Importar Extrato Bancário
-            </h3>
-            <span style={{fontSize:9,color:P.inkSubtle,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.06em'}}>Revolut · Millennium · Trading 212</span>
+            <h4 className="text-xs font-black text-brand-dark uppercase tracking-widest">
+              Importar Transações
+            </h4>
+            <p style={{fontSize:9,color:P.inkSubtle,marginTop:2}}>Adiciona dados do teu extrato bancário</p>
           </div>
-          <button onClick={onClose} style={{width:28,height:28,borderRadius:8,background:P.brandLight,border:'none',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
-            <X style={{width:12,height:12,color:P.brand}} />
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-400 hover:bg-slate-55 transition-custom"
+          >
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:14}} className="no-scrollbar">
+        {/* Seleção de Conta Bancária */}
+        <div style={{marginTop:12,display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,flexShrink:0}}>
           <div>
-            <label style={{fontSize:9,fontWeight:800,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:4}}>Associar à Conta</label>
-            <select 
-              value={selectedBankId} 
-              onChange={e => {
+            <label style={{fontSize:8,fontWeight:850,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.06em'}}>Conta Destino</label>
+            <select
+              value={selectedBankId}
+              onChange={(e) => {
                 setSelectedBankId(e.target.value);
-                if (file) { processFile(file); }
-              }} 
-              style={{width:'100%',padding:'11px 12px',borderRadius:12,border:`1.5px solid ${P.border}`,background:P.surface,color:P.ink,fontSize:12,fontWeight:600,outline:'none'}}
+                if (importMode === 'text' && pastedText) {
+                  // Re-analisar com o novo banco
+                  const txs = parseFreeText(pastedText, e.target.value);
+                  setParsedTransactions(txs);
+                }
+              }}
+              style={{
+                width:'100%',
+                padding:'8px 10px',
+                marginTop:4,
+                borderRadius:10,
+                border:`1px solid ${P.border}`,
+                background:'#FFFFFF',
+                fontSize:11,
+                fontWeight:700,
+                color:P.ink
+              }}
             >
-              {banks.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              {banks.map(bank => (
+                <option key={bank.id} value={bank.id}>{bank.name}</option>
+              ))}
             </select>
           </div>
-
           <div>
-            <label style={{fontSize:9,fontWeight:800,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:4}}>Formato do CSV</label>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:6,background:'#F7F8FF',border:`1px solid ${P.border}`,borderRadius:12,padding:3}}>
-              {([
-                { key: 'auto', label: 'Auto' },
-                { key: 'revolut', label: 'Revolut' },
-                { key: 'millennium', label: 'Millennium' },
-                { key: 't212', label: 'T212' },
-              ] as const).map(f => {
-                const active = format === f.key;
-                return (
-                  <button
-                    key={f.key}
-                    type="button"
-                    onClick={() => {
-                      setFormat(f.key);
-                      if (file) {
-                        setTimeout(() => processFile(file), 50);
-                      }
-                    }}
-                    style={{
-                      padding:'6px 2px',
-                      borderRadius:8,
-                      border:'none',
-                      cursor:'pointer',
-                      fontSize:9,
-                      fontWeight:800,
-                      transition:'all 0.15s',
-                      background: active ? P.surface : 'transparent',
-                      color: active ? P.brand : P.inkSubtle,
-                      boxShadow: active ? '0 1px 4px rgba(0,0,0,0.06)' : 'none'
-                    }}
-                  >
-                    {f.label}
-                  </button>
-                );
-              })}
-            </div>
+            <label style={{fontSize:8,fontWeight:850,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.06em'}}>Formato CSV</label>
+            <select
+              value={format}
+              disabled={importMode === 'text'}
+              onChange={(e) => setFormat(e.target.value as any)}
+              style={{
+                width:'100%',
+                padding:'8px 10px',
+                marginTop:4,
+                borderRadius:10,
+                border:`1px solid ${P.border}`,
+                background: importMode === 'text' ? '#F3F4F6' : '#FFFFFF',
+                fontSize:11,
+                fontWeight:700,
+                color:P.ink,
+                cursor: importMode === 'text' ? 'not-allowed' : 'default'
+              }}
+            >
+              <option value="auto">Deteção Auto</option>
+              <option value="revolut">Revolut CSV</option>
+              <option value="millennium">Millennium BCP</option>
+              <option value="t212">Trading 212</option>
+            </select>
           </div>
+        </div>
 
-          {!file ? (
-            <div
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              style={{
-                border:`1.5px dashed ${P.brand}50`,
-                borderRadius:16,
-                padding:'28px 16px',
-                textAlign:'center',
-                background:`rgba(79,110,247,0.02)`,
-                cursor:'pointer',
-                transition:'all 0.2s',
-                display:'flex',
-                flexDirection:'column',
-                alignItems:'center',
-                gap:8
-              }}
-            >
-              <Upload style={{width:24,height:24,color:P.brand}} />
-              <div>
-                <p style={{fontSize:11,fontWeight:800,color:P.ink}}>Arrasta o extrato CSV para aqui</p>
-                <p style={{fontSize:9,color:P.inkSubtle,marginTop:2}}>Ou clica para escolher o ficheiro</p>
-              </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                accept=".csv" 
-                style={{display:'none'}} 
-              />
-            </div>
-          ) : (
-            <div 
-              style={{
-                background:P.successLight,
-                border:`1px solid ${P.success}30`,
-                borderRadius:16,
-                padding:'12px 14px',
-                display:'flex',
-                alignItems:'center',
-                justifyContent:'space-between'
-              }}
-            >
-              <div style={{display:'flex',alignItems:'center',gap:10,minWidth:0}}>
-                <FileText style={{width:20,height:20,color:P.success,flexShrink:0}} />
-                <div style={{minWidth:0}}>
-                  <p style={{fontSize:11,fontWeight:800,color:P.ink,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{file.name}</p>
-                  <p style={{fontSize:9,color:P.success,fontWeight:700,marginTop:1}}>{parsedTransactions.length} movimentos extraídos</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => { setFile(null); setParsedTransactions([]); }} 
-                style={{background:'none',border:'none',color:P.inkSubtle,cursor:'pointer',padding:4}}
+        {/* Seleção de Modo: Ficheiro CSV ou Copiar/Colar */}
+        <div style={{display:'flex',background:'#F7F8FF',border:'1px solid #E5E8F8',borderRadius:12,padding:3,gap:3,marginTop:12,flexShrink:0}}>
+          <button
+            type="button"
+            onClick={() => { setImportMode('csv'); setParsedTransactions([]); setErrorMsg(null); }}
+            style={{
+              flex:1,
+              padding:'6px 2px',
+              borderRadius:9,
+              border:'none',
+              cursor:'pointer',
+              fontSize:9,
+              fontWeight:800,
+              textTransform:'uppercase',
+              letterSpacing:'0.05em',
+              transition:'all 0.2s',
+              background: importMode === 'csv' ? '#FFFFFF' : 'transparent',
+              color: importMode === 'csv' ? '#4F6EF7' : '#9CA3AF',
+              boxShadow: importMode === 'csv' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+            }}
+          >
+            Ficheiro CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => { setImportMode('text'); setParsedTransactions([]); setErrorMsg(null); }}
+            style={{
+              flex:1,
+              padding:'6px 2px',
+              borderRadius:9,
+              border:'none',
+              cursor:'pointer',
+              fontSize:9,
+              fontWeight:800,
+              textTransform:'uppercase',
+              letterSpacing:'0.05em',
+              transition:'all 0.2s',
+              background: importMode === 'text' ? '#FFFFFF' : 'transparent',
+              color: importMode === 'text' ? '#4F6EF7' : '#9CA3AF',
+              boxShadow: importMode === 'text' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+            }}
+          >
+            Copiar e Colar Texto
+          </button>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-0.5 mt-4" style={{display:'flex',flexDirection:'column',gap:12}}>
+          
+          {importMode === 'csv' ? (
+            // Drag and drop CSV
+            !file ? (
+              <div 
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  flex:1,
+                  minHeight:100,
+                  border:`2px dashed ${P.border}`,
+                  borderRadius:20,
+                  background:'#FFFFFF',
+                  padding:20,
+                  textAlign:'center',
+                  cursor:'pointer',
+                  transition:'all 0.2s',
+                  display:'flex',
+                  flexDirection:'column',
+                  alignItems:'center',
+                  justifyContent:'center',
+                  gap:8
+                }}
               >
-                <X style={{width:14,height:14}} />
-              </button>
+                <Upload style={{width:22,height:22,color:P.brand}} />
+                <div>
+                  <p style={{fontSize:11,fontWeight:800,color:P.ink}}>Arrasta o extrato CSV para aqui</p>
+                  <p style={{fontSize:9,color:P.inkSubtle,marginTop:2}}>Ou clica para escolher o ficheiro</p>
+                </div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  accept=".csv" 
+                  style={{display:'none'}} 
+                />
+              </div>
+            ) : (
+              <div 
+                style={{
+                  background:P.successLight,
+                  border:`1px solid ${P.success}30`,
+                  borderRadius:16,
+                  padding:'10px 12px',
+                  display:'flex',
+                  alignItems:'center',
+                  justifyContent:'space-between'
+                }}
+              >
+                <div style={{display:'flex',alignItems:'center',gap:10,minWidth:0}}>
+                  <FileText style={{width:18,height:18,color:P.success,flexShrink:0}} />
+                  <div style={{minWidth:0}}>
+                    <p style={{fontSize:10,fontWeight:800,color:P.ink,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{file.name}</p>
+                    <p style={{fontSize:8,color:P.success,fontWeight:700,marginTop:1}}>{parsedTransactions.length} movimentos extraídos</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => { setFile(null); setParsedTransactions([]); }} 
+                  style={{background:'none',border:'none',color:P.inkSubtle,cursor:'pointer',padding:4}}
+                >
+                  <X style={{width:14,height:14}} />
+                </button>
+              </div>
+            )
+          ) : (
+            // Caixa de Texto Inteligente (Copiar/Colar)
+            <div style={{display:'flex',flexDirection:'column',gap:6}}>
+              <div style={{position:'relative'}}>
+                <textarea
+                  value={pastedText}
+                  onChange={(e) => handleFreeTextChange(e.target.value)}
+                  placeholder="Seleciona e COPIA os movimentos no ecrã do teu banco (Millennium BCP, Revolut, etc.) e COLA-OS aqui diretamente..."
+                  style={{
+                    width:'100%',
+                    height:100,
+                    padding:'10px 12px',
+                    borderRadius:16,
+                    border:`1px solid ${P.border}`,
+                    background:'#FFFFFF',
+                    fontSize:10,
+                    fontWeight:600,
+                    color:P.ink,
+                    resize:'none',
+                    lineHeight:1.4,
+                    outline:'none'
+                  }}
+                />
+                {!pastedText && (
+                  <Clipboard style={{position:'absolute',right:12,bottom:12,width:14,height:14,color:P.inkSubtle,pointerEvents:'none'}} />
+                )}
+              </div>
+              <p style={{fontSize:8,color:P.inkSubtle,lineHeight:1.3,fontWeight:600,padding:'0 2px'}}>
+                💡 <strong>Como funciona:</strong> O nosso algoritmo lê o texto colado da área de transferência e encontra automaticamente as datas, valores e nomes das lojas de forma inteligente.
+              </p>
             </div>
           )}
 
           {errorMsg && (
-            <div style={{background:P.dangerLight,border:`1px solid ${P.danger}30`,borderRadius:12,padding:'10px 12px',display:'flex',alignItems:'center',gap:8,color:P.danger,fontSize:10,fontWeight:700}}>
-              <AlertCircle style={{width:14,height:14,flexShrink:0}} />
+            <div style={{background:P.dangerLight,border:`1px solid ${P.danger}30`,borderRadius:12,padding:'8px 10px',display:'flex',alignItems:'center',gap:8,color:P.danger,fontSize:9,fontWeight:700}}>
+              <AlertCircle style={{width:13,height:13,flexShrink:0}} />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {parsedTransactions.length > 0 && (
-            <div style={{display:'flex',flexDirection:'column',gap:8,marginTop:4}}>
-              <span style={{fontSize:9,fontWeight:800,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.08em',padding:'0 2px'}}>Resumo dos Movimentos</span>
+            <div style={{display:'flex',flexDirection:'column',gap:8,marginTop:2}}>
+              <span style={{fontSize:8,fontWeight:800,color:P.inkSubtle,textTransform:'uppercase',letterSpacing:'0.08em',padding:'0 2px'}}>Resumo da Leitura ({parsedTransactions.length} detetados)</span>
               
-              <div style={{background:'#F7F8FF',borderRadius:14,padding:'10px 12px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+              <div style={{background:'#F7F8FF',borderRadius:14,padding:'8px 10px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
                 <div>
-                  <span style={{fontSize:8,fontWeight:700,color:P.inkSubtle,textTransform:'uppercase'}}>Despesas</span>
-                  <p style={{fontSize:13,fontWeight:900,color:P.danger,marginTop:2}}>
+                  <span style={{fontSize:7,fontWeight:700,color:P.inkSubtle,textTransform:'uppercase'}}>Despesas</span>
+                  <p style={{fontSize:11,fontWeight:900,color:P.danger,marginTop:1}}>
                     -{formatEuro(totalExp)}
                   </p>
                 </div>
                 <div style={{textAlign:'right'}}>
-                  <span style={{fontSize:8,fontWeight:700,color:P.inkSubtle,textTransform:'uppercase'}}>Receitas</span>
-                  <p style={{fontSize:13,fontWeight:900,color:P.success,marginTop:2}}>
+                  <span style={{fontSize:7,fontWeight:700,color:P.inkSubtle,textTransform:'uppercase'}}>Receitas</span>
+                  <p style={{fontSize:11,fontWeight:900,color:P.success,marginTop:1}}>
                     +{formatEuro(totalInc)}
                   </p>
                 </div>
               </div>
 
-              <div style={{display:'flex',flexDirection:'column',gap:6,maxHeight:120,overflowY:'auto'}} className="no-scrollbar">
+              <div style={{display:'flex',flexDirection:'column',gap:5,maxHeight:110,overflowY:'auto'}} className="no-scrollbar">
                 {parsedTransactions.slice(0, 3).map((tx, idx) => (
-                  <div key={idx} style={{background:'#FFFFFF',borderRadius:10,border:`1px solid ${P.border}`,padding:'8px 10px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div style={{minWidth:0}}>
-                      <p style={{fontSize:10,fontWeight:800,color:P.ink,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tx.description}</p>
-                      <span style={{fontSize:8,color:P.inkSubtle,fontWeight:600}}>{tx.date} · {tx.category}</span>
+                  <div key={idx} style={{background:'#FFFFFF',borderRadius:10,border:`1px solid ${P.border}`,padding:'6px 8px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                    <div style={{minWidth:0, marginRight:6}}>
+                      <p style={{fontSize:9,fontWeight:800,color:P.ink,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tx.description}</p>
+                      <span style={{fontSize:7,color:P.inkSubtle,fontWeight:600}}>{tx.date} · {tx.category}</span>
                     </div>
-                    <span style={{fontSize:10,fontWeight:900,color: tx.type === 'income' ? P.success : P.danger, flexShrink:0, paddingLeft:8}}>
+                    <span style={{fontSize:9,fontWeight:900,color: tx.type === 'income' ? P.success : P.danger, flexShrink:0}}>
                       {tx.type === 'income' ? '+' : '-'}{formatEuro(tx.amount)}
                     </span>
                   </div>
@@ -543,10 +758,11 @@ export const CSVImportModal: React.FC<CSVImportModalProps> = ({ isOpen, onClose,
           )}
         </div>
 
-        <div style={{borderTop:`1px solid ${P.border}`,paddingTop:12,marginTop:16,display:'flex',gap:10,flexShrink:0}}>
+        {/* Rodapé / Botões */}
+        <div style={{borderTop:`1px solid ${P.border}`,paddingTop:10,marginTop:10,display:'flex',gap:8,flexShrink:0}}>
           <button 
             onClick={onClose} 
-            style={{flex:1,padding:'11px',borderRadius:12,background:'#F7F8FF',border:`1px solid ${P.border}`,color:P.inkMuted,fontSize:11,fontWeight:800,cursor:'pointer'}}
+            style={{flex:1,padding:'9px',borderRadius:10,background:'#F7F8FF',border:`1px solid ${P.border}`,color:P.inkMuted,fontSize:10,fontWeight:800,cursor:'pointer'}}
           >
             Cancelar
           </button>
@@ -555,22 +771,22 @@ export const CSVImportModal: React.FC<CSVImportModalProps> = ({ isOpen, onClose,
             disabled={parsedTransactions.length === 0}
             style={{
               flex:1.5,
-              padding:'11px',
-              borderRadius:12,
+              padding:'9px',
+              borderRadius:10,
               background: parsedTransactions.length > 0 ? 'linear-gradient(135deg,#4F6EF7,#7C5CFC)' : P.inkSubtle,
               color:'#fff',
-              fontSize:11,
+              fontSize:10,
               fontWeight:900,
               border:'none',
               cursor: parsedTransactions.length > 0 ? 'pointer' : 'not-allowed',
-              boxShadow: parsedTransactions.length > 0 ? '0 4px 14px rgba(79,110,247,0.30)' : 'none',
+              boxShadow: parsedTransactions.length > 0 ? '0 4px 12px rgba(79,110,247,0.30)' : 'none',
               display:'flex',
               alignItems:'center',
               justifyContent:'center',
-              gap:6
+              gap:4
             }}
           >
-            <CheckCircle2 style={{width:14,height:14}} />
+            <CheckCircle2 style={{width:13,height:13}} />
             Confirmar Importação
           </button>
         </div>
