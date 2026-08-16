@@ -50,7 +50,23 @@ import { TransactionModal } from './components/TransactionModal';
 
 // Funções auxiliares para lidar com datas na hora local da máquina de forma segura, evitando bugs de fuso horário UTC
 const parseLocalDate = (dateStr: string): Date => {
-  const [year, month, day] = dateStr.split('-').map(Number);
+  if (!dateStr || typeof dateStr !== 'string') {
+    return new Date();
+  }
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) {
+    const partsSlash = dateStr.split('/');
+    if (partsSlash.length === 3) {
+      if (partsSlash[0].length === 4) {
+        return new Date(Number(partsSlash[0]), Number(partsSlash[1]) - 1, Number(partsSlash[2]));
+      } else {
+        return new Date(Number(partsSlash[2]), Number(partsSlash[1]) - 1, Number(partsSlash[0]));
+      }
+    }
+    return new Date();
+  }
+  const [year, month, day] = parts.map(Number);
+  if (isNaN(year) || isNaN(month) || isNaN(day)) return new Date();
   return new Date(year, month - 1, day);
 };
 
@@ -425,7 +441,7 @@ function App() {
               }
             }
 
-            setToastMessage(`Importado: ${amountVal.toFixed(2)}€ (${descVal}) no ${targetBank.name}`);
+            setToastMessage(`Importado: ${amountVal.toFixed(2)}€ (${descVal}) no ${targetBank?.name || 'Banco'}`);
             setTimeout(() => setToastMessage(null), 5000);
           }
         } catch (err) {

@@ -87,7 +87,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
     .filter(tx => tx.type === 'income')
     .reduce((sum, tx) => sum + tx.amount, 0);
 
-  const effectiveSalary = budget.salary + totalIncome;
+  const salaryTxsSum = currentMonthTransactions
+    .filter(tx => tx.category === 'Salário' && tx.type === 'income')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const otherIncome = totalIncome - salaryTxsSum;
+  const baseSalary = salaryTxsSum > 0 ? salaryTxsSum : budget.salary;
+  const effectiveSalary = baseSalary + otherIncome;
   const allocatedPlafondReal = Math.max(0, effectiveSalary - spentFixos - savedPoupanca - investedInvestimento);
   const remainingPlafondReal = allocatedPlafondReal - spentPlafondReal;
 
@@ -360,7 +366,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           {/* 5. Gráfico Donut */}
-          {budget.salary > 0 && (
+          {baseSalary > 0 && (
             <div style={{background:'#FFFFFF',borderRadius:'24px',border:`1px solid ${P.border}`,padding:'18px 16px',boxShadow:'0 2px 16px rgba(79,110,247,0.06)'}}>
               <div style={{marginBottom:14}}>
                 <span style={{fontSize:11,fontWeight:800,color:P.inkSubtle,letterSpacing:'0.08em',textTransform:'uppercase'}}>Distribuição do Plafond</span>

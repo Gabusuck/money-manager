@@ -58,7 +58,13 @@ export const Evolution: React.FC<EvolutionProps> = ({
     .filter(tx => tx.type === 'income')
     .reduce((sum, tx) => sum + tx.amount, 0);
 
-  const effectiveSalary = budget.salary + totalIncome;
+  const salaryTxsSum = currentMonthTransactions
+    .filter(tx => tx.category === 'Salário' && tx.type === 'income')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const otherIncome = totalIncome - salaryTxsSum;
+  const baseSalary = salaryTxsSum > 0 ? salaryTxsSum : budget.salary;
+  const effectiveSalary = baseSalary + otherIncome;
   const allocatedPlafondReal = Math.max(0, effectiveSalary - spentFixos - savedPoupanca - investedInvestimento);
   const remainingPlafondReal = allocatedPlafondReal - spentPlafondReal;
 
@@ -244,7 +250,7 @@ export const Evolution: React.FC<EvolutionProps> = ({
             onClick={onEditBudget}
             className="text-[9px] font-bold text-brand-purple hover:underline uppercase tracking-wider transition-custom cursor-pointer"
           >
-            Salário Base: {budget.salary}€
+            Salário Base: {baseSalary}€
           </button>
         </div>
         
